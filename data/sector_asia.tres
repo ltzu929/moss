@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="SectorData" load_steps=2 format=3 uid="uid://de5nghry0twj7"]
+
+[ext_resource type="Script" uid="uid://c3mp30tv2pifk" path="res://scripts/resources/sector_data.gd" id="1_42bf4"]
+
+[resource]
+script = ExtResource("1_42bf4")
+region_name = "亚洲"
+description = "人口众多"
+authority = 100
+metadata/_custom_type_script = "uid://c3mp30tv2pifk"

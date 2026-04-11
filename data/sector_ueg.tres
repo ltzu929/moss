@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="SectorData" load_steps=2 format=3 uid="uid://dthd18iep6jve"]
+
+[ext_resource type="Script" uid="uid://c3mp30tv2pifk" path="res://scripts/resources/sector_data.gd" id="1_ndvs4"]
+
+[resource]
+script = ExtResource("1_ndvs4")
+region_name = "UEG"
+metadata/_custom_type_script = "uid://c3mp30tv2pifk"

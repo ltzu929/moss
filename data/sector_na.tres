@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="SectorData" load_steps=2 format=3 uid="uid://c5g8pdsgsa214"]
+
+[ext_resource type="Script" uid="uid://c3mp30tv2pifk" path="res://scripts/resources/sector_data.gd" id="1_5176y"]
+
+[resource]
+script = ExtResource("1_5176y")
+region_name = "北美"
+metadata/_custom_type_script = "uid://c3mp30tv2pifk"

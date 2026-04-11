@@ -1,0 +1,98 @@
+[gd_scene load_steps=9 format=3 uid="uid://dlmkcdge21u4x"]
+
+[ext_resource type="Script" uid="uid://ctakhimn50hdc" path="res://scripts/systems/main_os.gd" id="1_8e66l"]
+[ext_resource type="Script" uid="uid://dhndawkfhm8iq" path="res://scripts/resources/game_event.gd" id="2_0h44u"]
+[ext_resource type="PackedScene" uid="uid://xn0mj5mp0u12" path="res://scenes/sector_info.tscn" id="2_qcklt"]
+[ext_resource type="Resource" uid="uid://bgrmda00hq7ef" path="res://data/events/event_2044.tres" id="3_b37nj"]
+[ext_resource type="Resource" uid="uid://de5nghry0twj7" path="res://data/sector_asia.tres" id="3_sjuws"]
+[ext_resource type="Resource" uid="uid://c5g8pdsgsa214" path="res://data/sector_na.tres" id="4_lwoul"]
+[ext_resource type="Resource" uid="uid://dthd18iep6jve" path="res://data/sector_ueg.tres" id="5_8e66l"]
+[ext_resource type="PackedScene" uid="uid://jls1m2vbj8iu" path="res://scenes/event_popup.tscn" id="9_b37nj"]
+
+[node name="MainOS" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_8e66l")
+all_events = Array[ExtResource("2_0h44u")]([ExtResource("3_b37nj")])
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_right = 674.0
+offset_bottom = -200.0
+grow_vertical = 2
+alignment = 1
+
+[node name="SectorInfoAsia" parent="HBoxContainer" instance=ExtResource("2_qcklt")]
+custom_minimum_size = Vector2(222, 448)
+layout_mode = 2
+data_card = ExtResource("3_sjuws")
+
+[node name="SectorInfoNa" parent="HBoxContainer" instance=ExtResource("2_qcklt")]
+custom_minimum_size = Vector2(222, 448)
+layout_mode = 2
+data_card = ExtResource("4_lwoul")
+
+[node name="SectorInfoUeg" parent="HBoxContainer" instance=ExtResource("2_qcklt")]
+custom_minimum_size = Vector2(222, 448)
+layout_mode = 2
+data_card = ExtResource("5_8e66l")
+
+[node name="Timer" type="Timer" parent="."]
+autostart = true
+
+[node name="EventPopup" parent="." instance=ExtResource("9_b37nj")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -300.0
+offset_right = 200.0
+offset_bottom = 300.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="GlobalContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -47.0
+offset_bottom = 40.0
+grow_horizontal = 0
+
+[node name="ComputationalLabel" type="Label" parent="GlobalContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "算力:100"
+
+[node name="EnergyLabel" type="Label" parent="GlobalContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "能源:100"
+
+[node name="YearLabel" type="Label" parent="GlobalContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "年份:2044"
+
+[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
