@@ -267,7 +267,8 @@ func show_end_screen(title: String, message: String) -> void:
 	if end_screen_instance != null:
 		end_screen_instance.queue_free()
 
-	# 创建新的结局界面实例
+	# 加载结局场景并创建实例
+	var end_screen_scene := load("res://scenes/game_over.tscn")
 	end_screen_instance = end_screen_scene.instantiate()
 
 	# 添加到主界面
