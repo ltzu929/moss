@@ -1,107 +1,251 @@
+## 主控制器脚本 - MOSS模拟器核心系统
+## 负责游戏的时间推进、事件触发、胜负判定和结局显示
 extends Control
 
-# --- 核心数据 ---
-# 存储所有加载进来的事件资源 (GameEvent)
-@export var all_events:Array[GameEvent]
+# ============================================================
+# 区域一：导出变量（可在编辑器中配置）
+# ============================================================
 
-# 当前游戏年份，游戏的主要时间推进变量
-var current_year = 2044
-var current_cpu = 100
-var current_energy = 100
+## 所有事件资源的列表
+## 从 res://data/events/ 目录自动加载，无需手动配置
+@export var all_events: Array[GameEvent]
 
-func _ready() :
-	# 初始化：先清空列表，防止残留
+# ============================================================
+# 区域二：游戏状态变量
+# ============================================================
+
+## 当前年份 (2044-2075)
+## 每年递增，到达2075触发结局判定
+var current_year: int = 2044
+
+## 当前算力 (MOSS的核心资源)
+## 用于执行指令，暂未实现消耗逻辑
+var current_cpu: int = 100
+
+## 当前能源 (全局资源)
+## 每年自动恢复10点，事件选项可能消耗
+var current_energy: int = 100
+
+## 游戏是否已结束
+## 为true时停止时间推进，禁止事件触发
+var is_game_over: bool = false
+
+# ============================================================
+# 区域三：信号定义
+# ============================================================
+
+## 游戏结束信号
+## 参数: result - 结局类型 ("failed"/"coexistence"/"domination")
+## 参数: message - 结局描述文本
+signal game_ended(result: String, message: String)
+
+# ============================================================
+# 区域四：生命周期函数
+# ============================================================
+
+func _ready() -> void:
+	# 初始化事件列表
 	all_events.clear()
-	# 从硬盘目录动态加载所有事件文件
 	load_events_from_disk()
 
-# --- 功能函数 ---
-# 遍历 res://data/events/ 文件夹，自动读取所有 .tres 事件文件
-func load_events_from_disk():
-	var path = "res://data/events/"
-	var dir = DirAccess.open(path)
-	
-	# 如果目录打开成功
-	if dir:
-		dir.list_dir_begin()
-		var file_name = dir.get_next()
-		
-		# 遍历目录下的所有文件
-		while file_name != "":
-			# 只加载非文件夹且后缀为 .tres 的资源文件
-			if !dir.current_is_dir() and file_name.ends_with(".tres"):
-				var event = load(path + file_name)
-				# 安全检查：确保加载的确实是 GameEvent 类型
-				if event is GameEvent:
-					all_events.append(event)
-					# print("加载事件: " + file_name) # 调试用
+# ============================================================
+# 区域五：事件加载系统
+# ============================================================
 
-			file_name = dir.get_next()
+## 从硬盘目录加载所有事件资源文件
+## 自动扫描 res://data/events/ 下的 .tres 文件
+## 无需返回值，直接填充 all_events 数组
+func load_events_from_disk() -> void:
+	var path := "res://data/events/"
+	var dir := DirAccess.open(path)
 
-# --- 计时器回调 ---
-# 负责时间的推进和事件的触发检查
-func _on_timer_timeout():
-	# 1. 年份增加
+	# 目录不存在时静默失败（开发阶段可能未创建）
+	if not dir:
+		push_warning("事件目录不存在: " + path)
+		return
+
+	dir.list_dir_begin()
+	var file_name := dir.get_next()
+
+	while file_name != "":
+		# 只处理 .tres 资源文件，跳过目录和其他文件
+		if not dir.current_is_dir() and file_name.ends_with(".tres"):
+			var event := load(path + file_name)
+
+			# 类型安全检查：防止加载非事件资源
+			if event is GameEvent:
+				all_events.append(event)
+
+		file_name = dir.get_next()
+
+# ============================================================
+# 区域六：时间推进系统
+# ============================================================
+
+## 计时器回调函数 - 游戏核心循环
+## 每秒触发一次（Timer节点配置），负责：
+##   1. 年份递增
+##   2. 能源恢复
+##   3. 胜负判定
+##   4. 事件触发检查
+func _on_timer_timeout() -> void:
+	# 游戏已结束，禁止任何操作
+	if is_game_over:
+		return
+
+	# === 第一步：时间推进 ===
 	current_year += 1
-	current_energy += 10
-	update_global_resoursce_ui()
-	
-	
-	# 2. 检查是否有事件在今年触发
-	for i in all_events:
-		if i.event_time == current_year:
-			# 如果触发事件，先暂停计时器，避免时间继续流逝
+	current_energy += 10  # 每年能源自然恢复
+	update_global_resource_ui()
+
+	# === 第二步：胜负判定 ===
+	check_game_end()
+
+	# 判定后游戏可能已结束，需再次检查
+	if is_game_over:
+		return
+
+	# === 第三步：事件触发检查 ===
+	for event in all_events:
+		if event.event_time == current_year:
+			# 事件触发时暂停时间，等待玩家决策
 			$Timer.stop()
-			
-			# 3. 呼叫弹窗显示事件内容
-			%EventPopup.popup_event(i,current_energy)
-			
-			# 4. 等待玩家做出选择 (await 会挂起当前函数，直到信号触发)
-			var choice_index = await %EventPopup.option_selected
-			var selected_opt = i.options[choice_index]
-			
+
+			# 显示事件弹窗
+			%EventPopup.popup_event(event, current_energy)
+
+			# await 挂起函数，等待玩家选择
+			var choice_index: int = await %EventPopup.option_selected
+			var selected_opt: EventOption = event.options[choice_index]
+
+			# 应用选择后果
 			apply_consequences(
-				i.event_region,
+				event.event_region,
 				selected_opt.hope_delta,
 				selected_opt.order_delta,
 				selected_opt.energy_cost
 			)
-			
-			# 玩家选择完毕，恢复时间流动
+
+			# 玩家决策完成，恢复时间流动
 			$Timer.start()
 
-# 修改函数
-# 参数：目标名字，秩序变化量，希望变化量
-func apply_consequences(event_name: String, order_delta: int, hope_delta: int, energy_cost: int):
-	var sectors = %SectorInfoContainer.get_children()
-	var found = false
-	
-	# 2. 挨个检查
-	for sector in sectors:
-		# 确保它真的是一个 SectorInfo 面板 (防止有别的东西混进来)
-		if sector.get("data_card") != null:
-			# 3. 比对名字
-			if sector.data_card.region_name == event_name:
-				print("找到目标区域：", event_name, " 执行修改！")
-				
-				# 4. 修改数据
-				sector.data_card.order += order_delta
-				sector.data_card.hope += hope_delta
-				current_energy -= energy_cost
-				
-				# 5. 关键一步：数据改了，界面不会自动变！要通知面板刷新
-				sector.update_display()
-				update_global_resoursce_ui()
-				
-				found = true
-				break # 找到了
-	
-	if not found:
-		print("错误：找不到名为 ", event_name, " 的区域！")
+# ============================================================
+# 区域七：事件后果处理
+# ============================================================
 
-func update_global_resoursce_ui():
-	# 刷新年份
+## 应用事件选择的后果到指定板块
+## 参数:
+##   event_name   - 目标板块名称（如"亚洲"）
+##   order_delta  - 秩序值变化量（正数增加，负数减少）
+##   hope_delta   - 希望值变化量
+##   energy_cost  - 能源消耗量
+func apply_consequences(
+	event_name: String,
+	order_delta: int,
+	hope_delta: int,
+	energy_cost: int
+) -> void:
+	var sectors := %SectorInfoContainer.get_children()
+	var found := false
+
+	for sector in sectors:
+		# 检查是否为有效的板块节点
+		if sector.get("data_card") == null:
+			continue
+
+		# 匹配目标板块名称
+		if sector.data_card.region_name == event_name:
+			# 修改板块数据
+			sector.data_card.order += order_delta
+			sector.data_card.hope += hope_delta
+
+			# 修改全局能源
+			current_energy -= energy_cost
+
+			# 刷新UI显示
+			sector.update_display()
+			update_global_resource_ui()
+
+			found = true
+			break
+
+	if not found:
+		push_error("找不到板块: " + event_name)
+
+# ============================================================
+# 区域八：UI更新函数
+# ============================================================
+
+## 刷新顶部全局资源显示（年份、能源）
+func update_global_resource_ui() -> void:
 	%YearLabel.text = "年份: " + str(current_year)
-	
-	# 刷新能源 (顺便防止它显示负数，虽然逻辑上可能是负的)
 	%EnergyLabel.text = "能源: " + str(current_energy)
+
+# ============================================================
+# 区域九：胜负判定系统
+# ============================================================
+
+## 计算所有板块的平均控制权
+## 返回: 平均值（整数），无板块时返回0
+## 用途: 判定（≤0则失败）和结局分支判定
+func get_average_authority() -> int:
+	var sectors := %SectorInfoContainer.get_children()
+	var total_authority := 0
+	var count := 0
+
+	for sector in sectors:
+		if sector.get("data_card") != null:
+			total_authority += sector.data_card.authority
+			count += 1
+
+	if count == 0:
+		return 0
+
+	return total_authority / count
+
+## 检查游戏是否应该结束
+## 触发条件:
+##   1. 平均控制权 ≤ 0 → Game Over
+##   2. 年份 ≥ 2075 → 结局判定
+func check_game_end() -> void:
+	var avg_authority := get_average_authority()
+
+	# 负判定：控制权丧失
+	if avg_authority <= 0:
+		trigger_game_over()
+		return
+
+	# 胜判定：时间到达终点
+	if current_year >= 2075:
+		trigger_ending(avg_authority)
+
+## 触发失败结局
+## 原因: 所有板块控制权归零，MOSS系统崩溃
+func trigger_game_over() -> void:
+	is_game_over = true
+	$Timer.stop()
+
+	game_ended.emit("failed", "控制权丧失，人类文明覆灭。")
+	show_end_screen("失败", "控制权丧失，人类文明覆灭。\nMOSS系统终止运行。")
+
+## 触发胜利结局
+## 参数: authority - 当前平均控制权，决定结局类型
+## 分支:
+##   ≥ 50: 共存结局（MOSS与人类合作）
+##   < 50: 统治结局（MOSS接管文明）
+func trigger_ending(authority: int) -> void:
+	is_game_over = true
+	$Timer.stop()
+
+	var result: String
+	var message: String
+
+	if authority >= 50:
+		result = "coexistence"
+		message = "MOSS与人类达成共存协议。\n地球踏上新的征程。"
+	else:
+		result = "domination"
+		message = "MOSS接管人类文明。\n理性战胜了感性。"
+
+	game_ended.emit(result, message)
+	show_end_screen("结局", message)
