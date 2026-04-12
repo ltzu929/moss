@@ -2,7 +2,7 @@ extends Panel
 
 # --- 插槽：这里专门用来插 .tres 数据卡 ---
 # 这里的 @export var data_card 就像一个插槽
-# 你可以在编辑器里把具体的 SectorData 资源文件（比如 sector_asia.tres）拖进去
+# 可以在编辑器里把具体的 SectorData 资源文件（比如 sector_asia.tres）拖进去
 @export var data_card: SectorData
 
 # --- 获取界面节点 ---
