@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat ~/.claude/settings.json)",
+      "Bash(cat \"C:/Users/zk/.claude/settings.json\")",
+      "Bash(npx -y @coding-solo/godot-mcp --help)",
+      "mcp__godot__get_godot_version",
+      "mcp__godot__get_project_info",
+      "mcp__godot__create_scene"
+    ]
+  }
+}

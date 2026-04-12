@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "godot": {
+      "command": "npx",
+      "args": ["-y", "@coding-solo/godot-mcp"],
+      "env": {
+        "GODOT_PATH": "E:/steam/steamapps/common/Godot Engine/godot.windows.opt.tools.64.exe"
+      }
+    }
+  }
+}
