@@ -10,9 +10,6 @@ extends Control
 ## 从 res://data/events/ 目录自动加载，无需手动配置
 @export var all_events: Array[GameEvent]
 
-## 结局场景预加载
-## 避免每次结束游戏时重新加载
-var end_screen_scene: PackedScene = preload("res://scenes/game_over.tscn")
 
 ## 当前显示的结局界面实例
 var end_screen_instance: Control = null
