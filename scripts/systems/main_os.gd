@@ -10,6 +10,13 @@ extends Control
 ## 从 res://data/events/ 目录自动加载，无需手动配置
 @export var all_events: Array[GameEvent]
 
+## 结局场景预加载
+## 避免每次结束游戏时重新加载
+var end_screen_scene: PackedScene = preload("res://scenes/game_over.tscn")
+
+## 当前显示的结局界面实例
+var end_screen_instance: Control = null
+
 # ============================================================
 # 区域二：游戏状态变量
 # ============================================================
@@ -249,3 +256,56 @@ func trigger_ending(authority: int) -> void:
 
 	game_ended.emit(result, message)
 	show_end_screen("结局", message)
+
+# ============================================================
+# 区域十：结局界面系统
+# ============================================================
+
+## 显示结局界面
+## 参数:
+##   title   - 界面标题（"失败"或"结局"）
+##   message - 结局描述文本
+func show_end_screen(title: String, message: String) -> void:
+	# 如果已有实例，先移除
+	if end_screen_instance != null:
+		end_screen_instance.queue_free()
+
+	# 创建新的结局界面实例
+	end_screen_instance = end_screen_scene.instantiate()
+
+	# 添加到主界面
+	add_child(end_screen_instance)
+
+	# 设置文本内容
+	end_screen_instance.show_end(title, message)
+
+	# 连接重新开始信号
+	end_screen_instance.restart_requested.connect(_on_restart_requested)
+
+## 重新开始按钮回调
+## 重置所有游戏状态，重新开始游戏循环
+func _on_restart_requested() -> void:
+	# 移除结局界面
+	if end_screen_instance != null:
+		end_screen_instance.queue_free()
+		end_screen_instance = null
+
+	# 重置时间状态
+	current_year = 2044
+	current_energy = 100
+	is_game_over = false
+
+	# 重置所有板块数据到初始值
+	var sectors := %SectorInfoContainer.get_children()
+	for sector in sectors:
+		if sector.get("data_card") != null:
+			sector.data_card.order = 50
+			sector.data_card.hope = 50
+			sector.data_card.authority = 10
+			sector.update_display()
+
+	# 刷新UI
+	update_global_resource_ui()
+
+	# 恢复时间流动
+	$Timer.start()
