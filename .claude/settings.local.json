@@ -10,7 +10,8 @@
       "mcp__godot__add_node",
       "mcp__godot__run_project",
       "mcp__godot__get_debug_output",
-      "Bash(rm \"C:/Users/zk/.claude/projects/e--GameProiect-moss/memory/project_progress.md\")"
+      "Bash(rm \"C:/Users/zk/.claude/projects/e--GameProiect-moss/memory/project_progress.md\")",
+      "mcp__godot__stop_project"
     ]
   }
 }

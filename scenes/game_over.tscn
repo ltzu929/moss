@@ -1,5 +1,7 @@
 [gd_scene format=3 uid="uid://bwcd17dhcxc17"]
 
+[ext_resource type="Script" uid="uid://c7l6ad40f3lni" path="res://scripts/ui/game_over.gd" id="1_xeevv"]
+
 [node name="GameOver" type="Control" unique_id=379235346]
 layout_mode = 3
 anchors_preset = 15
@@ -7,6 +9,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("1_xeevv")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=2041230420]
 layout_mode = 0
@@ -24,3 +27,5 @@ layout_mode = 2
 [node name="RestartButton" type="Button" parent="VBoxContainer" unique_id=1931045912]
 layout_mode = 2
 text = "重新开始"
+
+[connection signal="pressed" from="VBoxContainer/RestartButton" to="." method="_on_restart_button_pressed"]

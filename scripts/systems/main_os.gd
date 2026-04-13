@@ -90,26 +90,16 @@ func load_events_from_disk() -> void:
 ## 每秒触发一次（Timer节点配置），负责：
 ##   1. 年份递增
 ##   2. 能源恢复
-##   3. 胜负判定
-##   4. 事件触发检查
+##   3. 事件触发检查
+##   4. 时间推进
+##   5. 胜负判定
 func _on_timer_timeout() -> void:
 	# 游戏已结束，禁止任何操作
 	if is_game_over:
 		return
 
-	# === 第一步：时间推进 ===
-	current_year += 1
-	current_energy += 10  # 每年能源自然恢复
-	update_global_resource_ui()
-
-	# === 第二步：胜负判定 ===
-	check_game_end()
-
-	# 判定后游戏可能已结束，需再次检查
-	if is_game_over:
-		return
-
-	# === 第三步：事件触发检查 ===
+	# === 第一步：事件触发检查 ===
+	# 先检查当前年份的事件，再推进时间
 	for event in all_events:
 		if event.event_time == current_year:
 			# 事件触发时暂停时间，等待玩家决策
@@ -132,6 +122,14 @@ func _on_timer_timeout() -> void:
 
 			# 玩家决策完成，恢复时间流动
 			$Timer.start()
+
+	# === 第二步：时间推进 ===
+	current_year += 1
+	current_energy += 10  # 每年能源自然恢复
+	update_global_resource_ui()
+
+	# === 第三步：胜负判定 ===
+	check_game_end()
 
 # ============================================================
 # 区域七：事件后果处理
@@ -180,9 +178,10 @@ func apply_consequences(
 # 区域八：UI更新函数
 # ============================================================
 
-## 刷新顶部全局资源显示（年份、能源）
+## 刷新顶部全局资源显示（年份、算力、能源）
 func update_global_resource_ui() -> void:
 	%YearLabel.text = "年份: " + str(current_year)
+	%ComputationalLabel.text = "算力: " + str(current_cpu)
 	%EnergyLabel.text = "能源: " + str(current_energy)
 
 # ============================================================
@@ -205,7 +204,8 @@ func get_average_authority() -> int:
 	if count == 0:
 		return 0
 
-	return total_authority / count
+	# 返回整数平均值，向下取整
+	return int(total_authority / count)
 
 ## 检查游戏是否应该结束
 ## 触发条件:
