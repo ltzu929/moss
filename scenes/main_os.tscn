@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://dlmkcdge21u4x"]
+[gd_scene format=3 uid="uid://dlmkcdge21u4x"]
 
 [ext_resource type="Script" uid="uid://ctakhimn50hdc" path="res://scripts/systems/main_os.gd" id="1_8e66l"]
 [ext_resource type="Script" uid="uid://dhndawkfhm8iq" path="res://scripts/resources/game_event.gd" id="2_0h44u"]
@@ -7,9 +7,10 @@
 [ext_resource type="Resource" uid="uid://de5nghry0twj7" path="res://data/sector_asia.tres" id="3_sjuws"]
 [ext_resource type="Resource" uid="uid://c5g8pdsgsa214" path="res://data/sector_na.tres" id="4_lwoul"]
 [ext_resource type="Resource" uid="uid://dthd18iep6jve" path="res://data/sector_ueg.tres" id="5_8e66l"]
+[ext_resource type="PackedScene" uid="uid://dellv4e6qlqpr" path="res://scenes/allocate_popup.tscn" id="9_a8ufc"]
 [ext_resource type="PackedScene" uid="uid://jls1m2vbj8iu" path="res://scenes/event_popup.tscn" id="9_b37nj"]
 
-[node name="MainOS" type="Control"]
+[node name="MainOS" type="Control" unique_id=1064400959]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -19,7 +20,7 @@ grow_vertical = 2
 script = ExtResource("1_8e66l")
 all_events = Array[ExtResource("2_0h44u")]([ExtResource("3_b37nj")])
 
-[node name="ColorRect" type="ColorRect" parent="."]
+[node name="ColorRect" type="ColorRect" parent="." unique_id=1465576623]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -28,7 +29,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 1)
 
-[node name="SectorInfoContainer" type="HBoxContainer" parent="."]
+[node name="SectorInfoContainer" type="HBoxContainer" parent="." unique_id=1437917960]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 9
@@ -38,25 +39,25 @@ offset_bottom = -200.0
 grow_vertical = 2
 alignment = 1
 
-[node name="SectorInfoAsia" parent="SectorInfoContainer" instance=ExtResource("2_qcklt")]
+[node name="SectorInfoAsia" parent="SectorInfoContainer" unique_id=845453540 instance=ExtResource("2_qcklt")]
 custom_minimum_size = Vector2(222, 448)
 layout_mode = 2
 data_card = ExtResource("3_sjuws")
 
-[node name="SectorInfoNa" parent="SectorInfoContainer" instance=ExtResource("2_qcklt")]
+[node name="SectorInfoNa" parent="SectorInfoContainer" unique_id=680731091 instance=ExtResource("2_qcklt")]
 custom_minimum_size = Vector2(222, 448)
 layout_mode = 2
 data_card = ExtResource("4_lwoul")
 
-[node name="SectorInfoUeg" parent="SectorInfoContainer" instance=ExtResource("2_qcklt")]
+[node name="SectorInfoUeg" parent="SectorInfoContainer" unique_id=883468909 instance=ExtResource("2_qcklt")]
 custom_minimum_size = Vector2(222, 448)
 layout_mode = 2
 data_card = ExtResource("5_8e66l")
 
-[node name="Timer" type="Timer" parent="."]
+[node name="Timer" type="Timer" parent="." unique_id=984637322]
 autostart = true
 
-[node name="EventPopup" parent="." instance=ExtResource("9_b37nj")]
+[node name="EventPopup" parent="." unique_id=701897754 instance=ExtResource("9_b37nj")]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
@@ -72,7 +73,7 @@ offset_bottom = 300.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="GlobalResourcesContainer" type="HBoxContainer" parent="."]
+[node name="GlobalResourcesContainer" type="HBoxContainer" parent="." unique_id=768598594]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 1
@@ -82,19 +83,27 @@ offset_left = -47.0
 offset_bottom = 40.0
 grow_horizontal = 0
 
-[node name="ComputationalLabel" type="Label" parent="GlobalResourcesContainer"]
+[node name="ComputationalLabel" type="Label" parent="GlobalResourcesContainer" unique_id=777115127]
 unique_name_in_owner = true
 layout_mode = 2
 text = "算力:100"
 
-[node name="EnergyLabel" type="Label" parent="GlobalResourcesContainer"]
+[node name="EnergyLabel" type="Label" parent="GlobalResourcesContainer" unique_id=1504169730]
 unique_name_in_owner = true
 layout_mode = 2
 text = "能源:100"
 
-[node name="YearLabel" type="Label" parent="GlobalResourcesContainer"]
+[node name="YearLabel" type="Label" parent="GlobalResourcesContainer" unique_id=1488346041]
 unique_name_in_owner = true
 layout_mode = 2
 text = "年份:2044"
+
+[node name="CommandButtonContainer" type="HBoxContainer" parent="." unique_id=107053379]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="AllocatePopup" parent="." unique_id=1777844314 instance=ExtResource("9_a8ufc")]
+layout_mode = 0
 
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]

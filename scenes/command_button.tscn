@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://daun5aawwmnag"]
+
+[ext_resource type="Script" uid="uid://cymghks3vur1j" path="res://scripts/ui/command_button.gd" id="1_lohhn"]
+
+[node name="root" type="Button" unique_id=935664176]
+script = ExtResource("1_lohhn")

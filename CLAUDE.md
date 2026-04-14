@@ -58,8 +58,8 @@ signal game_ended(result: String)
 ## 计算所有板块的平均控制权
 ## 返回: 平均值（整数），无板块时返回0
 func get_average_authority() -> int:
-    # 遍历所有板块累加控制权
-    ...
+	# 遍历所有板块累加控制权
+	...
 ```
 
 ### 类型标注

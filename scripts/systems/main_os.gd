@@ -35,7 +35,20 @@ var current_energy: int = 100
 var is_game_over: bool = false
 
 # ============================================================
-# 区域三：信号定义
+# 区域三：指令系统状态
+# ============================================================
+
+## 当前选中的板块
+var selected_sector: SectorInfo = null
+
+## 各指令冷却剩余年数 {"算力分配": 0, "系统接管": 2}
+var command_cooldowns: Dictionary = {}
+
+## 可用指令列表（从磁盘加载）
+var available_commands: Array[CommandData] = []
+
+# ============================================================
+# 区域四：信号定义
 # ============================================================
 
 ## 游戏结束信号
@@ -44,7 +57,7 @@ var is_game_over: bool = false
 signal game_ended(result: String, message: String)
 
 # ============================================================
-# 区域四：生命周期函数
+# 区域五：生命周期函数
 # ============================================================
 
 func _ready() -> void:
@@ -52,8 +65,18 @@ func _ready() -> void:
 	all_events.clear()
 	load_events_from_disk()
 
+	# 初始化指令列表
+	available_commands.clear()
+	load_commands_from_disk()
+
+	# 连接所有板块的点击信号
+	connect_sector_signals()
+
+	# 初始化指令按钮
+	setup_command_buttons()
+
 # ============================================================
-# 区域五：事件加载系统
+# 区域六：事件加载系统
 # ============================================================
 
 ## 从硬盘目录加载所有事件资源文件
@@ -83,7 +106,119 @@ func load_events_from_disk() -> void:
 		file_name = dir.get_next()
 
 # ============================================================
-# 区域六：时间推进系统
+# 区域七：指令加载系统
+# ============================================================
+
+## 从硬盘目录加载所有指令资源文件
+## 自动扫描 res://data/commands/ 下的 .tres 文件
+func load_commands_from_disk() -> void:
+	var path := "res://data/commands/"
+	var dir := DirAccess.open(path)
+
+	if not dir:
+		push_warning("指令目录不存在: " + path)
+		return
+
+	dir.list_dir_begin()
+	var file_name := dir.get_next()
+
+	while file_name != "":
+		if not dir.current_is_dir() and file_name.ends_with(".tres"):
+			var cmd := load(path + file_name)
+
+			if cmd is CommandData:
+				available_commands.append(cmd)
+				# 初始化冷却状态为0
+				command_cooldowns[cmd.command_name] = 0
+
+		file_name = dir.get_next()
+
+# ============================================================
+# 区域八：板块选中管理
+# ============================================================
+
+## 连接所有板块的点击信号
+func connect_sector_signals() -> void:
+	var sectors := %SectorInfoContainer.get_children()
+	for sector in sectors:
+		if sector.get("sector_clicked") != null:
+			sector.sector_clicked.connect(_on_sector_clicked)
+
+## 设置选中板块
+## 参数: sector - 被点击的板块节点
+func select_sector(sector: SectorInfo) -> void:
+	# 取消之前的选中
+	if selected_sector != null:
+		selected_sector.set_selected(false)
+
+	# 设置新选中
+	selected_sector = sector
+	selected_sector.set_selected(true)
+
+## 取消选中状态
+func deselect_sector() -> void:
+	if selected_sector != null:
+		selected_sector.set_selected(false)
+		selected_sector = null
+
+## 板块点击回调 - 连接到SectorInfo的sector_clicked信号
+func _on_sector_clicked(sector: SectorInfo) -> void:
+	select_sector(sector)
+
+# ============================================================
+# 区域九：冷却系统
+# ============================================================
+
+## 每年更新冷却状态
+## 减少所有指令的冷却计数（最小为0）
+func update_cooldowns() -> void:
+	for cmd_name in command_cooldowns.keys():
+		if command_cooldowns[cmd_name] > 0:
+			command_cooldowns[cmd_name] -= 1
+
+## 检查指令是否可用（冷却、资源、选中状态）
+## 参数: cmd - 指令数据
+## 返回: true表示可执行
+func is_command_available(cmd: CommandData) -> bool:
+	# 检查选中状态
+	if selected_sector == null:
+		return false
+
+	# 检查冷却
+	if command_cooldowns.get(cmd.command_name, 0) > 0:
+		return false
+
+	# 检查算力
+	if current_cpu < cmd.cpu_cost:
+		return false
+
+	# 检查能源
+	if current_energy < cmd.energy_cost:
+		return false
+
+	return true
+
+## 获取指令不可用的原因（用于tooltip）
+## 参数: cmd - 指令数据
+## 返回: 不可用原因字符串，可用时返回空字符串
+func get_command_unavailable_reason(cmd: CommandData) -> String:
+	if selected_sector == null:
+		return "请先选择板块"
+
+	var cooldown: int = command_cooldowns.get(cmd.command_name, 0)
+	if cooldown > 0:
+		return "冷却中（剩余%d年）" % cooldown
+
+	if current_cpu < cmd.cpu_cost:
+		return "算力不足（需要%d）" % cmd.cpu_cost
+
+	if current_energy < cmd.energy_cost:
+		return "能源不足（需要%d）" % cmd.energy_cost
+
+	return ""
+
+# ============================================================
+# 区域十：时间推进系统
 # ============================================================
 
 ## 计时器回调函数 - 游戏核心循环
@@ -126,7 +261,11 @@ func _on_timer_timeout() -> void:
 	# === 第二步：时间推进 ===
 	current_year += 1
 	current_energy += 10  # 每年能源自然恢复
+	current_cpu += 5      # 每年算力恢复5点
+	current_cpu = mini(current_cpu, 100)  # 算力上限100
+	update_cooldowns()    # 更新指令冷却
 	update_global_resource_ui()
+	update_command_buttons()  # 更新指令按钮状态
 
 	# === 第三步：胜负判定 ===
 	check_game_end()
@@ -307,3 +446,118 @@ func _on_restart_requested() -> void:
 
 	# 恢复时间流动
 	$Timer.start()
+
+# ============================================================
+# 区域十一：指令执行系统
+# ============================================================
+
+## 执行指令
+## 参数: cmd - 指令数据
+## 返回: true表示执行成功
+func execute_command(cmd: CommandData) -> bool:
+	if not is_command_available(cmd):
+		return false
+
+	# 消耗资源
+	current_cpu -= cmd.cpu_cost
+	current_energy -= cmd.energy_cost
+
+	# 启动冷却
+	command_cooldowns[cmd.command_name] = cmd.cooldown_years
+
+	# 刷新资源UI
+	update_global_resource_ui()
+
+	return true
+
+## 应用指令效果到选中板块
+## 参数: cmd - 指令数据
+##       effect_type - 对于算力分配，"order"或"hope"
+func apply_command_effect(cmd: CommandData, effect_type: String = "") -> void:
+	if selected_sector == null:
+		return
+
+	# 应用效果
+	if cmd.is_allocate_type:
+		# 算力分配根据选择决定效果
+		if effect_type == "order":
+			selected_sector.data_card.order += cmd.order_delta
+		elif effect_type == "hope":
+			selected_sector.data_card.hope += cmd.hope_delta
+	else:
+		# 其他指令直接应用所有效果
+		selected_sector.data_card.order += cmd.order_delta
+		selected_sector.data_card.hope += cmd.hope_delta
+		selected_sector.data_card.authority += cmd.authority_delta
+
+	# 限制数值范围
+	selected_sector.data_card.clamp_values()
+
+	# 刷新板块显示
+	selected_sector.update_display()
+
+## 指令按钮点击回调
+## 参数: cmd - 指令数据
+func _on_command_button_pressed(cmd: CommandData) -> void:
+	if not is_command_available(cmd):
+		return
+
+	if cmd.is_allocate_type:
+		# 算力分配需要弹出选择窗口
+		$Timer.stop()
+		%AllocatePopup.popup_allocate(cmd, selected_sector.data_card.region_name)
+		var choice: String = await %AllocatePopup.choice_selected
+		if choice != "":
+			execute_command(cmd)
+			apply_command_effect(cmd, choice)
+		$Timer.start()
+	else:
+		# 其他指令直接执行
+		execute_command(cmd)
+		apply_command_effect(cmd)
+
+# ============================================================
+# 区域十二：指令按钮管理
+# ============================================================
+
+## 初始化指令按钮容器中的所有按钮
+func setup_command_buttons() -> void:
+	var button_container: HBoxContainer = %CommandButtonContainer
+
+	if button_container == null:
+		push_error("找不到CommandButtonContainer")
+		return
+
+	# 清空现有按钮
+	for child in button_container.get_children():
+		child.queue_free()
+
+	# 为每个指令创建按钮
+	for cmd in available_commands:
+		var button_scene := load("res://scenes/command_button.tscn")
+		var button: Button = button_scene.instantiate()
+
+		# 配置按钮
+		button.setup(cmd)
+		button.cooldowns_ref = command_cooldowns
+
+		# 连接点击信号
+		button.command_pressed.connect(_on_command_button_pressed)
+
+		# 添加到容器
+		button_container.add_child(button)
+
+## 更新所有指令按钮状态
+func update_command_buttons() -> void:
+	var button_container: HBoxContainer = %CommandButtonContainer
+
+	if button_container == null:
+		return
+
+	for button in button_container.get_children():
+		if button.get("update_state") != null:
+			# 更新按钮的状态变量
+			button.current_cpu = current_cpu
+			button.current_energy = current_energy
+			button.has_selected_sector = (selected_sector != null)
+			button.update_state()
