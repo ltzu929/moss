@@ -3,31 +3,45 @@
 [ext_resource type="Script" uid="uid://ddm2s7iv0qrfv" path="res://scripts/ui/allocate_popup.gd" id="1_51q68"]
 
 [node name="AllocatePopup" type="PanelContainer" unique_id=1777844314]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -4.0
+offset_top = -43.0
+offset_right = 4.0
+offset_bottom = 43.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("1_51q68")
 
-[node name="AllocateTitle" type="Label" parent="." unique_id=512184389]
+[node name="VBoxContainer2" type="VBoxContainer" parent="." unique_id=1809652037]
+layout_mode = 2
+
+[node name="AllocateTitle" type="Label" parent="VBoxContainer2" unique_id=512184389]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="AllocateDesc" type="Label" parent="." unique_id=512978559]
+[node name="AllocateDesc" type="Label" parent="VBoxContainer2" unique_id=512978559]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=359136600]
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer2" unique_id=359136600]
 layout_mode = 2
 
-[node name="OrderButton" type="Button" parent="VBoxContainer" unique_id=1598295303]
+[node name="OrderButton" type="Button" parent="VBoxContainer2/VBoxContainer" unique_id=1598295303]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="HopeButton" type="Button" parent="VBoxContainer" unique_id=1910157037]
+[node name="HopeButton" type="Button" parent="VBoxContainer2/VBoxContainer" unique_id=1910157037]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="CancelButton" type="Button" parent="VBoxContainer" unique_id=400173149]
+[node name="CancelButton" type="Button" parent="VBoxContainer2/VBoxContainer" unique_id=400173149]
 unique_name_in_owner = true
 layout_mode = 2
 
-[connection signal="pressed" from="VBoxContainer/OrderButton" to="." method="_on_order_button_pressed"]
-[connection signal="pressed" from="VBoxContainer/HopeButton" to="." method="_on_hope_button_pressed"]
-[connection signal="pressed" from="VBoxContainer/CancelButton" to="." method="_on_cancel_button_pressed"]
+[connection signal="pressed" from="VBoxContainer2/VBoxContainer/OrderButton" to="." method="_on_order_button_pressed"]
+[connection signal="pressed" from="VBoxContainer2/VBoxContainer/HopeButton" to="." method="_on_hope_button_pressed"]
+[connection signal="pressed" from="VBoxContainer2/VBoxContainer/CancelButton" to="." method="_on_cancel_button_pressed"]

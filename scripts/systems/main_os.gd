@@ -162,8 +162,20 @@ func deselect_sector() -> void:
 		selected_sector = null
 
 ## 板块点击回调 - 连接到SectorInfo的sector_clicked信号
+## 实现toggle行为：点击已选中的板块取消选中，点击其他板块切换选中
 func _on_sector_clicked(sector: SectorInfo) -> void:
-	select_sector(sector)
+	# 如果点击的是已选中的板块，取消选中
+	if selected_sector == sector:
+		deselect_sector()
+		# 如果弹窗打开，更新显示为未选择状态
+		if %AllocatePopup.visible:
+			%AllocatePopup.update_display("未选择板块")
+	else:
+		# 选中新板块
+		select_sector(sector)
+		# 如果弹窗打开，实时更新板块名称
+		if %AllocatePopup.visible:
+			%AllocatePopup.update_display(sector.data_card.region_name)
 
 # ============================================================
 # 区域九：冷却系统

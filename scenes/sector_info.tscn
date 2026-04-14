@@ -1,8 +1,8 @@
-[gd_scene load_steps=2 format=3 uid="uid://xn0mj5mp0u12"]
+[gd_scene format=3 uid="uid://xn0mj5mp0u12"]
 
 [ext_resource type="Script" uid="uid://g2le40hscppk" path="res://scripts/resources/sector_info.gd" id="1_ntx5u"]
 
-[node name="SectorInfo" type="Panel"]
+[node name="SectorInfo" type="Panel" unique_id=349971974]
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -16,14 +16,14 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_ntx5u")
 
-[node name="TitleLabel" type="Label" parent="."]
+[node name="TitleLabel" type="Label" parent="." unique_id=1689910912]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_bottom = 23.0
 grow_horizontal = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1247954770]
 custom_minimum_size = Vector2(222, 448)
 layout_mode = 1
 anchors_preset = 15
@@ -33,16 +33,16 @@ grow_horizontal = 2
 grow_vertical = 2
 alignment = 2
 
-[node name="OrderBar" type="ProgressBar" parent="VBoxContainer"]
+[node name="OrderBar" type="ProgressBar" parent="VBoxContainer" unique_id=1352125433]
 unique_name_in_owner = true
 self_modulate = Color(0, 0, 1, 1)
 layout_mode = 2
 
-[node name="HopeBar" type="ProgressBar" parent="VBoxContainer"]
+[node name="HopeBar" type="ProgressBar" parent="VBoxContainer" unique_id=1271144024]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="AuthorityBar" type="ProgressBar" parent="VBoxContainer"]
+[node name="AuthorityBar" type="ProgressBar" parent="VBoxContainer" unique_id=1266018246]
 unique_name_in_owner = true
 modulate = Color(1, 0, 0, 1)
 layout_mode = 2
