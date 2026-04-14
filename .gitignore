@@ -1,3 +1,11 @@
 # Godot 4+ specific ignores
 .godot/
 /android/
+
+# IDE and tool configs (personal dev environment)
+.idea/
+.vscode/
+.claude/
+
+# Superpowers brainstorming temp files
+.superpowers/
