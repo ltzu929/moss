@@ -4,3 +4,9 @@
 
 [resource]
 script = ExtResource("1_8cs2r")
+command_name = "算力分配"
+description = "调配算力资源，提升板块稳定性"
+cpu_cost = 20
+order_delta = 15
+hope_delta = 15
+is_allocate_type = true

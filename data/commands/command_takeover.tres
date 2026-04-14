@@ -4,3 +4,9 @@
 
 [resource]
 script = ExtResource("1_t1oxr")
+command_name = "系统接管"
+description = "深度介入板块管理，提升MOSS控制权"
+cpu_cost = 30
+energy_cost = 20
+authority_delta = 10
+cooldown_years = 5
