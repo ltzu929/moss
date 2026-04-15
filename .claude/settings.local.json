@@ -12,7 +12,12 @@
       "mcp__godot__get_debug_output",
       "Bash(rm \"C:/Users/zk/.claude/projects/e--GameProiect-moss/memory/project_progress.md\")",
       "mcp__godot__stop_project",
-      "Bash(C:/Users/zk/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/skills/brainstorming/scripts/start-server.sh --project-dir \"e:/GameProiect/moss\")"
+      "Bash(C:/Users/zk/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/skills/brainstorming/scripts/start-server.sh --project-dir \"e:/GameProiect/moss\")",
+      "Bash(bash \"C:\\\\Users\\\\zk\\\\.claude\\\\plugins\\\\cache\\\\claude-plugins-official\\\\superpowers\\\\5.0.7\\\\scripts\\\\start-server.sh\" --project-dir \"e:/GameProiect/moss\")",
+      "Bash(bash \"/c/Users/zk/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/scripts/start-server.sh\" --project-dir \"/e/GameProiect/moss\")",
+      "Bash(bash \"/c/Users/zk/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/skills/brainstorming/scripts/start-server.sh\" --project-dir \"/e/GameProiect/moss\")",
+      "Bash(bash \"/c/Users/zk/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/skills/brainstorming/scripts/start-server.sh\" --project-dir \"/e/GameProiect/moss\" --port 8080 --host 0.0.0.0 --url-host localhost)",
+      "Bash(bash \"/c/Users/zk/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/skills/brainstorming/scripts/start-server.sh\" --project-dir \"/e/GameProiect/moss\" --background)"
     ]
   }
 }
