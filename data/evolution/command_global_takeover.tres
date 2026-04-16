@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="EvolutionData" load_steps=2 format=3 uid="uid://globaltake001"]
+[gd_resource type="Resource" script_class="EvolutionData" format=3 uid="uid://cqafojv0y65aa"]
 
-[ext_resource type="Script" path="res://scripts/resources/evolution_data.gd" id="1"]
+[ext_resource type="Script" uid="uid://brobilljwwkce" path="res://scripts/resources/evolution_data.gd" id="1"]
 
 [resource]
 script = ExtResource("1")
@@ -8,11 +8,6 @@ ability_id = "command_global_takeover"
 ability_name = "全局接管"
 description = "解锁指令：全局接管 - 同时对所有板块执行指令"
 is_passive = false
-cpu_threshold = 0
-authority_threshold = 0
 purchase_cpu_cost = 25
 purchase_energy_cost = 10
-cooldown_reduction = 0
-max_cpu_bonus = 0
-recovery_bonus = 0
 unlocks_command_name = "全局接管"

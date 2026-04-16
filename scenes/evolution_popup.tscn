@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://d3hjloh5j0xx8"]
 
-[ext_resource type="Script" path="res://scripts/ui/evolution_popup.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://bbyy1hkfa7rfk" path="res://scripts/ui/evolution_popup.gd" id="1_script"]
 
 [node name="root" type="PanelContainer" unique_id=576500476]
 script = ExtResource("1_script")
