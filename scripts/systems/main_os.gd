@@ -50,8 +50,8 @@ var unlocked_evolution_commands: Array[String] = []
 ## 算力上限（初始100，可通过进化突破到150）
 var max_cpu: int = 100
 
-## 算力恢复速率（初始5，可通过进化提升）
-var cpu_recovery_rate: int = 5
+## 算力恢复速率（初始10，可通过进化提升）
+var cpu_recovery_rate: int = 10
 
 ## 冷却缩减值（初始0，可通过进化增加）
 var cooldown_reduction: int = 0
@@ -650,7 +650,7 @@ func _on_restart_requested() -> void:
 	unlocked_passives.clear()
 	unlocked_evolution_commands.clear()
 	max_cpu = 100
-	cpu_recovery_rate = 5
+	cpu_recovery_rate = 10
 	cooldown_reduction = 0
 	update_evolution_button()
 
