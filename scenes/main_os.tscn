@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://dlmkcdge21u4x"]
+[gd_scene load_steps=6 format=3 uid="uid://dlmkcdge21u4x"]
 
 [ext_resource type="Script" uid="uid://ctakhimn50hdc" path="res://scripts/systems/main_os.gd" id="1_8e66l"]
 [ext_resource type="Script" uid="uid://dhndawkfhm8iq" path="res://scripts/resources/game_event.gd" id="2_0h44u"]
@@ -9,6 +9,8 @@
 [ext_resource type="Resource" uid="uid://dthd18iep6jve" path="res://data/sector_ueg.tres" id="5_8e66l"]
 [ext_resource type="PackedScene" uid="uid://dellv4e6qlqpr" path="res://scenes/allocate_popup.tscn" id="9_a8ufc"]
 [ext_resource type="PackedScene" uid="uid://jls1m2vbj8iu" path="res://scenes/event_popup.tscn" id="9_b37nj"]
+[ext_resource type="PackedScene" path="res://scenes/evolution_popup.tscn" id="10_evopopup"]
+[ext_resource type="PackedScene" path="res://scenes/evolution_notice.tscn" id="11_evonotice"]
 
 [node name="MainOS" type="Control" unique_id=1064400959]
 layout_mode = 3
@@ -98,11 +100,48 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "年份:2044"
 
+[node name="EvolutionButton" type="Button" parent="GlobalResourcesContainer" unique_id=888888001]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Lv.1"
+
 [node name="AllocatePopup" parent="." unique_id=1777844314 instance=ExtResource("9_a8ufc")]
 unique_name_in_owner = true
 layout_mode = 1
 offset_top = -60.5
 offset_bottom = 60.5
+
+[node name="EvolutionPopup" parent="." instance=ExtResource("10_evopopup")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -250.0
+offset_right = 200.0
+offset_bottom = 250.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="EvolutionNotice" parent="." instance=ExtResource("11_evonotice")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -100.0
+offset_right = 150.0
+offset_bottom = 100.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="CommandButtonContainer" type="HBoxContainer" parent="." unique_id=107053379]
 unique_name_in_owner = true
@@ -115,3 +154,4 @@ grow_horizontal = 2
 grow_vertical = 0
 
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
+[connection signal="pressed" from="GlobalResourcesContainer/EvolutionButton" to="." method="_on_evolution_button_pressed"]

@@ -1,0 +1,21 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/evolution_notice.gd" id="1_script"]
+
+[node name="root" type="PanelContainer" unique_id=154773425]
+script = ExtResource("1_script")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1846461158]
+layout_mode = 2
+
+[node name="NoticeTitle" type="Label" parent="VBoxContainer" unique_id=2030703380]
+layout_mode = 2
+
+[node name="NoticeDesc" type="Label" parent="VBoxContainer" unique_id=461140617]
+layout_mode = 2
+
+[node name="ConfirmButton" type="Button" parent="VBoxContainer" unique_id=591246215]
+layout_mode = 2
+text = "确认"
+
+[connection signal="pressed" from="VBoxContainer/ConfirmButton" to="." method="_on_confirm_pressed"]

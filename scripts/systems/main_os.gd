@@ -104,6 +104,12 @@ func _ready() -> void:
 	# 初始化指令按钮
 	setup_command_buttons()
 
+	# 连接进化弹窗信号
+	if has_node("%EvolutionPopup"):
+		var popup := get_node("%EvolutionPopup")
+		if popup.get("purchase_requested") != null:
+			popup.purchase_requested.connect(_on_purchase_requested)
+
 # ============================================================
 # 区域七：事件加载系统
 # ============================================================
@@ -163,7 +169,171 @@ func load_commands_from_disk() -> void:
 		file_name = dir.get_next()
 
 # ============================================================
-# 区域九：板块选中管理
+# 区域九：进化能力加载系统
+# ============================================================
+
+## 从硬盘目录加载所有进化能力资源文件
+## 自动扫描 res://data/evolution/ 下的 .tres 文件
+func load_evolutions_from_disk() -> void:
+	var path := "res://data/evolution/"
+	var dir := DirAccess.open(path)
+
+	if not dir:
+		push_warning("进化能力目录不存在: " + path)
+		return
+
+	dir.list_dir_begin()
+	var file_name := dir.get_next()
+
+	while file_name != "":
+		if not dir.current_is_dir() and file_name.ends_with(".tres"):
+			var evolution := load(path + file_name)
+
+			if evolution is EvolutionData:
+				all_evolutions.append(evolution)
+
+		file_name = dir.get_next()
+
+## 每年检查进化能力自动解锁
+## 遍历所有被动能力，检查是否满足解锁条件
+func check_evolution_unlocks() -> void:
+	var unlocked_any: bool = false
+	var unlocked_names: Array[String] = []
+
+	for evolution in all_evolutions:
+		if not evolution.is_passive:
+			continue
+
+		if evolution.ability_id in unlocked_passives:
+			continue
+
+		if evolution.cpu_threshold > 0 and current_cpu < evolution.cpu_threshold:
+			continue
+
+		if evolution.authority_threshold > 0:
+			var avg_auth := get_average_authority()
+			if avg_auth < evolution.authority_threshold:
+				continue
+
+		unlocked_passives.append(evolution.ability_id)
+		apply_evolution_effect(evolution)
+		unlocked_any = true
+		unlocked_names.append(evolution.ability_name)
+
+	if unlocked_any:
+		update_evolution_level()
+		# TODO: 显示进化通知弹窗
+
+## 应用进化能力效果
+## 参数: evolution - 进化能力数据
+func apply_evolution_effect(evolution: EvolutionData) -> void:
+	if evolution.cooldown_reduction > 0:
+		cooldown_reduction += evolution.cooldown_reduction
+
+	if evolution.max_cpu_bonus > 0:
+		max_cpu += evolution.max_cpu_bonus
+
+	if evolution.recovery_bonus > 0:
+		cpu_recovery_rate += evolution.recovery_bonus
+
+## 更新进化等级
+## 根据已解锁被动能力数量确定等级
+func update_evolution_level() -> void:
+	var passive_count := unlocked_passives.size()
+
+	if passive_count >= 3:
+		evolution_level = 3
+	elif passive_count >= 1:
+		evolution_level = 2
+	else:
+		evolution_level = 1
+
+## 购买解锁进化指令
+## 参数: evolution - 进化能力数据
+## 返回: true表示购买成功
+func purchase_evolution_command(evolution: EvolutionData) -> bool:
+	if evolution.is_passive:
+		return false
+
+	if evolution.ability_id in unlocked_evolution_commands:
+		return false
+
+	if current_cpu < evolution.purchase_cpu_cost:
+		return false
+
+	if current_energy < evolution.purchase_energy_cost:
+		return false
+
+	current_cpu -= evolution.purchase_cpu_cost
+	current_energy -= evolution.purchase_energy_cost
+
+	unlocked_evolution_commands.append(evolution.ability_id)
+
+	update_global_resource_ui()
+
+	return true
+
+## 获取进化进度（用于UI）
+## 返回: 包含进度百分比和下一个解锁能力的字典
+func get_evolution_progress() -> Dictionary:
+	var result := {
+		"cpu_progress": 0.0,
+		"authority_progress": 0.0,
+		"next_passive": null
+	}
+
+	for evolution in all_evolutions:
+		if not evolution.is_passive:
+			continue
+		if evolution.ability_id in unlocked_passives:
+			continue
+
+		result["next_passive"] = evolution
+
+		if evolution.cpu_threshold > 0:
+			result["cpu_progress"] = float(current_cpu) / float(evolution.cpu_threshold)
+
+		if evolution.authority_threshold > 0:
+			var avg_auth := get_average_authority()
+			result["authority_progress"] = float(avg_auth) / float(evolution.authority_threshold)
+
+		break
+
+	return result
+
+# ============================================================
+# 区域九点五：进化弹窗管理
+# ============================================================
+
+## 显示进化弹窗
+func show_evolution_popup() -> void:
+	$Timer.stop()
+	%EvolutionPopup.all_evolutions_ref = all_evolutions
+	%EvolutionPopup.unlocked_passives_ref = unlocked_passives
+	%EvolutionPopup.unlocked_commands_ref = unlocked_evolution_commands
+	%EvolutionPopup.show_popup(evolution_level, current_cpu, current_energy)
+	await %EvolutionPopup.popup_closed
+	$Timer.start()
+
+## 更新进化按钮显示
+func update_evolution_button() -> void:
+	if has_node("%EvolutionButton"):
+		var btn := get_node("%EvolutionButton")
+		if btn is Button:
+			btn.text = "Lv." + str(evolution_level)
+
+## 进化按钮点击回调
+func _on_evolution_button_pressed() -> void:
+	show_evolution_popup()
+
+## 购买请求回调
+## 参数: evolution - 进化能力数据
+func _on_purchase_requested(evolution: EvolutionData) -> void:
+	if purchase_evolution_command(evolution):
+		%EvolutionPopup.show_popup(evolution_level, current_cpu, current_energy)
+
+# ============================================================
+# 区域十：板块选中管理
 # ============================================================
 
 ## 连接所有板块的点击信号
@@ -302,9 +472,10 @@ func _on_timer_timeout() -> void:
 	# === 第二步：时间推进 ===
 	current_year += 1
 	current_energy += 10  # 每年能源自然恢复
-	current_cpu += 5      # 每年算力恢复5点
-	current_cpu = mini(current_cpu, 100)  # 算力上限100
+	current_cpu += cpu_recovery_rate      # 每年算力恢复
+	current_cpu = mini(current_cpu, max_cpu)  # 算力上限（可通过进化提升）
 	update_cooldowns()    # 更新指令冷却
+	check_evolution_unlocks()  # 检查进化解锁
 	update_global_resource_ui()
 	update_command_buttons()  # 更新指令按钮状态
 
@@ -471,7 +642,17 @@ func _on_restart_requested() -> void:
 	# 重置时间状态
 	current_year = 2044
 	current_energy = 100
+	current_cpu = 100
 	is_game_over = false
+
+	# 重置进化状态
+	evolution_level = 1
+	unlocked_passives.clear()
+	unlocked_evolution_commands.clear()
+	max_cpu = 100
+	cpu_recovery_rate = 5
+	cooldown_reduction = 0
+	update_evolution_button()
 
 	# 重置所有板块数据到初始值
 	var sectors := %SectorInfoContainer.get_children()
