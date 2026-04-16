@@ -23,8 +23,8 @@ var end_screen_instance: Control = null
 var current_year: int = 2044
 
 ## 当前算力 (MOSS的核心资源)
-## 用于执行指令，暂未实现消耗逻辑
-var current_cpu: int = 100
+## 用于执行指令，初始30，每年恢复10
+var current_cpu: int = 30
 
 ## 当前能源 (全局资源)
 ## 每年自动恢复10点，事件选项可能消耗
@@ -647,7 +647,7 @@ func _on_restart_requested() -> void:
 	# 重置时间状态
 	current_year = 2044
 	current_energy = 100
-	current_cpu = 100
+	current_cpu = 30
 	is_game_over = false
 
 	# 重置进化状态
