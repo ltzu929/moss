@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="EvolutionData" format=3 uid="uid://recovery001"]
+
+[ext_resource type="Script" uid="uid://brobilljwwkce" path="res://scripts/resources/evolution_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ability_id = "passive_recovery"
+ability_name = "恢复速度提升"
+description = "算力恢复速度每年增加5点"
+cpu_threshold = 80
+recovery_bonus = 5

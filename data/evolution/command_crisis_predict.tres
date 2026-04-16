@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="EvolutionData" format=3 uid="uid://crisispred001"]
+
+[ext_resource type="Script" uid="uid://brobilljwwkce" path="res://scripts/resources/evolution_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ability_id = "command_crisis_predict"
+ability_name = "危机预测"
+description = "解锁指令：危机预测 - 提前获知即将发生的危机事件"
+is_passive = false
+purchase_cpu_cost = 40
+unlocks_command_name = "危机预测"
