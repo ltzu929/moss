@@ -222,7 +222,12 @@ func check_evolution_unlocks() -> void:
 
 	if unlocked_any:
 		update_evolution_level()
-		# TODO: 显示进化通知弹窗
+		update_evolution_button()
+		# 显示进化通知弹窗
+		$Timer.stop()
+		%EvolutionNotice.show_notice(unlocked_names)
+		await %EvolutionNotice.notice_confirmed
+		$Timer.start()
 
 ## 应用进化能力效果
 ## 参数: evolution - 进化能力数据
