@@ -22,11 +22,11 @@ func _ready() -> void:
 ## 显示进化通知
 ## 参数: unlocked_names - 已解锁的能力名称列表
 func show_notice(unlocked_names: Array[String]) -> void:
-	%NoticeTitle.text = "进化解锁！"
+	$VBoxContainer/NoticeTitle.text = "进化解锁！"
 	var desc := "以下能力已激活：\n"
 	for n in unlocked_names:
 		desc += "• " + n + "\n"
-	%NoticeDesc.text = desc
+	$VBoxContainer/NoticeDesc.text = desc
 	show()
 
 # ============================================================

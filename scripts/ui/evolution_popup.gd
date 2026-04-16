@@ -51,7 +51,7 @@ func show_popup(level: int, cpu: int, energy: int) -> void:
 
 	# 更新等级显示
 	var names := ["初始", "进化", "终极"]
-	%LevelLabel.text = "形态: " + names[level - 1]
+	$VBoxContainer/LevelLabel.text = "形态: " + names[level - 1]
 
 	# 更新被动能力列表
 	var txt := ""
@@ -60,10 +60,11 @@ func show_popup(level: int, cpu: int, energy: int) -> void:
 			txt += "✓ " + e.ability_name + "\n"
 	if txt == "":
 		txt = "暂无"
-	%PassivesList.text = txt
+	$VBoxContainer/PassivesList.text = txt
 
 	# 清空并重建购买按钮列表
-	for c in %PurchaseContainer.get_children():
+	var purchase_container: VBoxContainer = $VBoxContainer/PurchaseContainer
+	for c in purchase_container.get_children():
 		c.queue_free()
 
 	for e in all_evolutions_ref:
@@ -79,7 +80,7 @@ func show_popup(level: int, cpu: int, energy: int) -> void:
 		btn.text = e.ability_name + " (" + str(e.purchase_cpu_cost) + "算力)"
 		btn.disabled = current_cpu < e.purchase_cpu_cost
 		btn.pressed.connect(func(): purchase_requested.emit(e))
-		%PurchaseContainer.add_child(btn)
+		purchase_container.add_child(btn)
 
 	show()
 
