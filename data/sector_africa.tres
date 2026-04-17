@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="SectorData" load_steps=2 format=3 uid="uid://cfrica001"]
+
+[ext_resource type="Script" uid="uid://c3mp30tv2pifk" path="res://scripts/resources/sector_data.gd" id="1_africa"]
+
+[resource]
+script = ExtResource("1_africa")
+region_name = "非洲"
+description = "加蓬太空电梯基地"
+metadata/_custom_type_script = "uid://c3mp30tv2pifk"

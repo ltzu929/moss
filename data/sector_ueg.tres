@@ -4,5 +4,6 @@
 
 [resource]
 script = ExtResource("1_ndvs4")
-region_name = "UEG"
+region_name = "欧洲"
+description = "UEG联合政府总部"
 metadata/_custom_type_script = "uid://c3mp30tv2pifk"
