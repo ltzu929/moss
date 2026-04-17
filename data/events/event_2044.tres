@@ -29,7 +29,7 @@ metadata/_custom_type_script = "uid://bl7wa43xriuci"
 [resource]
 script = ExtResource("1_j8jfo")
 event_title = "太空电梯危机"
-event_time = 2045
+event_time = 2044
 event_region = "亚洲"
 event_description = "数字生命派袭击方舟空间站"
 options = Array[ExtResource("1_qu5m7")]([SubResource("Resource_j5aep"), SubResource("Resource_bbnqo"), SubResource("Resource_qu5m7")])
