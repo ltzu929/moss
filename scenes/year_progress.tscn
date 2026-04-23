@@ -1,0 +1,23 @@
+[gd_scene format=3]
+
+[node name="root" type="Control" unique_id=2092369038]
+layout_mode = 3
+anchors_preset = 0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=1541196724]
+layout_mode = 0
+
+[node name="StartLabel" type="Label" parent="HBoxContainer" unique_id=715941287]
+layout_mode = 2
+
+[node name="ProgressBar" type="ProgressBar" parent="HBoxContainer" unique_id=1505046498]
+layout_mode = 2
+
+[node name="EndLabel" type="Label" parent="HBoxContainer" unique_id=170061719]
+layout_mode = 2
+
+[node name="YearProgress" type="Control" parent="." unique_id=215673191]
+anchors_preset = 0
+anchor_right = 1.0
+offset_bottom = 30.0
+size_flags_vertical = 4
