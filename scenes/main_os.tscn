@@ -46,37 +46,37 @@ grow_vertical = 2
 alignment = 1
 
 [node name="SectorInfoAsia" parent="SectorInfoContainer" unique_id=845453540 instance=ExtResource("2_qcklt")]
-custom_minimum_size = Vector2(222, 448)
+custom_minimum_size = Vector2(180, 300)
 layout_mode = 2
 data_card = ExtResource("3_sjuws")
 
 [node name="SectorInfoNa" parent="SectorInfoContainer" unique_id=680731091 instance=ExtResource("2_qcklt")]
-custom_minimum_size = Vector2(222, 448)
+custom_minimum_size = Vector2(180, 300)
 layout_mode = 2
 data_card = ExtResource("4_lwoul")
 
 [node name="SectorInfoEurope" parent="SectorInfoContainer" unique_id=883468909 instance=ExtResource("2_qcklt")]
-custom_minimum_size = Vector2(222, 448)
+custom_minimum_size = Vector2(180, 300)
 layout_mode = 2
 data_card = ExtResource("5_8e66l")
 
 [node name="SectorInfoAfrica" parent="SectorInfoContainer" unique_id=1001 instance=ExtResource("2_qcklt")]
-custom_minimum_size = Vector2(222, 448)
+custom_minimum_size = Vector2(180, 300)
 layout_mode = 2
 data_card = ExtResource("6_africa")
 
 [node name="SectorInfoRussia" parent="SectorInfoContainer" unique_id=1002 instance=ExtResource("2_qcklt")]
-custom_minimum_size = Vector2(222, 448)
+custom_minimum_size = Vector2(180, 300)
 layout_mode = 2
 data_card = ExtResource("7_russia")
 
 [node name="SectorInfoOceania" parent="SectorInfoContainer" unique_id=1003 instance=ExtResource("2_qcklt")]
-custom_minimum_size = Vector2(222, 448)
+custom_minimum_size = Vector2(180, 300)
 layout_mode = 2
 data_card = ExtResource("8_oceania")
 
 [node name="SectorInfoSouthAmerica" parent="SectorInfoContainer" unique_id=1004 instance=ExtResource("2_qcklt")]
-custom_minimum_size = Vector2(222, 448)
+custom_minimum_size = Vector2(180, 300)
 layout_mode = 2
 data_card = ExtResource("9_southam")
 
