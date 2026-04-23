@@ -1,23 +1,40 @@
-[gd_scene format=3]
+[gd_scene load_steps=2 format=3 uid="uid://bqxj2k3n4m5p"]
 
-[node name="root" type="Control" unique_id=2092369038]
+[ext_resource type="Script" uid="uid://sgbdb01w6lj1" path="res://scripts/ui/year_progress.gd" id="1"]
+
+[node name="YearProgress" type="Control"]
 layout_mode = 3
 anchors_preset = 0
-
-[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=1541196724]
-layout_mode = 0
-
-[node name="StartLabel" type="Label" parent="HBoxContainer" unique_id=715941287]
-layout_mode = 2
-
-[node name="ProgressBar" type="ProgressBar" parent="HBoxContainer" unique_id=1505046498]
-layout_mode = 2
-
-[node name="EndLabel" type="Label" parent="HBoxContainer" unique_id=170061719]
-layout_mode = 2
-
-[node name="YearProgress" type="Control" parent="." unique_id=215673191]
-anchors_preset = 0
-anchor_right = 1.0
+offset_right = 400.0
 offset_bottom = 30.0
 size_flags_vertical = 4
+script = ExtResource("1")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = 30.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="StartLabel" type="Label" parent="HBoxContainer"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+text = "2044"
+horizontal_alignment = 2
+
+[node name="ProgressBar" type="ProgressBar" parent="HBoxContainer"]
+custom_minimum_size = Vector2(100, 20)
+layout_mode = 2
+size_flags_horizontal = 3
+value = 0.0
+show_percentage = false
+
+[node name="EndLabel" type="Label" parent="HBoxContainer"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+text = "2075"
+horizontal_alignment = 1
