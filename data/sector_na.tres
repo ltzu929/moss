@@ -5,4 +5,9 @@
 [resource]
 script = ExtResource("1_5176y")
 region_name = "北美"
+description = "科研与算力储备充足，秩序稳定，但社会信任偏脆弱。"
+order = 58
+hope = 44
+authority = 26
+population = 8000000
 metadata/_custom_type_script = "uid://c3mp30tv2pifk"

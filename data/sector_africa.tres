@@ -5,5 +5,9 @@
 [resource]
 script = ExtResource("1_africa")
 region_name = "非洲"
-description = "加蓬太空电梯基地"
+description = "太空电梯与前线工程区，士气高昂，但基础秩序最不稳定。"
+order = 38
+hope = 64
+authority = 18
+population = 9000000
 metadata/_custom_type_script = "uid://c3mp30tv2pifk"

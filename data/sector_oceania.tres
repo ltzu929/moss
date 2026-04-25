@@ -5,5 +5,9 @@
 [resource]
 script = ExtResource("1_oceania")
 region_name = "大洋洲"
-description = "澳大利亚发动机群"
+description = "孤立但韧性强的后备区域，整体均衡，适合承担恢复型操作。"
+order = 55
+hope = 57
+authority = 20
+population = 3200000
 metadata/_custom_type_script = "uid://c3mp30tv2pifk"

@@ -5,6 +5,9 @@
 [resource]
 script = ExtResource("1_42bf4")
 region_name = "亚洲"
-description = "人口众多"
-authority = 100
+description = "人口与工业核心区，动员潜力巨大，但民生压力同样最高。"
+order = 46
+hope = 58
+authority = 24
+population = 18000000
 metadata/_custom_type_script = "uid://c3mp30tv2pifk"

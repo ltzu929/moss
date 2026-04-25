@@ -5,5 +5,9 @@
 [resource]
 script = ExtResource("1_southam")
 region_name = "南美"
-description = "巴西发动机群"
+description = "资源与农业保障区，民心基础较好，但秩序与控制权都偏弱。"
+order = 48
+hope = 61
+authority = 17
+population = 5600000
 metadata/_custom_type_script = "uid://c3mp30tv2pifk"

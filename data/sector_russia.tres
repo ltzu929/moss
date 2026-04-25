@@ -5,5 +5,9 @@
 [resource]
 script = ExtResource("1_russia")
 region_name = "俄罗斯"
-description = "西伯利亚发动机群"
+description = "西伯利亚发动机群维持全球推进，纪律严密，但长期高压导致希望低迷。"
+order = 72
+hope = 34
+authority = 25
+population = 7000000
 metadata/_custom_type_script = "uid://c3mp30tv2pifk"
