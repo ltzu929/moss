@@ -126,6 +126,11 @@ func _ready() -> void:
 		if popup.get("purchase_requested") != null:
 			popup.purchase_requested.connect(_on_purchase_requested)
 
+	if has_node("%MossStatusPanel"):
+		var moss_status_panel := get_node("%MossStatusPanel")
+		if moss_status_panel is MossStatusPanel:
+			moss_status_panel.details_requested.connect(_on_moss_details_requested)
+
 	update_evolution_button()
 	update_global_resource_ui()
 	update_command_buttons()
@@ -443,6 +448,10 @@ func update_evolution_button() -> void:
 			btn.text = "进化 Lv." + str(evolution_level)
 			btn.tooltip_text = "查看已解锁能力并购买新指令"
 
+## 右侧状态面板“查看详情”按钮回调
+func _on_moss_details_requested() -> void:
+	show_evolution_popup()
+
 ## 进化按钮点击回调
 func _on_evolution_button_pressed() -> void:
 	show_evolution_popup()
@@ -474,12 +483,14 @@ func select_sector(sector: SectorInfo) -> void:
 	# 设置新选中
 	selected_sector = sector
 	selected_sector.set_selected(true)
+	update_command_buttons()
 
 ## 取消选中状态
 func deselect_sector() -> void:
 	if selected_sector != null:
 		selected_sector.set_selected(false)
 		selected_sector = null
+		update_command_buttons()
 
 ## 板块点击回调 - 连接到SectorInfo的sector_clicked信号
 ## 实现toggle行为：点击已选中的板块取消选中，点击其他板块切换选中
@@ -655,9 +666,38 @@ func apply_consequences(
 
 ## 刷新顶部全局资源显示（年份、算力、能源）
 func update_global_resource_ui() -> void:
-	%YearLabel.text = "年份: " + str(current_year)
-	%ComputationalLabel.text = "算力: " + str(current_cpu)
-	%EnergyLabel.text = "能源: " + str(current_energy)
+	if has_node("%ComputationalLabel"):
+		%ComputationalLabel.text = "算力: " + str(current_cpu)
+
+	if has_node("%EnergyLabel"):
+		%EnergyLabel.text = "能源: " + str(current_energy)
+
+	if has_node("TopBarContainer/MossLabel"):
+		var moss_label := get_node("TopBarContainer/MossLabel")
+		if moss_label is Label:
+			moss_label.text = get_moss_model_name()
+
+	if has_node("%YearProgress"):
+		var year_progress := get_node("%YearProgress")
+		if year_progress is YearProgress:
+			year_progress.update_progress(current_year)
+
+	if has_node("%MossStatusPanel"):
+		var moss_status_panel := get_node("%MossStatusPanel")
+		if moss_status_panel is MossStatusPanel:
+			moss_status_panel.update_display(evolution_level, get_average_authority())
+
+## 获取当前 MOSS 型号显示名称
+func get_moss_model_name() -> String:
+	match evolution_level:
+		1:
+			return "MOSS-550C"
+		2:
+			return "MOSS-550W"
+		3:
+			return "MOSS"
+		_:
+			return "MOSS"
 
 # ============================================================
 # 区域九：胜负判定系统

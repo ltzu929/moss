@@ -15,6 +15,8 @@
 [ext_resource type="Resource" uid="uid://csoutham001" path="res://data/sector_south_america.tres" id="9_southam"]
 [ext_resource type="PackedScene" uid="uid://d3hjloh5j0xx8" path="res://scenes/evolution_popup.tscn" id="10_evopopup"]
 [ext_resource type="PackedScene" path="res://scenes/evolution_notice.tscn" id="11_evonotice"]
+[ext_resource type="PackedScene" uid="uid://bqxj2k3n4m5p" path="res://scenes/year_progress.tscn" id="12_yearprogress"]
+[ext_resource type="PackedScene" path="res://scenes/moss_status_panel.tscn" id="13_mosspanel"]
 
 [node name="MainOS" type="Control" unique_id=1064400959]
 layout_mode = 3
@@ -35,15 +37,89 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 1)
 
-[node name="SectorInfoContainer" type="HBoxContainer" parent="." unique_id=1437917960]
+[node name="TopBarContainer" type="HBoxContainer" parent="." unique_id=768598594]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 9
+z_index = 10
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 20.0
+offset_top = 16.0
+offset_right = -20.0
+offset_bottom = 56.0
+grow_horizontal = 2
+theme_override_constants/separation = 12
+
+[node name="MossLabel" type="Label" parent="TopBarContainer" unique_id=2033000001]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.267, 0.267, 1)
+text = "MOSS-550C"
+vertical_alignment = 1
+
+[node name="TopBarSpacer" type="Control" parent="TopBarContainer" unique_id=2033000002]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ComputationalLabel" type="Label" parent="TopBarContainer" unique_id=777115127]
+unique_name_in_owner = true
+layout_mode = 2
+text = "算力:30"
+vertical_alignment = 1
+
+[node name="EnergyLabel" type="Label" parent="TopBarContainer" unique_id=1504169730]
+unique_name_in_owner = true
+layout_mode = 2
+text = "能源:100"
+vertical_alignment = 1
+
+[node name="EvolutionButton" type="Button" parent="TopBarContainer" unique_id=888888001]
+unique_name_in_owner = true
+layout_mode = 2
+text = "进化 Lv.1"
+
+[node name="YearProgress" parent="." unique_id=2033000003 instance=ExtResource("12_yearprogress")]
+unique_name_in_owner = true
+layout_mode = 1
+z_index = 10
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 20.0
+offset_top = 64.0
+offset_right = -20.0
+offset_bottom = 94.0
+grow_horizontal = 2
+
+[node name="MossStatusPanel" parent="." unique_id=2033000004 instance=ExtResource("13_mosspanel")]
+unique_name_in_owner = true
+layout_mode = 1
+z_index = 10
+anchors_preset = 7
+anchor_left = 1.0
+anchor_top = 0.0
+anchor_right = 1.0
 anchor_bottom = 1.0
-offset_right = 1284.0
-offset_bottom = -200.0
+offset_left = -170.0
+offset_top = 106.0
+offset_right = -20.0
+offset_bottom = -92.0
+grow_horizontal = 0
 grow_vertical = 2
-alignment = 1
+
+[node name="SectorInfoContainer" type="GridContainer" parent="." unique_id=1437917960]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 106.0
+offset_right = -182.0
+offset_bottom = -92.0
+grow_horizontal = 2
+grow_vertical = 2
+columns = 4
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 12
 
 [node name="SectorInfoAsia" parent="SectorInfoContainer" unique_id=845453540 instance=ExtResource("2_qcklt")]
 layout_mode = 2
@@ -80,6 +156,7 @@ autostart = true
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
+z_index = 30
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -92,39 +169,10 @@ offset_bottom = 300.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="GlobalResourcesContainer" type="HBoxContainer" parent="." unique_id=768598594]
-unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -47.0
-offset_bottom = 40.0
-grow_horizontal = 0
-
-[node name="ComputationalLabel" type="Label" parent="GlobalResourcesContainer" unique_id=777115127]
-unique_name_in_owner = true
-layout_mode = 2
-text = "算力:100"
-
-[node name="EnergyLabel" type="Label" parent="GlobalResourcesContainer" unique_id=1504169730]
-unique_name_in_owner = true
-layout_mode = 2
-text = "能源:100"
-
-[node name="YearLabel" type="Label" parent="GlobalResourcesContainer" unique_id=1488346041]
-unique_name_in_owner = true
-layout_mode = 2
-text = "年份:2044"
-
-[node name="EvolutionButton" type="Button" parent="GlobalResourcesContainer" unique_id=888888001]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Lv.1"
-
 [node name="AllocatePopup" parent="." unique_id=1777844314 instance=ExtResource("9_a8ufc")]
 unique_name_in_owner = true
 layout_mode = 1
+z_index = 30
 offset_top = -60.5
 offset_bottom = 60.5
 
@@ -132,6 +180,7 @@ offset_bottom = 60.5
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
+z_index = 30
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -148,6 +197,7 @@ grow_vertical = 2
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
+z_index = 30
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -163,12 +213,18 @@ grow_vertical = 2
 [node name="CommandButtonContainer" type="HBoxContainer" parent="." unique_id=107053379]
 unique_name_in_owner = true
 layout_mode = 1
+z_index = 10
 anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -72.0
+offset_right = -20.0
+offset_bottom = -20.0
 grow_horizontal = 2
 grow_vertical = 0
+theme_override_constants/separation = 12
 
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
-[connection signal="pressed" from="GlobalResourcesContainer/EvolutionButton" to="." method="_on_evolution_button_pressed"]
+[connection signal="pressed" from="TopBarContainer/EvolutionButton" to="." method="_on_evolution_button_pressed"]
