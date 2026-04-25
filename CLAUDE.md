@@ -93,17 +93,28 @@ var current_year = 2044  # 类型不明确
 ```
 res://
 ├── data/
-│   ├── sectors/          # 板块数据 (.tres)
-│   └── events/           # 事件数据 (.tres)
+│   ├── sectors/          # 板块数据 (.tres) - 7个板块
+│   ├── commands/         # 指令配置 (.tres)
+│   ├── events/           # 事件数据 (.tres) - 4个核心事件
+│   └── evolution/        # 进化能力数据 (.tres)
 ├── scripts/
 │   ├── resources/        # 数据类 (Resource)
 │   ├── systems/          # 核心系统脚本
 │   ├── ui/               # 界面逻辑
 │   └── utils/            # 工具函数
 ├── scenes/
-│   ├── main_os.tscn      # 主场景
+│   ├── main_os.tscn      # 主场景（3列网格布局）
 │   ├── event_popup.tscn
-│   └── sector_info.tscn
+│   ├── sector_info.tscn
+│   ├── year_progress.tscn     # 年份进度条
+│   ├── moss_status_panel.tscn # MOSS状态面板
+│   └── game_over.tscn
+├── docs/                 # 文档目录
+│   ├── 开发流程.md
+│   ├── 数值设计.md       # 数值决策框架
+│   ├── UI交互规范.md     # UI决策框架
+│   ├── 决策流程.md       # 决策流程
+│   └── ui-mockup/        # UI mockup
 └── assets/
 ```
 
@@ -111,13 +122,17 @@ res://
 
 ## 开发流程
 
-详见 `docs/开发流程.md`，当前处于 **阶段一：核心骨架** 完成阶段。
+详见 `docs/开发流程.md`，当前处于 **阶段四：事件内容** 完成阶段。
+
+**已完成**:
+- 阶段一：核心骨架 ✅
+- 阶段二：MOSS指令系统 ✅
+- 阶段三：MOSS进化系统 ✅
+- 阶段四：事件内容填充 ✅
 
 **待完成**:
-- 阶段二：MOSS指令系统
-- 阶段三：MOSS进化系统
-- 阶段四：事件内容填充
 - 阶段五：情感打磨
+- 阶段六：整合测试
 
 ---
 
