@@ -24,8 +24,8 @@ func _ready() -> void:
 ##       current_energy - 当前能源值
 func popup_event(event: GameEvent, current_energy: int) -> void:
 	# 设置界面文本
-	%EventTitle.text = event.event_title
-	%RichTextLabel.text = event.event_description
+	%EventTitle.text = event.event_title + " · " + event.event_region
+	%RichTextLabel.text = "[color=#8BDDD9]影响板块：%s[/color]\n\n%s" % [event.event_region, event.event_description]
 
 	# 清理上一轮事件的按钮
 	for child in %OptionList.get_children():

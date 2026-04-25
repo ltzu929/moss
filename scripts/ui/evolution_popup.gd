@@ -77,8 +77,19 @@ func show_popup(level: int, cpu: int, energy: int) -> void:
 
 		# 创建购买按钮
 		var btn := Button.new()
-		btn.text = e.ability_name + " (" + str(e.purchase_cpu_cost) + "算力)"
-		btn.disabled = current_cpu < e.purchase_cpu_cost
+		var cost_parts: Array[String] = []
+		if e.purchase_cpu_cost > 0:
+			cost_parts.append(str(e.purchase_cpu_cost) + "算力")
+		if e.purchase_energy_cost > 0:
+			cost_parts.append(str(e.purchase_energy_cost) + "能源")
+
+		var cost_text := "免费"
+		if not cost_parts.is_empty():
+			cost_text = " / ".join(cost_parts)
+
+		btn.text = "解锁指令：" + e.ability_name + " (" + cost_text + ")"
+		btn.disabled = current_cpu < e.purchase_cpu_cost or current_energy < e.purchase_energy_cost
+		btn.tooltip_text = e.description
 		btn.pressed.connect(func(): purchase_requested.emit(e))
 		purchase_container.add_child(btn)
 

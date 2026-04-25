@@ -14,6 +14,18 @@ extends Control
 ## 当前显示的结局界面实例
 var end_screen_instance: Control = null
 
+## 游戏初始常量
+const INITIAL_YEAR: int = 2044
+const INITIAL_CPU: int = 30
+const INITIAL_ENERGY: int = 100
+const INITIAL_MAX_CPU: int = 100
+const INITIAL_CPU_RECOVERY_RATE: int = 10
+
+## 进化指令名称
+const COMMAND_ENERGY_CONVERT: String = "能源转换"
+const COMMAND_GLOBAL_TAKEOVER: String = "全局接管"
+const COMMAND_CRISIS_PREDICT: String = "危机预测"
+
 # ============================================================
 # 区域二：游戏状态变量
 # ============================================================
@@ -72,6 +84,9 @@ var command_cooldowns: Dictionary = {}
 ## 可用指令列表（从磁盘加载）
 var available_commands: Array[CommandData] = []
 
+## 板块初始状态快照（用于重新开始）
+var initial_sector_states: Dictionary = {}
+
 # ============================================================
 # 区域五：信号定义
 # ============================================================
@@ -100,6 +115,7 @@ func _ready() -> void:
 
 	# 连接所有板块的点击信号
 	connect_sector_signals()
+	cache_initial_sector_states()
 
 	# 初始化指令按钮
 	setup_command_buttons()
@@ -109,6 +125,50 @@ func _ready() -> void:
 		var popup := get_node("%EvolutionPopup")
 		if popup.get("purchase_requested") != null:
 			popup.purchase_requested.connect(_on_purchase_requested)
+
+	update_evolution_button()
+	update_global_resource_ui()
+	update_command_buttons()
+
+# ============================================================
+# 区域六点五：初始状态缓存
+# ============================================================
+
+## 缓存所有板块的初始数值，用于重新开始时恢复
+func cache_initial_sector_states() -> void:
+	initial_sector_states.clear()
+
+	var sectors := %SectorInfoContainer.get_children()
+	for sector in sectors:
+		if sector.get("data_card") == null:
+			continue
+
+		initial_sector_states[sector.data_card.region_name] = {
+			"order": sector.data_card.order,
+			"hope": sector.data_card.hope,
+			"authority": sector.data_card.authority,
+			"population": sector.data_card.population,
+			"is_locked": sector.data_card.is_locked
+		}
+
+## 恢复所有板块到初始数值
+func restore_sector_states() -> void:
+	var sectors := %SectorInfoContainer.get_children()
+
+	for sector in sectors:
+		if sector.get("data_card") == null:
+			continue
+
+		var state: Dictionary = initial_sector_states.get(sector.data_card.region_name, {})
+		if state.is_empty():
+			continue
+
+		sector.data_card.order = state["order"]
+		sector.data_card.hope = state["hope"]
+		sector.data_card.authority = state["authority"]
+		sector.data_card.population = state["population"]
+		sector.data_card.is_locked = state["is_locked"]
+		sector.update_display()
 
 # ============================================================
 # 区域七：事件加载系统
@@ -274,9 +334,64 @@ func purchase_evolution_command(evolution: EvolutionData) -> bool:
 
 	unlocked_evolution_commands.append(evolution.ability_id)
 
+	var unlocked_command := create_evolution_command(evolution)
+	if unlocked_command != null and not has_command_named(unlocked_command.command_name):
+		available_commands.append(unlocked_command)
+		command_cooldowns[unlocked_command.command_name] = 0
+		setup_command_buttons()
+		update_command_buttons()
+
 	update_global_resource_ui()
 
 	return true
+
+## 根据进化数据创建对应的运行时指令
+## 参数: evolution - 进化能力数据
+## 返回: 创建成功时返回指令数据，失败时返回null
+func create_evolution_command(evolution: EvolutionData) -> CommandData:
+	var cmd := CommandData.new()
+	cmd.command_name = evolution.unlocks_command_name
+	cmd.is_allocate_type = false
+
+	match evolution.unlocks_command_name:
+		COMMAND_ENERGY_CONVERT:
+			cmd.description = "消耗20能源，将其转化为10算力"
+			cmd.cpu_cost = 0
+			cmd.energy_cost = 20
+			cmd.cooldown_years = 2
+		COMMAND_GLOBAL_TAKEOVER:
+			cmd.description = "消耗30算力和10能源，对所有板块控制权+5"
+			cmd.cpu_cost = 30
+			cmd.energy_cost = 10
+			cmd.cooldown_years = 5
+		COMMAND_CRISIS_PREDICT:
+			cmd.description = "预测未来5年内将发生的重大危机"
+			cmd.cpu_cost = 0
+			cmd.energy_cost = 0
+			cmd.cooldown_years = 0
+		_:
+			push_warning("未知的进化指令: " + evolution.unlocks_command_name)
+			return null
+
+	return cmd
+
+## 判断某个指令是否已存在于可用指令列表中
+## 参数: command_name - 指令名称
+func has_command_named(command_name: String) -> bool:
+	for cmd in available_commands:
+		if cmd.command_name == command_name:
+			return true
+
+	return false
+
+## 判断指令是否必须先选中板块
+## 参数: cmd - 指令数据
+func command_requires_selected_sector(cmd: CommandData) -> bool:
+	match cmd.command_name:
+		COMMAND_ENERGY_CONVERT, COMMAND_GLOBAL_TAKEOVER, COMMAND_CRISIS_PREDICT:
+			return false
+		_:
+			return true
 
 ## 获取进化进度（用于UI）
 ## 返回: 包含进度百分比和下一个解锁能力的字典
@@ -325,7 +440,8 @@ func update_evolution_button() -> void:
 	if has_node("%EvolutionButton"):
 		var btn := get_node("%EvolutionButton")
 		if btn is Button:
-			btn.text = "Lv." + str(evolution_level)
+			btn.text = "进化 Lv." + str(evolution_level)
+			btn.tooltip_text = "查看已解锁能力并购买新指令"
 
 ## 进化按钮点击回调
 func _on_evolution_button_pressed() -> void:
@@ -397,7 +513,7 @@ func update_cooldowns() -> void:
 ## 返回: true表示可执行
 func is_command_available(cmd: CommandData) -> bool:
 	# 检查选中状态
-	if selected_sector == null:
+	if command_requires_selected_sector(cmd) and selected_sector == null:
 		return false
 
 	# 检查冷却
@@ -418,7 +534,7 @@ func is_command_available(cmd: CommandData) -> bool:
 ## 参数: cmd - 指令数据
 ## 返回: 不可用原因字符串，可用时返回空字符串
 func get_command_unavailable_reason(cmd: CommandData) -> String:
-	if selected_sector == null:
+	if command_requires_selected_sector(cmd) and selected_sector == null:
 		return "请先选择板块"
 
 	var cooldown: int = command_cooldowns.get(cmd.command_name, 0)
@@ -466,8 +582,8 @@ func _on_timer_timeout() -> void:
 			# 应用选择后果
 			apply_consequences(
 				event.event_region,
-				selected_opt.hope_delta,
 				selected_opt.order_delta,
+				selected_opt.hope_delta,
 				selected_opt.energy_cost
 			)
 
@@ -513,12 +629,15 @@ func apply_consequences(
 
 		# 匹配目标板块名称
 		if sector.data_card.region_name == event_name:
+			select_sector(sector)
+
 			# 修改板块数据
 			sector.data_card.order += order_delta
 			sector.data_card.hope += hope_delta
+			sector.data_card.clamp_values()
 
 			# 修改全局能源
-			current_energy -= energy_cost
+			current_energy = maxi(0, current_energy - energy_cost)
 
 			# 刷新UI显示
 			sector.update_display()
@@ -645,31 +764,33 @@ func _on_restart_requested() -> void:
 		end_screen_instance = null
 
 	# 重置时间状态
-	current_year = 2044
-	current_energy = 100
-	current_cpu = 30
+	current_year = INITIAL_YEAR
+	current_energy = INITIAL_ENERGY
+	current_cpu = INITIAL_CPU
 	is_game_over = false
+	deselect_sector()
 
 	# 重置进化状态
 	evolution_level = 1
 	unlocked_passives.clear()
 	unlocked_evolution_commands.clear()
-	max_cpu = 100
-	cpu_recovery_rate = 10
+	max_cpu = INITIAL_MAX_CPU
+	cpu_recovery_rate = INITIAL_CPU_RECOVERY_RATE
 	cooldown_reduction = 0
+
+	# 重置指令状态
+	command_cooldowns.clear()
+	available_commands.clear()
+	load_commands_from_disk()
+	setup_command_buttons()
 	update_evolution_button()
 
 	# 重置所有板块数据到初始值
-	var sectors := %SectorInfoContainer.get_children()
-	for sector in sectors:
-		if sector.get("data_card") != null:
-			sector.data_card.order = 50
-			sector.data_card.hope = 50
-			sector.data_card.authority = 10
-			sector.update_display()
+	restore_sector_states()
 
 	# 刷新UI
 	update_global_resource_ui()
+	update_command_buttons()
 
 	# 恢复时间流动
 	$Timer.start()
@@ -690,7 +811,8 @@ func execute_command(cmd: CommandData) -> bool:
 	current_energy -= cmd.energy_cost
 
 	# 启动冷却
-	command_cooldowns[cmd.command_name] = cmd.cooldown_years
+	var adjusted_cooldown := maxi(0, cmd.cooldown_years - cooldown_reduction)
+	command_cooldowns[cmd.command_name] = adjusted_cooldown
 
 	# 刷新资源UI
 	update_global_resource_ui()
@@ -735,13 +857,58 @@ func _on_command_button_pressed(cmd: CommandData) -> void:
 		%AllocatePopup.popup_allocate(cmd, selected_sector.data_card.region_name)
 		var choice: String = await %AllocatePopup.choice_selected
 		if choice != "":
-			execute_command(cmd)
-			apply_command_effect(cmd, choice)
+			if execute_command(cmd):
+				apply_command_effect(cmd, choice)
+				update_command_buttons()
 		$Timer.start()
 	else:
 		# 其他指令直接执行
-		execute_command(cmd)
-		apply_command_effect(cmd)
+		if not execute_command(cmd):
+			return
+
+		if command_requires_selected_sector(cmd):
+			apply_command_effect(cmd)
+		else:
+			await apply_special_command_effect(cmd)
+
+		update_command_buttons()
+
+## 应用无需选中板块的特殊指令效果
+## 参数: cmd - 指令数据
+func apply_special_command_effect(cmd: CommandData) -> void:
+	match cmd.command_name:
+		COMMAND_ENERGY_CONVERT:
+			current_cpu += 10
+			current_cpu = mini(current_cpu, max_cpu)
+			update_global_resource_ui()
+		COMMAND_GLOBAL_TAKEOVER:
+			var sectors := %SectorInfoContainer.get_children()
+			for sector in sectors:
+				if sector.get("data_card") == null:
+					continue
+				sector.data_card.authority += 5
+				sector.data_card.clamp_values()
+				sector.update_display()
+		COMMAND_CRISIS_PREDICT:
+			await show_crisis_prediction()
+
+## 显示未来5年内的事件预测
+func show_crisis_prediction() -> void:
+	var prediction_lines: Array[String] = []
+	var end_year := current_year + 5
+
+	for event in all_events:
+		if event.event_time > current_year and event.event_time <= end_year:
+			prediction_lines.append("%d - %s" % [event.event_time, event.event_title])
+
+	var message := "未来5年内暂无已知重大危机。"
+	if not prediction_lines.is_empty():
+		message = "\n".join(prediction_lines)
+
+	$Timer.stop()
+	%EvolutionNotice.show_message("危机预测", message)
+	await %EvolutionNotice.notice_confirmed
+	$Timer.start()
 
 # ============================================================
 # 区域十二：指令按钮管理
@@ -786,5 +953,5 @@ func update_command_buttons() -> void:
 			# 更新按钮的状态变量
 			button.current_cpu = current_cpu
 			button.current_energy = current_energy
-			button.has_selected_sector = (selected_sector != null)
+			button.has_selected_sector = (selected_sector != null) or not command_requires_selected_sector(button.command_data)
 			button.update_state()

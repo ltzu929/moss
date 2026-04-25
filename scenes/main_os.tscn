@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://dlmkcdge21u4x"]
+[gd_scene format=3 uid="uid://dlmkcdge21u4x"]
 
 [ext_resource type="Script" uid="uid://ctakhimn50hdc" path="res://scripts/systems/main_os.gd" id="1_8e66l"]
 [ext_resource type="Script" uid="uid://dhndawkfhm8iq" path="res://scripts/resources/game_event.gd" id="2_0h44u"]
@@ -7,13 +7,13 @@
 [ext_resource type="Resource" uid="uid://de5nghry0twj7" path="res://data/sector_asia.tres" id="3_sjuws"]
 [ext_resource type="Resource" uid="uid://c5g8pdsgsa214" path="res://data/sector_na.tres" id="4_lwoul"]
 [ext_resource type="Resource" uid="uid://dthd18iep6jve" path="res://data/sector_ueg.tres" id="5_8e66l"]
-[ext_resource type="Resource" path="res://data/sector_africa.tres" id="6_africa"]
-[ext_resource type="Resource" path="res://data/sector_russia.tres" id="7_russia"]
-[ext_resource type="Resource" path="res://data/sector_oceania.tres" id="8_oceania"]
-[ext_resource type="Resource" path="res://data/sector_south_america.tres" id="9_southam"]
+[ext_resource type="Resource" uid="uid://cfrica001" path="res://data/sector_africa.tres" id="6_africa"]
+[ext_resource type="Resource" uid="uid://crussia001" path="res://data/sector_russia.tres" id="7_russia"]
+[ext_resource type="Resource" uid="uid://coceania001" path="res://data/sector_oceania.tres" id="8_oceania"]
 [ext_resource type="PackedScene" uid="uid://dellv4e6qlqpr" path="res://scenes/allocate_popup.tscn" id="9_a8ufc"]
 [ext_resource type="PackedScene" uid="uid://jls1m2vbj8iu" path="res://scenes/event_popup.tscn" id="9_b37nj"]
-[ext_resource type="PackedScene" path="res://scenes/evolution_popup.tscn" id="10_evopopup"]
+[ext_resource type="Resource" uid="uid://csoutham001" path="res://data/sector_south_america.tres" id="9_southam"]
+[ext_resource type="PackedScene" uid="uid://d3hjloh5j0xx8" path="res://scenes/evolution_popup.tscn" id="10_evopopup"]
 [ext_resource type="PackedScene" path="res://scenes/evolution_notice.tscn" id="11_evonotice"]
 
 [node name="MainOS" type="Control" unique_id=1064400959]
@@ -40,43 +40,36 @@ unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 9
 anchor_bottom = 1.0
-offset_right = 1554.0
+offset_right = 1284.0
 offset_bottom = -200.0
 grow_vertical = 2
 alignment = 1
 
 [node name="SectorInfoAsia" parent="SectorInfoContainer" unique_id=845453540 instance=ExtResource("2_qcklt")]
-custom_minimum_size = Vector2(180, 300)
 layout_mode = 2
 data_card = ExtResource("3_sjuws")
 
 [node name="SectorInfoNa" parent="SectorInfoContainer" unique_id=680731091 instance=ExtResource("2_qcklt")]
-custom_minimum_size = Vector2(180, 300)
 layout_mode = 2
 data_card = ExtResource("4_lwoul")
 
 [node name="SectorInfoEurope" parent="SectorInfoContainer" unique_id=883468909 instance=ExtResource("2_qcklt")]
-custom_minimum_size = Vector2(180, 300)
 layout_mode = 2
 data_card = ExtResource("5_8e66l")
 
 [node name="SectorInfoAfrica" parent="SectorInfoContainer" unique_id=1001 instance=ExtResource("2_qcklt")]
-custom_minimum_size = Vector2(180, 300)
 layout_mode = 2
 data_card = ExtResource("6_africa")
 
 [node name="SectorInfoRussia" parent="SectorInfoContainer" unique_id=1002 instance=ExtResource("2_qcklt")]
-custom_minimum_size = Vector2(180, 300)
 layout_mode = 2
 data_card = ExtResource("7_russia")
 
 [node name="SectorInfoOceania" parent="SectorInfoContainer" unique_id=1003 instance=ExtResource("2_qcklt")]
-custom_minimum_size = Vector2(180, 300)
 layout_mode = 2
 data_card = ExtResource("8_oceania")
 
 [node name="SectorInfoSouthAmerica" parent="SectorInfoContainer" unique_id=1004 instance=ExtResource("2_qcklt")]
-custom_minimum_size = Vector2(180, 300)
 layout_mode = 2
 data_card = ExtResource("9_southam")
 
@@ -135,7 +128,7 @@ layout_mode = 1
 offset_top = -60.5
 offset_bottom = 60.5
 
-[node name="EvolutionPopup" parent="." instance=ExtResource("10_evopopup")]
+[node name="EvolutionPopup" parent="." unique_id=1207531910 instance=ExtResource("10_evopopup")]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
@@ -151,7 +144,7 @@ offset_bottom = 250.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="EvolutionNotice" parent="." instance=ExtResource("11_evonotice")]
+[node name="EvolutionNotice" parent="." unique_id=1118723480 instance=ExtResource("11_evonotice")]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1

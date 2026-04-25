@@ -29,6 +29,14 @@ func show_notice(unlocked_names: Array[String]) -> void:
 	$VBoxContainer/NoticeDesc.text = desc
 	show()
 
+## 显示通用消息通知
+## 参数: title - 标题
+## 参数: message - 正文内容
+func show_message(title: String, message: String) -> void:
+	$VBoxContainer/NoticeTitle.text = title
+	$VBoxContainer/NoticeDesc.text = message
+	show()
+
 # ============================================================
 # 区域四：回调函数
 # ============================================================
