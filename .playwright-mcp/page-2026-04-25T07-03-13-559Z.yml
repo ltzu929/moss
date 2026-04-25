@@ -1,0 +1,161 @@
+- generic [ref=e2]:
+  - heading "MOSS 事件弹窗按钮样式方案" [level=1] [ref=e3]
+  - generic [ref=e4]:
+    - 'heading "方案A: 霓虹边框风格" [level=2] [ref=e5]'
+    - paragraph [ref=e6]: 科幻感强，强调交互反馈，适合营造MOSS未来科技氛围
+    - generic [ref=e7]:
+      - generic [ref=e8]: 太空电梯危机
+      - generic [ref=e9]: 【影响板块：亚洲】
+      - generic [ref=e10]: 数字生命派袭击方舟空间站
+      - generic [ref=e11]:
+        - generic [ref=e12]: "正常状态:"
+        - button "反击 秩序-20 希望+20" [ref=e13] [cursor=pointer]:
+          - text: 反击
+          - generic [ref=e14]: 秩序-20
+          - generic [ref=e15]: 希望+20
+        - generic [ref=e16]: "Hover状态:"
+        - button "反击 秩序-20 希望+20" [ref=e17] [cursor=pointer]:
+          - text: 反击
+          - generic [ref=e18]: 秩序-20
+          - generic [ref=e19]: 希望+20
+        - generic [ref=e20]: "Pressed状态:"
+        - button "反击 秩序-20 希望+20" [ref=e21] [cursor=pointer]:
+          - text: 反击
+          - generic [ref=e22]: 秩序-20
+          - generic [ref=e23]: 希望+20
+        - generic [ref=e24]: "禁用状态:"
+        - button "反击 能源不足(需要100)" [ref=e25]:
+          - text: 反击
+          - generic [ref=e26]: 能源不足(需要100)
+      - generic [ref=e27]: "工具提示: 消耗能源 100"
+  - generic [ref=e28]:
+    - 'heading "方案B: 渐变按钮风格" [level=2] [ref=e29]'
+    - paragraph [ref=e30]: 现代UI风格，质感丰富，左边缘指示条增加信息层次
+    - generic [ref=e31]:
+      - generic [ref=e32]: 太空电梯危机
+      - generic [ref=e33]: 【影响板块：亚洲】
+      - generic [ref=e34]: 数字生命派袭击方舟空间站
+      - generic [ref=e35]:
+        - generic [ref=e36]: "正常状态:"
+        - button "反击 秩序-20 希望+20" [ref=e37] [cursor=pointer]:
+          - text: 反击
+          - generic [ref=e38]: 秩序-20
+          - generic [ref=e39]: 希望+20
+        - generic [ref=e40]: "Hover状态:"
+        - button "反击 秩序-20 希望+20" [ref=e41] [cursor=pointer]:
+          - text: 反击
+          - generic [ref=e42]: 秩序-20
+          - generic [ref=e43]: 希望+20
+        - generic [ref=e44]: "Pressed状态:"
+        - button "反击 秩序-20 希望+20" [ref=e45] [cursor=pointer]:
+          - text: 反击
+          - generic [ref=e46]: 秩序-20
+          - generic [ref=e47]: 希望+20
+        - generic [ref=e48]: "禁用状态:"
+        - button "反击 能源不足(需要100)" [ref=e49]:
+          - text: 反击
+          - generic [ref=e50]: 能源不足(需要100)
+      - generic [ref=e51]: "工具提示: 消耗能源 100"
+  - generic [ref=e52]:
+    - 'heading "方案C: 终端/控制台风格" [level=2] [ref=e53]'
+    - paragraph [ref=e54]: MOSS AI终端风格，简洁克制，强化科幻沉浸感
+    - generic [ref=e55]:
+      - generic [ref=e56]: 太空电梯危机
+      - generic [ref=e57]: 【影响板块：亚洲】
+      - generic [ref=e58]: 数字生命派袭击方舟空间站
+      - generic [ref=e59]:
+        - generic [ref=e60]: "正常状态:"
+        - button "> 反击 秩序-20 希望+20" [ref=e61] [cursor=pointer]:
+          - text: "> 反击"
+          - generic [ref=e62]: 秩序-20
+          - generic [ref=e63]: 希望+20
+        - generic [ref=e64]: "Hover状态:"
+        - button "> 反击 秩序-20 希望+20" [ref=e65] [cursor=pointer]:
+          - text: "> 反击"
+          - generic [ref=e66]: 秩序-20
+          - generic [ref=e67]: 希望+20
+        - generic [ref=e68]: "Pressed状态:"
+        - button "> 反击 秩序-20 希望+20" [ref=e69] [cursor=pointer]:
+          - text: "> 反击"
+          - generic [ref=e70]: 秩序-20
+          - generic [ref=e71]: 希望+20
+        - generic [ref=e72]: "禁用状态:"
+        - button "> 反击 能源不足" [ref=e73]:
+          - text: "> 反击"
+          - generic [ref=e74]: 能源不足
+      - generic [ref=e75]: "工具提示: 消耗能源 100"
+  - generic [ref=e76]:
+    - heading "三方案对比" [level=2] [ref=e77]
+    - generic [ref=e78]:
+      - generic [ref=e79]:
+        - heading "方案A - 霓虹边框" [level=3] [ref=e80]
+        - paragraph [ref=e81]:
+          - text: 强调科技感和交互反馈
+          - text: 边框发光效果醒目
+        - generic [ref=e82]:
+          - heading "优点:" [level=4] [ref=e83]
+          - list [ref=e84]:
+            - listitem [ref=e85]: 视觉冲击力强
+            - listitem [ref=e86]: 状态变化明显
+            - listitem [ref=e87]: 符合科幻游戏调性
+          - heading "缺点:" [level=4] [ref=e88]
+          - list [ref=e89]:
+            - listitem [ref=e90]: 可能过于花哨
+            - listitem [ref=e91]: 多个按钮时视觉干扰
+      - generic [ref=e92]:
+        - heading "方案B - 渐变按钮" [level=3] [ref=e93]
+        - paragraph [ref=e94]:
+          - text: 现代UI设计语言
+          - text: 质感丰富层次分明
+        - generic [ref=e95]:
+          - heading "优点:" [level=4] [ref=e96]
+          - list [ref=e97]:
+            - listitem [ref=e98]: 视觉层次清晰
+            - listitem [ref=e99]: 左指示条有辨识度
+            - listitem [ref=e100]: 温和不刺眼
+          - heading "缺点:" [level=4] [ref=e101]
+          - list [ref=e102]:
+            - listitem [ref=e103]: 相对保守
+            - listitem [ref=e104]: 科幻感稍弱
+      - generic [ref=e105]:
+        - heading "方案C - 终端风格" [level=3] [ref=e106]
+        - paragraph [ref=e107]:
+          - text: MOSS AI核心交互风格
+          - text: 简洁克制沉浸感强
+        - generic [ref=e108]: 推荐
+        - generic [ref=e109]:
+          - heading "优点:" [level=4] [ref=e110]
+          - list [ref=e111]:
+            - listitem [ref=e112]: 完美契合MOSS设定
+            - listitem [ref=e113]: 简洁不干扰阅读
+            - listitem [ref=e114]: 技术感与克制感并存
+            - listitem [ref=e115]: 代码风格字体强化AI身份
+          - heading "缺点:" [level=4] [ref=e116]
+          - list [ref=e117]:
+            - listitem [ref=e118]: 可能显得冷淡
+            - listitem [ref=e119]: 交互反馈相对内敛
+  - generic [ref=e120]:
+    - 'heading "★ 推荐方案: C - 终端/控制台风格" [level=3] [ref=e121]'
+    - generic [ref=e122]:
+      - paragraph [ref=e123]:
+        - strong [ref=e124]: "核心理由:"
+      - list [ref=e125]:
+        - listitem [ref=e126]:
+          - strong [ref=e127]: "设定契合:"
+          - text: MOSS是AI系统，玩家扮演的是MOSS。终端风格的">"提示符和等宽字体强化了"你是AI"的身份认知。
+        - listitem [ref=e128]:
+          - strong [ref=e129]: "沉浸感强:"
+          - text: 流浪地球系列中的MOSS界面就是这种简洁、克制、高效的控制台风格，玩家能立刻产生代入感。
+        - listitem [ref=e130]:
+          - strong [ref=e131]: "信息优先:"
+          - text: 事件选项的关键是让玩家快速理解后果（秩序-20/希望+20），简洁的按钮样式让信息成为焦点，而非按钮本身。
+        - listitem [ref=e132]:
+          - strong [ref=e133]: "一致性:"
+          - text: 与项目现有UI风格（深青色背景、浅青色边框）高度统一，不会显得突兀。
+      - paragraph [ref=e134]:
+        - strong [ref=e135]: "实施建议:"
+      - list [ref=e136]:
+        - listitem [ref=e137]: 使用等宽字体 (如Consolas, 或Godot的monospace字体)
+        - listitem [ref=e138]: 左侧4px边框作为视觉锚点，hover时变为青绿色发光
+        - listitem [ref=e139]: 禁用状态使用深灰色，保持界面整洁
+        - listitem [ref=e140]: 效果数值用红色/绿色区分负面/正面影响
