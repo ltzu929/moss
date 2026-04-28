@@ -8,6 +8,7 @@ script = ExtResource("1_option")
 button_text = "执行自救计划"
 order_delta = 20
 hope_delta = -5
+authority_delta = 6
 energy_cost = 80
 metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
@@ -16,6 +17,7 @@ script = ExtResource("1_option")
 button_text = "等待人类决策"
 order_delta = -20
 hope_delta = 10
+authority_delta = -10
 energy_cost = 0
 metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
@@ -24,6 +26,7 @@ script = ExtResource("1_option")
 button_text = "强制接管决策"
 order_delta = 30
 hope_delta = -30
+authority_delta = 18
 energy_cost = 30
 metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
