@@ -25,6 +25,7 @@ const INITIAL_CPU_RECOVERY_RATE: int = 10
 const COMMAND_ENERGY_CONVERT: String = "能源转换"
 const COMMAND_GLOBAL_TAKEOVER: String = "全局接管"
 const COMMAND_CRISIS_PREDICT: String = "危机预测"
+const ACTION_LOG_LIMIT: int = 24
 
 # ============================================================
 # 区域二：游戏状态变量
@@ -86,6 +87,10 @@ var available_commands: Array[CommandData] = []
 
 ## 板块初始状态快照（用于重新开始）
 var initial_sector_states: Dictionary = {}
+var action_log: Array[Dictionary] = []
+
+## 已触发的事件ID列表（防止重复触发）
+var triggered_events: Array[String] = []
 
 # ============================================================
 # 区域五：信号定义
@@ -134,6 +139,40 @@ func _ready() -> void:
 	update_evolution_button()
 	update_global_resource_ui()
 	update_command_buttons()
+
+func get_action_log() -> Array[Dictionary]:
+	return action_log.duplicate(true)
+
+func record_action(kind: String, title: String, message: String) -> void:
+	var entry := {
+		"year": current_year,
+		"kind": kind,
+		"title": title,
+		"message": message
+	}
+	action_log.append(entry)
+
+	while action_log.size() > ACTION_LOG_LIMIT:
+		action_log.remove_at(0)
+
+	print("[%d][%s] %s\n%s" % [current_year, kind, title, message])
+
+func append_signed_change(lines: Array[String], label: String, delta: int) -> void:
+	if delta == 0:
+		return
+
+	var prefix := "+" if delta > 0 else ""
+	lines.append("%s %s%d" % [label, prefix, delta])
+
+func log_command_result(cmd: CommandData, lines: Array[String]) -> void:
+	append_signed_change(lines, "算力", -cmd.cpu_cost)
+	append_signed_change(lines, "能源", -cmd.energy_cost)
+
+	var cooldown: int = command_cooldowns.get(cmd.command_name, 0)
+	if cooldown > 0:
+		lines.append("冷却 %d 年" % cooldown)
+
+	record_action("command", cmd.command_name, "\n".join(lines))
 
 # ============================================================
 # 区域六点五：初始状态缓存
@@ -345,6 +384,11 @@ func purchase_evolution_command(evolution: EvolutionData) -> bool:
 		command_cooldowns[unlocked_command.command_name] = 0
 		setup_command_buttons()
 		update_command_buttons()
+
+	var lines: Array[String] = ["解锁指令：%s" % evolution.unlocks_command_name]
+	append_signed_change(lines, "算力", -evolution.purchase_cpu_cost)
+	append_signed_change(lines, "能源", -evolution.purchase_energy_cost)
+	record_action("evolution", "进化解锁", "\n".join(lines))
 
 	update_global_resource_ui()
 
@@ -580,8 +624,15 @@ func _on_timer_timeout() -> void:
 	# 先检查当前年份的事件，再推进时间
 	for event in all_events:
 		if event.event_time == current_year:
+			# 跳过已触发的事件，防止重复触发
+			if event.event_title in triggered_events:
+				continue
+
 			# 事件触发时暂停时间，等待玩家决策
 			$Timer.stop()
+
+			# 标记事件已触发
+			triggered_events.append(event.event_title)
 
 			# 显示事件弹窗
 			%EventPopup.popup_event(event, current_energy)
@@ -595,7 +646,10 @@ func _on_timer_timeout() -> void:
 				event.event_region,
 				selected_opt.order_delta,
 				selected_opt.hope_delta,
-				selected_opt.energy_cost
+				selected_opt.authority_delta,
+				selected_opt.energy_cost,
+				event.event_title,
+				selected_opt.button_text
 			)
 
 			# 玩家决策完成，恢复时间流动
@@ -628,7 +682,10 @@ func apply_consequences(
 	event_name: String,
 	order_delta: int,
 	hope_delta: int,
-	energy_cost: int
+	authority_delta: int,
+	energy_cost: int,
+	event_title: String = "",
+	option_text: String = ""
 ) -> void:
 	var sectors := %SectorInfoContainer.get_children()
 	var found := false
@@ -645,6 +702,7 @@ func apply_consequences(
 			# 修改板块数据
 			sector.data_card.order += order_delta
 			sector.data_card.hope += hope_delta
+			sector.data_card.authority += authority_delta
 			sector.data_card.clamp_values()
 
 			# 修改全局能源
@@ -653,6 +711,16 @@ func apply_consequences(
 			# 刷新UI显示
 			sector.update_display()
 			update_global_resource_ui()
+
+			var lines: Array[String] = []
+			if option_text != "":
+				lines.append("方案：%s" % option_text)
+			lines.append("影响板块：%s" % event_name)
+			append_signed_change(lines, "秩序", order_delta)
+			append_signed_change(lines, "希望", hope_delta)
+			append_signed_change(lines, "控制权", authority_delta)
+			append_signed_change(lines, "能源", -energy_cost)
+			record_action("event", event_title if event_title != "" else event_name, "\n".join(lines))
 
 			found = true
 			break
@@ -743,6 +811,7 @@ func check_game_end() -> void:
 func trigger_game_over() -> void:
 	is_game_over = true
 	$Timer.stop()
+	record_action("ending", "失败", "控制权丧失，人类文明覆灭。")
 
 	game_ended.emit("failed", "控制权丧失，人类文明覆灭。")
 	show_end_screen("失败", "控制权丧失，人类文明覆灭。\nMOSS系统终止运行。")
@@ -766,6 +835,7 @@ func trigger_ending(authority: int) -> void:
 		result = "domination"
 		message = "MOSS接管人类文明。\n理性战胜了感性。"
 
+	record_action("ending", result, message)
 	game_ended.emit(result, message)
 	show_end_screen("结局", message)
 
@@ -808,6 +878,8 @@ func _on_restart_requested() -> void:
 	current_energy = INITIAL_ENERGY
 	current_cpu = INITIAL_CPU
 	is_game_over = false
+	action_log.clear()
+	triggered_events.clear()
 	deselect_sector()
 
 	# 重置进化状态
@@ -866,24 +938,33 @@ func apply_command_effect(cmd: CommandData, effect_type: String = "") -> void:
 	if selected_sector == null:
 		return
 
+	var lines: Array[String] = ["影响板块：%s" % selected_sector.data_card.region_name]
+
 	# 应用效果
 	if cmd.is_allocate_type:
 		# 算力分配根据选择决定效果
 		if effect_type == "order":
 			selected_sector.data_card.order += cmd.order_delta
+			append_signed_change(lines, "秩序", cmd.order_delta)
 		elif effect_type == "hope":
 			selected_sector.data_card.hope += cmd.hope_delta
+			append_signed_change(lines, "希望", cmd.hope_delta)
 	else:
 		# 其他指令直接应用所有效果
 		selected_sector.data_card.order += cmd.order_delta
 		selected_sector.data_card.hope += cmd.hope_delta
 		selected_sector.data_card.authority += cmd.authority_delta
+		append_signed_change(lines, "秩序", cmd.order_delta)
+		append_signed_change(lines, "希望", cmd.hope_delta)
+		append_signed_change(lines, "控制权", cmd.authority_delta)
 
 	# 限制数值范围
 	selected_sector.data_card.clamp_values()
 
 	# 刷新板块显示
 	selected_sector.update_display()
+	update_global_resource_ui()
+	log_command_result(cmd, lines)
 
 ## 指令按钮点击回调
 ## 参数: cmd - 指令数据
@@ -921,14 +1002,22 @@ func apply_special_command_effect(cmd: CommandData) -> void:
 			current_cpu += 10
 			current_cpu = mini(current_cpu, max_cpu)
 			update_global_resource_ui()
+			var energy_lines: Array[String] = []
+			append_signed_change(energy_lines, "算力", 10)
+			log_command_result(cmd, energy_lines)
 		COMMAND_GLOBAL_TAKEOVER:
 			var sectors := %SectorInfoContainer.get_children()
+			var affected_count := 0
 			for sector in sectors:
 				if sector.get("data_card") == null:
 					continue
 				sector.data_card.authority += 5
 				sector.data_card.clamp_values()
 				sector.update_display()
+				affected_count += 1
+			update_global_resource_ui()
+			var takeover_lines: Array[String] = ["影响板块：全区域（%d）" % affected_count, "每个区域 控制权 +5"]
+			log_command_result(cmd, takeover_lines)
 		COMMAND_CRISIS_PREDICT:
 			await show_crisis_prediction()
 
@@ -944,6 +1033,8 @@ func show_crisis_prediction() -> void:
 	var message := "未来5年内暂无已知重大危机。"
 	if not prediction_lines.is_empty():
 		message = "\n".join(prediction_lines)
+
+	record_action("command", COMMAND_CRISIS_PREDICT, message)
 
 	$Timer.stop()
 	%EvolutionNotice.show_message("危机预测", message)
