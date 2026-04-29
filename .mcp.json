@@ -4,6 +4,7 @@
       "command": "npx",
       "args": ["-y", "@coding-solo/godot-mcp"],
       "env": {
+        "npm_config_cache": "E:/GameProiect/moss/.npm-cache",
         "GODOT_PATH": "E:/steam/steamapps/common/Godot Engine/godot.windows.opt.tools.64.exe"
       }
     }

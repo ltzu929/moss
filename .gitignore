@@ -6,6 +6,8 @@
 .idea/
 .vscode/
 .claude/
+.codex/
+.npm-cache/
 
 # Superpowers brainstorming temp files
 .superpowers/
