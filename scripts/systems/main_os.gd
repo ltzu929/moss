@@ -788,7 +788,7 @@ func get_average_authority() -> int:
 		return 0
 
 	# 返回整数平均值，向下取整
-	return int(total_authority / count)
+	return floori(float(total_authority) / float(count))
 
 ## 检查游戏是否应该结束
 ## 触发条件:

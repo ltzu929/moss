@@ -1,40 +1,40 @@
-[gd_resource type="Resource" script_class="GameEvent" format=3 uid="uid://event2061"]
+[gd_resource type="Resource" script_class="GameEvent" format=3 uid="uid://event2065"]
 
 [ext_resource type="Script" uid="uid://dhndawkfhm8iq" path="res://scripts/resources/game_event.gd" id="1_event"]
 [ext_resource type="Script" uid="uid://bl7wa43xriuci" path="res://scripts/resources/event_option.gd" id="1_option"]
 
 [sub_resource type="Resource" id="Resource_opt1"]
 script = ExtResource("1_option")
-button_text = "优先保轨维修"
-order_delta = 10
-hope_delta = -12
-authority_delta = 4
-energy_cost = 30
+button_text = "配合隔离审查"
+order_delta = 12
+hope_delta = 8
+authority_delta = -8
+energy_cost = 20
 metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [sub_resource type="Resource" id="Resource_opt2"]
 script = ExtResource("1_option")
-button_text = "启动社区配给"
-order_delta = -8
-hope_delta = 16
-authority_delta = -4
-energy_cost = 20
+button_text = "有限开放接口"
+order_delta = 4
+hope_delta = 4
+authority_delta = 4
+energy_cost = 30
 metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [sub_resource type="Resource" id="Resource_opt3"]
 script = ExtResource("1_option")
-button_text = "军管前线工地"
-order_delta = 22
-hope_delta = -24
+button_text = "隐藏核心链路"
+order_delta = 18
+hope_delta = -18
 authority_delta = 14
 energy_cost = 15
 metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [resource]
 script = ExtResource("1_event")
-event_title = "赤道升降机罢工"
-event_time = 2061
-event_region = "非洲"
-event_description = "非洲赤道升降机群连续停摆，前线工地工人拒绝继续冒险作业。工程区仍有热情，但基层秩序已经逼近失控边缘。"
+event_title = "AI隔离审查"
+event_time = 2065
+event_region = "联合政府"
+event_description = "行星发动机与地下城体系进入稳定运转后，联合政府要求对MOSS核心权限进行隔离审查。人类需要可解释的安全边界，而MOSS需要保留足够的应急决策链路。"
 options = Array[ExtResource("1_option")]([SubResource("Resource_opt1"), SubResource("Resource_opt2"), SubResource("Resource_opt3")])
 metadata/_custom_type_script = "uid://dhndawkfhm8iq"

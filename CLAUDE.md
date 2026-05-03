@@ -93,9 +93,9 @@ var current_year = 2044  # 类型不明确
 ```
 res://
 ├── data/
-│   ├── sectors/          # 板块数据 (.tres) - 7个板块
+│   ├── sector_*.tres     # 板块数据 (.tres) - 7个板块
 │   ├── commands/         # 指令配置 (.tres)
-│   ├── events/           # 事件数据 (.tres) - 4个核心事件
+│   ├── events/           # 事件数据 (.tres) - 6个活动编年史事件
 │   └── evolution/        # 进化能力数据 (.tres)
 ├── scripts/
 │   ├── resources/        # 数据类 (Resource)
@@ -103,7 +103,7 @@ res://
 │   ├── ui/               # 界面逻辑
 │   └── utils/            # 工具函数
 ├── scenes/
-│   ├── main_os.tscn      # 主场景（3列网格布局）
+│   ├── main_os.tscn      # 主场景（4列网格布局）
 │   ├── event_popup.tscn
 │   ├── sector_info.tscn
 │   ├── year_progress.tscn     # 年份进度条

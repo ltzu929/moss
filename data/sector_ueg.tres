@@ -4,8 +4,8 @@
 
 [resource]
 script = ExtResource("1_ndvs4")
-region_name = "欧洲"
-description = "UEG联合政府中枢，秩序最高，但任何强控都会迅速伤害人心。"
+region_name = "联合政府"
+description = "联合政府决策中枢，秩序最高，但任何强控都会迅速伤害人心。"
 order = 68
 hope = 42
 authority = 30
