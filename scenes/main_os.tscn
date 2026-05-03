@@ -37,117 +37,140 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 1)
 
-[node name="TopBarContainer" type="HBoxContainer" parent="." unique_id=768598594]
-unique_name_in_owner = true
-layout_mode = 1
-z_index = 10
-anchors_preset = 10
-anchor_right = 1.0
-offset_left = 20.0
-offset_top = 16.0
-offset_right = -20.0
-offset_bottom = 56.0
-grow_horizontal = 2
-theme_override_constants/separation = 12
-
-[node name="MossLabel" type="Label" parent="TopBarContainer" unique_id=2033000001]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.267, 0.267, 1)
-text = "MOSS-550C"
-vertical_alignment = 1
-
-[node name="TopBarSpacer" type="Control" parent="TopBarContainer" unique_id=2033000002]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="ComputationalLabel" type="Label" parent="TopBarContainer" unique_id=777115127]
-unique_name_in_owner = true
-layout_mode = 2
-text = "算力:30"
-vertical_alignment = 1
-
-[node name="EnergyLabel" type="Label" parent="TopBarContainer" unique_id=1504169730]
-unique_name_in_owner = true
-layout_mode = 2
-text = "能源:100"
-vertical_alignment = 1
-
-[node name="EvolutionButton" type="Button" parent="TopBarContainer" unique_id=888888001]
-unique_name_in_owner = true
-layout_mode = 2
-text = "进化 Lv.1"
-
-[node name="YearProgress" parent="." unique_id=2033000003 instance=ExtResource("12_yearprogress")]
-unique_name_in_owner = true
-layout_mode = 1
-z_index = 10
-anchors_preset = 10
-anchor_right = 1.0
-offset_left = 20.0
-offset_top = 64.0
-offset_right = -20.0
-offset_bottom = 94.0
-grow_horizontal = 2
-
-[node name="MossStatusPanel" parent="." unique_id=2033000004 instance=ExtResource("13_mosspanel")]
-unique_name_in_owner = true
-layout_mode = 1
-z_index = 10
-anchors_preset = 7
-anchor_left = 1.0
-anchor_top = 0.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -170.0
-offset_top = 106.0
-offset_right = -20.0
-offset_bottom = -92.0
-grow_horizontal = 0
-grow_vertical = 2
-
-[node name="SectorInfoContainer" type="GridContainer" parent="." unique_id=1437917960]
-unique_name_in_owner = true
+[node name="MainLayout" type="VBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 20.0
-offset_top = 106.0
-offset_right = -182.0
-offset_bottom = -92.0
+offset_top = 16.0
+offset_right = -20.0
+offset_bottom = -20.0
 grow_horizontal = 2
 grow_vertical = 2
-columns = 4
+theme_override_constants/separation = 12
+
+[node name="TopBarContainer" type="HBoxContainer" parent="MainLayout" unique_id=768598594]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+z_index = 10
+theme_override_constants/separation = 12
+
+[node name="MossLabel" type="Label" parent="MainLayout/TopBarContainer" unique_id=2033000001]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.267, 0.267, 1)
+text = "MOSS-550C"
+vertical_alignment = 1
+
+[node name="TopBarSpacer" type="Control" parent="MainLayout/TopBarContainer" unique_id=2033000002]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ComputationalLabel" type="Label" parent="MainLayout/TopBarContainer" unique_id=777115127]
+unique_name_in_owner = true
+layout_mode = 2
+text = "算力:30"
+vertical_alignment = 1
+
+[node name="EnergyLabel" type="Label" parent="MainLayout/TopBarContainer" unique_id=1504169730]
+unique_name_in_owner = true
+layout_mode = 2
+text = "能源:100"
+vertical_alignment = 1
+
+[node name="EvolutionButton" type="Button" parent="MainLayout/TopBarContainer" unique_id=888888001]
+unique_name_in_owner = true
+layout_mode = 2
+text = "进化 Lv.1"
+
+[node name="YearProgress" parent="MainLayout" unique_id=2033000003 instance=ExtResource("12_yearprogress")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+z_index = 10
+size_flags_horizontal = 3
+
+[node name="ContentRow" type="HBoxContainer" parent="MainLayout"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="SectorInfoContainer" type="GridContainer" parent="MainLayout/ContentRow" unique_id=1437917960]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+columns = 3
 theme_override_constants/h_separation = 12
 theme_override_constants/v_separation = 12
 
-[node name="SectorInfoAsia" parent="SectorInfoContainer" unique_id=845453540 instance=ExtResource("2_qcklt")]
+[node name="SectorInfoAsia" parent="MainLayout/ContentRow/SectorInfoContainer" unique_id=845453540 instance=ExtResource("2_qcklt")]
 layout_mode = 2
 data_card = ExtResource("3_sjuws")
 
-[node name="SectorInfoNa" parent="SectorInfoContainer" unique_id=680731091 instance=ExtResource("2_qcklt")]
+[node name="SectorInfoNa" parent="MainLayout/ContentRow/SectorInfoContainer" unique_id=680731091 instance=ExtResource("2_qcklt")]
 layout_mode = 2
 data_card = ExtResource("4_lwoul")
 
-[node name="SectorInfoEurope" parent="SectorInfoContainer" unique_id=883468909 instance=ExtResource("2_qcklt")]
+[node name="SectorInfoGovernment" parent="MainLayout/ContentRow/SectorInfoContainer" unique_id=883468909 instance=ExtResource("2_qcklt")]
 layout_mode = 2
 data_card = ExtResource("5_8e66l")
 
-[node name="SectorInfoAfrica" parent="SectorInfoContainer" unique_id=1001 instance=ExtResource("2_qcklt")]
+[node name="SectorInfoAfrica" parent="MainLayout/ContentRow/SectorInfoContainer" unique_id=1001 instance=ExtResource("2_qcklt")]
 layout_mode = 2
 data_card = ExtResource("6_africa")
 
-[node name="SectorInfoRussia" parent="SectorInfoContainer" unique_id=1002 instance=ExtResource("2_qcklt")]
+[node name="SectorInfoRussia" parent="MainLayout/ContentRow/SectorInfoContainer" unique_id=1002 instance=ExtResource("2_qcklt")]
 layout_mode = 2
 data_card = ExtResource("7_russia")
 
-[node name="SectorInfoOceania" parent="SectorInfoContainer" unique_id=1003 instance=ExtResource("2_qcklt")]
+[node name="SectorInfoOceania" parent="MainLayout/ContentRow/SectorInfoContainer" unique_id=1003 instance=ExtResource("2_qcklt")]
 layout_mode = 2
 data_card = ExtResource("8_oceania")
 
-[node name="SectorInfoSouthAmerica" parent="SectorInfoContainer" unique_id=1004 instance=ExtResource("2_qcklt")]
+[node name="SectorInfoSouthAmerica" parent="MainLayout/ContentRow/SectorInfoContainer" unique_id=1004 instance=ExtResource("2_qcklt")]
 layout_mode = 2
 data_card = ExtResource("9_southam")
+
+[node name="RightPanel" type="VBoxContainer" parent="MainLayout/ContentRow"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="MossStatusPanel" parent="MainLayout/ContentRow/RightPanel" unique_id=2033000004 instance=ExtResource("13_mosspanel")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 150)
+layout_mode = 2
+z_index = 10
+
+[node name="LogPlaceholder" type="Panel" parent="MainLayout/ContentRow/RightPanel"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="LogVBox" type="VBoxContainer" parent="MainLayout/ContentRow/RightPanel/LogPlaceholder"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="LogTitle" type="Label" parent="MainLayout/ContentRow/RightPanel/LogPlaceholder/LogVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.866667, 0.85098, 1)
+text = "MOSS LOG"
+
+[node name="LogState" type="Label" parent="MainLayout/ContentRow/RightPanel/LogPlaceholder/LogVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.533333, 0.533333, 0.533333, 1)
+text = "[SYSTEM] AWAITING INPUT"
 
 [node name="Timer" type="Timer" parent="." unique_id=984637322]
 autostart = true
@@ -210,21 +233,12 @@ offset_bottom = 100.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="CommandButtonContainer" type="HBoxContainer" parent="." unique_id=107053379]
+[node name="CommandButtonContainer" type="HBoxContainer" parent="MainLayout" unique_id=107053379]
 unique_name_in_owner = true
-layout_mode = 1
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
 z_index = 10
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 20.0
-offset_top = -72.0
-offset_right = -20.0
-offset_bottom = -20.0
-grow_horizontal = 2
-grow_vertical = 0
 theme_override_constants/separation = 12
 
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
-[connection signal="pressed" from="TopBarContainer/EvolutionButton" to="." method="_on_evolution_button_pressed"]
+[connection signal="pressed" from="MainLayout/TopBarContainer/EvolutionButton" to="." method="_on_evolution_button_pressed"]

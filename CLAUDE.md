@@ -103,7 +103,7 @@ res://
 │   ├── ui/               # 界面逻辑
 │   └── utils/            # 工具函数
 ├── scenes/
-│   ├── main_os.tscn      # 主场景（4列网格布局）
+│   ├── main_os.tscn      # 主场景（3列网格 + 右侧面板布局）
 │   ├── event_popup.tscn
 │   ├── sector_info.tscn
 │   ├── year_progress.tscn     # 年份进度条

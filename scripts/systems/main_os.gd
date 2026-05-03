@@ -740,8 +740,8 @@ func update_global_resource_ui() -> void:
 	if has_node("%EnergyLabel"):
 		%EnergyLabel.text = "能源: " + str(current_energy)
 
-	if has_node("TopBarContainer/MossLabel"):
-		var moss_label := get_node("TopBarContainer/MossLabel")
+	if has_node("%MossLabel"):
+		var moss_label := get_node("%MossLabel")
 		if moss_label is Label:
 			moss_label.text = get_moss_model_name()
 
