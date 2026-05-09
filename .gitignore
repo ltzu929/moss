@@ -12,3 +12,9 @@
 
 # Superpowers brainstorming temp files
 .superpowers/
+
+# OpenCode local config
+opencode.json
+
+# Sisyphus local plans and state
+.sisyphus/
