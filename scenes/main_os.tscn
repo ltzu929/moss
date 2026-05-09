@@ -167,10 +167,23 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.55, 0.866667, 0.85098, 1)
 text = "MOSS LOG"
 
-[node name="LogState" type="Label" parent="MainLayout/ContentRow/RightPanel/LogPlaceholder/LogVBox"]
+[node name="LogScrollContainer" type="ScrollContainer" parent="MainLayout/ContentRow/RightPanel/LogPlaceholder/LogVBox" unique_id=2001000001]
+unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(0.533333, 0.533333, 0.533333, 1)
-text = "[SYSTEM] AWAITING INPUT"
+size_flags_vertical = 3
+size_flags_stretch_ratio = 1.0
+horizontal_scroll_mode = 0
+
+[node name="LogEntryContainer" type="VBoxContainer" parent="MainLayout/ContentRow/RightPanel/LogPlaceholder/LogVBox/LogScrollContainer" unique_id=2001000002]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LogCursor" type="Label" parent="MainLayout/ContentRow/RightPanel/LogPlaceholder/LogVBox" unique_id=2001000003]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.866667, 0.85098, 1)
+text = "█"
 
 [node name="Timer" type="Timer" parent="." unique_id=984637322]
 autostart = true

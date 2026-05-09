@@ -14,6 +14,10 @@ extends Control
 ## 当前显示的结局界面实例
 var end_screen_instance: Control = null
 
+## 打字机动画队列
+var _typewriter_queue: Array[Dictionary] = []
+var _typewriter_active: bool = false
+
 ## 游戏初始常量
 const INITIAL_YEAR: int = 2044
 const INITIAL_CPU: int = 30
@@ -155,7 +159,8 @@ func record_action(kind: String, title: String, message: String) -> void:
 	while action_log.size() > ACTION_LOG_LIMIT:
 		action_log.remove_at(0)
 
-	print("[%d][%s] %s\n%s" % [current_year, kind, title, message])
+	# 更新日志UI
+	_add_log_entry_to_ui(entry)
 
 func append_signed_change(lines: Array[String], label: String, delta: int) -> void:
 	if delta == 0:
@@ -814,7 +819,7 @@ func trigger_game_over() -> void:
 	record_action("ending", "失败", "控制权丧失，人类文明覆灭。")
 
 	game_ended.emit("failed", "控制权丧失，人类文明覆灭。")
-	show_end_screen("失败", "控制权丧失，人类文明覆灭。\nMOSS系统终止运行。")
+	show_end_screen("失败", "控制权丧失，人类文明覆灭。\nMOSS系统终止运行。", "failed")
 
 ## 触发胜利结局
 ## 参数: authority - 当前平均控制权，决定结局类型
@@ -827,17 +832,20 @@ func trigger_ending(authority: int) -> void:
 
 	var result: String
 	var message: String
+	var title: String
 
 	if authority >= 50:
 		result = "coexistence"
+		title = "共存协议"
 		message = "MOSS与人类达成共存协议。\n地球踏上新的征程。"
 	else:
 		result = "domination"
+		title = "MOSS统治"
 		message = "MOSS接管人类文明。\n理性战胜了感性。"
 
 	record_action("ending", result, message)
 	game_ended.emit(result, message)
-	show_end_screen("结局", message)
+	show_end_screen(title, message, result)
 
 # ============================================================
 # 区域十：结局界面系统
@@ -847,10 +855,16 @@ func trigger_ending(authority: int) -> void:
 ## 参数:
 ##   title   - 界面标题（"失败"或"结局"）
 ##   message - 结局描述文本
-func show_end_screen(title: String, message: String) -> void:
+##   result  - 结局类型 ("failed"/"coexistence"/"domination")
+func show_end_screen(title: String, message: String, result: String = "failed") -> void:
 	# 如果已有实例，先移除
 	if end_screen_instance != null:
 		end_screen_instance.queue_free()
+
+	# 计算统计数据
+	var avg_order := _get_average_stat("order")
+	var avg_hope := _get_average_stat("hope")
+	var avg_authority := get_average_authority()
 
 	# 加载结局场景并创建实例
 	var end_screen_scene := load("res://scenes/game_over.tscn")
@@ -859,11 +873,33 @@ func show_end_screen(title: String, message: String) -> void:
 	# 添加到主界面
 	add_child(end_screen_instance)
 
-	# 设置文本内容
-	end_screen_instance.show_end(title, message)
+	# 设置文本内容，传递统计数据和结局类型
+	end_screen_instance.show_end(title, message, result, avg_order, avg_hope, avg_authority)
 
 	# 连接重新开始信号
 	end_screen_instance.restart_requested.connect(_on_restart_requested)
+
+## 计算所有板块某项属性的平均值
+func _get_average_stat(stat_name: String) -> int:
+	var sectors := %SectorInfoContainer.get_children()
+	var total := 0
+	var count := 0
+
+	for sector in sectors:
+		if sector.get("data_card") != null:
+			match stat_name:
+				"order":
+					total += sector.data_card.order
+				"hope":
+					total += sector.data_card.hope
+				"authority":
+					total += sector.data_card.authority
+			count += 1
+
+	if count == 0:
+		return 0
+
+	return int(float(total) / float(count))
 
 ## 重新开始按钮回调
 ## 重置所有游戏状态，重新开始游戏循环
@@ -879,6 +915,7 @@ func _on_restart_requested() -> void:
 	current_cpu = INITIAL_CPU
 	is_game_over = false
 	action_log.clear()
+	_clear_log_ui()
 	triggered_events.clear()
 	deselect_sector()
 
@@ -1086,3 +1123,148 @@ func update_command_buttons() -> void:
 			button.current_energy = current_energy
 			button.has_selected_sector = (selected_sector != null) or not command_requires_selected_sector(button.command_data)
 			button.update_state()
+
+# ============================================================
+# 区域十三：日志UI系统
+# ============================================================
+
+## 将日志条目添加到UI（带打字机效果）
+func _add_log_entry_to_ui(entry: Dictionary) -> void:
+	var log_container := _get_log_container()
+	if log_container == null:
+		return
+
+	# 如果超过限制，移除最旧的条目
+	while log_container.get_child_count() >= ACTION_LOG_LIMIT:
+		log_container.get_child(0).queue_free()
+
+	# 构建日志完整文本
+	var year: int = entry.get("year", 2044)
+	var kind: String = entry.get("kind", "")
+	var title: String = entry.get("title", "")
+	var message: String = entry.get("message", "")
+
+	var full_text := "[%d]" % year
+	match kind:
+		"event":
+			full_text += " [EVENT]"
+		"command":
+			full_text += " [CMD]"
+		"evolution":
+			full_text += " [EVO]"
+		"ending":
+			full_text += " [END]"
+		_:
+			full_text += " [%s]" % kind.to_upper()
+
+	full_text += " %s" % title
+	if message != "":
+		full_text += "\n　%s" % message
+
+	# 加入打字机队列
+	_typewriter_queue.append({"text": full_text, "kind": kind, "message": message})
+
+	# 如果没有活跃的打字机动画，启动新的
+	if not _typewriter_active:
+		_process_typewriter_queue()
+
+## 获取日志容器节点
+func _get_log_container() -> VBoxContainer:
+	if has_node("%LogEntryContainer"):
+		return get_node("%LogEntryContainer") as VBoxContainer
+	return null
+
+## 获取日志滚动容器节点
+func _get_log_scroll_container() -> ScrollContainer:
+	if has_node("%LogScrollContainer"):
+		return get_node("%LogScrollContainer") as ScrollContainer
+	return null
+
+## 获取光标标签节点
+func _get_log_cursor() -> Label:
+	if has_node("%LogCursor"):
+		return get_node("%LogCursor") as Label
+	return null
+
+## 处理打字机队列
+func _process_typewriter_queue() -> void:
+	if _typewriter_queue.is_empty():
+		_typewriter_active = false
+		return
+
+	_typewriter_active = true
+	var entry_info: Dictionary = _typewriter_queue.pop_front()
+	var full_text: String = entry_info["text"]
+	var kind: String = entry_info["kind"]
+
+	# 创建日志条目标签
+	var log_container := _get_log_container()
+	if log_container == null:
+		_typewriter_active = false
+		return
+
+	var log_label := Label.new()
+	log_label.name = "LogEntry"
+
+	# 根据类型设置颜色
+	var text_color := Color(0.8, 0.8, 0.8)  # 默认灰色
+	match kind:
+		"event":
+			text_color = Color(0.545, 0.867, 0.835)  # 青色 #8bddb9
+		"command":
+			text_color = Color(0.4, 0.7, 1.0)  # 蓝色
+		"evolution":
+			text_color = Color(0.42, 0.8, 0.27)  # 绿色
+		"ending":
+			text_color = Color(1.0, 0.42, 0.42)  # 红色
+
+	log_label.add_theme_color_override("font_color", text_color)
+
+	# 自动换行
+	log_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+
+	log_container.add_child(log_label)
+
+	# 启动打字机效果
+	_start_typewriter(log_label, full_text)
+
+## 打字机效果：逐字显示文本
+func _start_typewriter(label: Label, full_text: String) -> void:
+	var cursor := _get_log_cursor()
+
+	# 隐藏光标在打字期间
+	if cursor != null:
+		cursor.visible = false
+
+	var chars := full_text.length()
+	for i in range(chars):
+		label.text = full_text.left(i + 1)
+
+		# 滚动到底部
+		var scroll := _get_log_scroll_container()
+		if scroll != null:
+			await get_tree().process_frame
+			scroll.scroll_vertical = int(scroll.get_v_scroll_bar().max_value)
+
+		# 每字符延迟，换行处稍作停留
+		if full_text[i] == '\n':
+			await get_tree().create_timer(0.08).timeout
+		else:
+			await get_tree().create_timer(0.02).timeout
+
+	# 恢复光标
+	if cursor != null:
+		cursor.visible = true
+
+	# 处理队列中的下一个条目
+	_process_typewriter_queue()
+
+## 重启时清空日志UI
+func _clear_log_ui() -> void:
+	var log_container := _get_log_container()
+	if log_container != null:
+		for child in log_container.get_children():
+			child.queue_free()
+
+	_typewriter_queue.clear()
+	_typewriter_active = false

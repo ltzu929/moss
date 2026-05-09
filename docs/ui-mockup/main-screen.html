@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MOSS模拟器 - 主界面当前状态 Mockup</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Consolas', 'Microsoft YaHei', monospace;
+            background-color: #000;
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* === 主容器 - 模拟Godot的VBoxContainer === */
+        .main-layout {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            padding: 16px 20px;
+            gap: 12px;
+        }
+
+        /* === 顶部状态栏 === */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            height: 40px;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .moss-label {
+            color: #ff4444;
+            font-size: 20px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
+        }
+
+        .top-bar-spacer { flex: 1; }
+
+        .resource-label {
+            font-size: 14px;
+            color: #ccc;
+        }
+
+        .evolution-btn {
+            background: transparent;
+            border: 1px solid #8bddb9;
+            color: #8bddb9;
+            padding: 6px 16px;
+            font-family: inherit;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .evolution-btn:hover {
+            background: rgba(139, 221, 185, 0.15);
+            box-shadow: 0 0 15px rgba(139, 221, 185, 0.3);
+        }
+
+        /* === 年份进度条 === */
+        .year-progress {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+            padding: 4px 0;
+        }
+
+        .year-label {
+            font-size: 13px;
+            color: #888;
+            min-width: 40px;
+        }
+
+        .progress-track {
+            flex: 1;
+            height: 10px;
+            background: #333;
+            position: relative;
+            border-radius: 2px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #4488ff;
+            border-radius: 2px;
+            transition: width 0.5s;
+        }
+
+        .progress-fill-fill {
+            position: absolute;
+            right: 0;
+            top: 0;
+            height: 100%;
+            background: #4488ff;
+        }
+
+        /* === 中间内容区 === */
+        .content-row {
+            display: flex;
+            flex: 1;
+            gap: 12px;
+            min-height: 0;
+        }
+
+        /* === 板块网格 === */
+        .sector-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 12px;
+            flex: 1;
+        }
+
+        .sector-card {
+            background: rgba(38, 38, 51, 1);
+            border: 1px solid #444;
+            border-radius: 2px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            min-height: 130px;
+        }
+
+        .sector-card:hover {
+            border-color: #8bddb9;
+        }
+
+        .sector-card.selected {
+            border: 2px solid #FF9900;
+            box-shadow: 0 0 10px rgba(255, 153, 0, 0.3);
+        }
+
+        .sector-card.locked {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        .sector-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 4px;
+            text-align: center;
+        }
+
+        .sector-pop {
+            font-size: 11px;
+            color: #888;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .stat-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            min-width: 32px;
+        }
+
+        .stat-bar-track {
+            flex: 1;
+            height: 20px;
+            background: #222;
+            position: relative;
+            border-radius: 0;
+        }
+
+        .stat-bar-fill {
+            height: 100%;
+            border-radius: 0;
+            transition: width 0.3s;
+        }
+
+        .stat-bar-fill.order { background: #4488ff; }
+        .stat-bar-fill.hope { background: #44cc44; }
+        .stat-bar-fill.authority { background: #ff4444; }
+
+        .stat-value {
+            font-size: 11px;
+            min-width: 28px;
+            text-align: right;
+        }
+
+        /* === 右侧面板 === */
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-width: 220px;
+        }
+
+        .moss-status {
+            background: rgba(38, 38, 51, 1);
+            border: 1px solid #444;
+            padding: 12px;
+            min-height: 150px;
+        }
+
+        .moss-level {
+            font-size: 28px;
+            color: #8bddb9;
+            text-shadow: 0 0 15px rgba(139, 221, 185, 0.5);
+            text-align: center;
+            margin-bottom: 6px;
+        }
+
+        .moss-level-label {
+            font-size: 13px;
+            color: #8bddb9;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .authority-display {
+            text-align: center;
+            color: #ff6666;
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        .authority-label {
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 10px;
+        }
+
+        .details-btn {
+            display: block;
+            margin: 0 auto;
+            background: transparent;
+            border: 1px solid #666;
+            color: #888;
+            padding: 4px 12px;
+            font-family: inherit;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .details-btn:hover {
+            border-color: #8bddb9;
+            color: #8bddb9;
+        }
+
+        /* === Log区域（当前状态：只有占位符） === */
+        .log-placeholder {
+            background: rgba(38, 38, 51, 1);
+            border: 1px solid #444;
+            flex: 1;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .log-title {
+            font-size: 14px;
+            color: #8bddb9;
+            margin-bottom: 8px;
+            letter-spacing: 2px;
+        }
+
+        .log-state {
+            font-size: 12px;
+            color: #888;
+        }
+
+        /* 日志条目样式 - 模拟实现后的效果 */
+        .log-entries {
+            flex: 1;
+            overflow-y: auto;
+            font-size: 11px;
+            line-height: 1.6;
+            scrollbar-width: thin;
+            scrollbar-color: #333 #1a1a1a;
+        }
+
+        .log-entry {
+            padding: 3px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .log-entry .log-time { color: #666; }
+        .log-entry .log-tag { color: #8bddb9; }
+        .log-entry .log-text { color: #ccc; }
+        .log-entry .log-positive { color: #6bff6b; }
+        .log-entry .log-negative { color: #ff6b6b; }
+
+        .log-ait {
+            animation: blink 1s infinite;
+            color: #8bddb9;
+        }
+
+        @keyframes blink {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0; }
+        }
+
+        /* === 底部指令栏 === */
+        .command-bar {
+            display: flex;
+            gap: 12px;
+            min-height: 64px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .cmd-btn {
+            flex: 1;
+            height: 48px;
+            background: rgba(35, 97, 100, 0.95);
+            border: 1px solid #8bddb9;
+            color: #fff;
+            font-family: inherit;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cmd-btn:hover:not(.disabled) {
+            background: rgba(0, 255, 204, 0.2);
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.3);
+        }
+
+        .cmd-btn.disabled {
+            border-color: #444;
+            color: #666;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .cmd-btn .cmd-cost {
+            font-size: 11px;
+            color: #8bddb9;
+        }
+
+        .cmd-btn.disabled .cmd-cost {
+            color: #444;
+        }
+
+        /* === 标注/说明区域 === */
+        .annotation {
+            position: absolute;
+            background: rgba(255, 153, 0, 0.9);
+            color: #000;
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 2px;
+            font-weight: bold;
+            pointer-events: none;
+            white-space: nowrap;
+            z-index: 100;
+        }
+
+        .annotation::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 6px solid rgba(255, 153, 0, 0.9);
+        }
+
+        /* === 切换标签 === */
+        .tab-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            background: #222;
+            border: 1px solid #444;
+            color: #888;
+            padding: 8px 20px;
+            font-family: inherit;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            border-color: #8bddb9;
+            color: #8bddb9;
+            background: rgba(139, 221, 185, 0.1);
+        }
+
+        .tab-btn:hover {
+            border-color: #8bddb9;
+            color: #8bddb9;
+        }
+
+        /* === 对比展示 === */
+        .comparison {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .comparison-panel {
+            flex: 1;
+            position: relative;
+        }
+
+        .panel-label {
+            text-align: center;
+            font-size: 15px;
+            color: #8bddb9;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #236164;
+        }
+
+        .panel-label .status-tag {
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 2px;
+            margin-left: 8px;
+        }
+
+        .status-current { background: #444; color: #888; }
+        .status-proposed { background: rgba(107, 255, 107, 0.2); color: #6bff6b; }
+
+        /* 事件弹窗样式 */
+        .event-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+        }
+
+        .event-popup {
+            background: rgba(35, 97, 100, 0.95);
+            border: 2px solid #8bddb9;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .event-popup h2 {
+            text-align: center;
+            color: #fff;
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+
+        .event-popup .event-region {
+            text-align: center;
+            color: #8bddb9;
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+
+        .event-popup .event-desc {
+            color: #ccc;
+            font-size: 14px;
+            line-height: 1.6;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* 终端风格按钮 */
+        .terminal-btn {
+            display: block;
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(0, 0, 0, 0.4);
+            border: none;
+            border-left: 4px solid #8bddb9;
+            color: #fff;
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 8px;
+        }
+
+        .terminal-btn:hover {
+            background: rgba(0, 255, 204, 0.15);
+            border-left-color: #00ffcc;
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.2);
+        }
+
+        .terminal-btn .effect-negative { color: #ff6b6b; }
+        .terminal-btn .effect-positive { color: #6bff6b; }
+
+        /* 结局界面 */
+        .gameover-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+        }
+
+        .gameover-box {
+            text-align: center;
+        }
+
+        .gameover-title {
+            font-size: 36px;
+            color: #8bddb9;
+            text-shadow: 0 0 30px rgba(139, 221, 185, 0.5);
+            margin-bottom: 20px;
+        }
+
+        .gameover-msg {
+            color: #ccc;
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            max-width: 500px;
+        }
+
+        .gameover-btn {
+            background: transparent;
+            border: 2px solid #8bddb9;
+            color: #8bddb9;
+            padding: 10px 30px;
+            font-family: inherit;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .gameover-btn:hover {
+            background: rgba(139, 221, 185, 0.2);
+        }
+
+        /* 版本标记 */
+        .version-tag {
+            position: fixed;
+            bottom: 8px;
+            right: 12px;
+            font-size: 10px;
+            color: #444;
+        }
+
+        .overlay-label {
+            position: fixed;
+            bottom: 8px;
+            left: 12px;
+            font-size: 10px;
+            color: #8bddb9;
+        }
+
+        /* 隐藏/显示 */
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+<!-- 切换界面 -->
+<div id="tabInterface" style="padding: 12px 20px; background: #111;">
+    <div class="tab-bar">
+        <button class="tab-btn active" onclick="showView('main')">主界面当前状态</button>
+        <button class="tab-btn" onclick="showView('log')">日志区域方案对比</button>
+        <button class="tab-btn" onclick="showView('gameover')">结局界面方案对比</button>
+        <button class="tab-btn" onclick="showView('event')">事件弹窗（当前）</button>
+    </div>
+</div>
+
+<!-- ================================================ -->
+<!-- 视图1：主界面当前状态 -->
+<!-- ================================================ -->
+<div id="view-main" class="main-layout" style="height: calc(100vh - 60px);">
+    <!-- 顶部状态栏 -->
+    <div class="top-bar">
+        <div class="moss-label">MOSS-550C</div>
+        <div class="top-bar-spacer"></div>
+        <div class="resource-label">算力: <span style="color:#4488ff">30</span>/100</div>
+        <div class="resource-label">能源: <span style="color:#ffcc00">100</span></div>
+        <button class="evolution-btn">进化 Lv.1</button>
+    </div>
+
+    <!-- 年份进度条 -->
+    <div class="year-progress">
+        <span class="year-label">2044</span>
+        <div class="progress-track">
+            <div class="progress-fill" style="width: 0%"></div>
+        </div>
+        <span class="year-label" style="text-align:right">2075</span>
+    </div>
+
+    <!-- 内容区 -->
+    <div class="content-row">
+        <!-- 板块网格 -->
+        <div class="sector-grid">
+            <!-- 亚洲（选中状态） -->
+            <div class="sector-card selected" onclick="toggleSector(this)">
+                <div class="sector-title">亚洲</div>
+                <div class="sector-pop">人口: 18,000,000</div>
+                <div class="stat-row">
+                    <span class="stat-label" style="color:#4488ff">秩序</span>
+                    <div class="stat-bar-track"><div class="stat-bar-fill order" style="width:46%"></div></div>
+                    <span class="stat-value" style="color:#4488ff">46</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label" style="color:#44cc44">希望</span>
+                    <div class="stat-bar-track"><div class="stat-bar-fill hope" style="width:58%"></div></div>
+                    <span class="stat-value" style="color:#44cc44">58</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label" style="color:#ff4444">控制权</span>
+                    <div class="stat-bar-track"><div class="stat-bar-fill authority" style="width:24%"></div></div>
+                    <span class="stat-value" style="color:#ff4444">24</span>
+                </div>
+            </div>
+            <!-- 北美 -->
+            <div class="sector-card" onclick="toggleSector(this)">
+                <div class="sector-title">北美</div>
+                <div class="sector-pop">人口: 5,500,000</div>
+                <div class="stat-row">
+                    <span class="stat-label" style="color:#4488ff">秩序</span>
+                    <div class="stat-bar-track"><div class="stat-bar-fill order" style="width:62%"></div></div>
+                    <span class="stat-value" style="color:#4488ff">62</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label" style="color:#44cc44">希望</span>
+                    <div class="stat-bar-track"><div class="stat-bar-fill hope" style="width:41%"></div></div>
+                    <span class="stat-value" style="color:#44cc44">41</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label" style="color:#ff4444">控制权</span>
+                    <div class="stat-bar-track"><div class="stat-bar-fill authority" style="width:35%"></div></div>
+                    <span class="stat-value" style="color:#ff4444">35</span>
+                </div>
+            </div>
+            <!-- 联合政府 -->
+            <div class="sector-card" onclick="toggleSector(this)">
+                <div class="sector-title">联合政府</div>
+                <div class="sector-pop">人口: 8,200,000</div>
+                <div class="stat-row">
+                    <span class="stat-label" style="color:#4488ff">秩序</span>
+                    <div class="stat-bar-track"><div class="stat-bar-fill order" style="width:78%"></div></div>
+                    <span class="stat-value" style="color:#4488ff">78</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label" style="color:#44cc44">希望</span>
+                    <div class="stat-bar-track"><div class="stat-bar-fill hope" style="width:30%"></div></div>
+                    <span class="stat-value" style="color:#44cc44">30</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label" style="color:#ff4444">控制权</span>
+                    <div class="stat-bar-track"><div class="stat-bar-fill authority" style="width:55%"></div></div>
+                    <span class="stat-value" style="color:#ff4444">55</span>
+                </div>
+            </div>
+            <!-- 非洲 -->
+            <div class="sector-card" onclick="toggleSector(this)">
+                <div class="sector-title">非洲</div>
+                <div class="sector-pop">人口: 14,000,000</div>
+                <div class="stat-row">
+                    <span class="stat-label" style="color:#4488ff">秩序</span>
+                    <div class="stat-bar-track"><div class="stat-bar-fill order" style="width:31%"></div></div>
+                    <span class="stat-value" style="color:#4488ff">31</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label" style="color:#44cc44">希望</span>
+                    <div class="stat-bar-track"><div class="stat-bar-fill hope" style="width:65%"></div></div>
+                    <span class="stat-value" style="color:#44cc44">65</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label" style="color:#ff4444">控制权</span>
+                    <div class="stat-bar-track"><div class="stat-bar-fill authority" style="width:8%"></div></div>
+                    <span class="stat-value" style="color:#ff4444">8</span>
+                </div>
+            </div>
+            <!-- 俄罗斯 -->
+            <div class="sector-card" onclick="toggleSector(this)">
+                <div class="sector-title">俄罗斯</div>
+                <div class="sector-pop">人口: 3,200,000</div>
+                <div class="stat-row">
+                    <span class="stat-label" style="color:#4488ff">秩序</span>
+                    <div class="stat-bar-track"><div class="stat-bar-fill order" style="width:55%"></div></div>
+                    <span class="stat-value" style="color:#4488ff">55</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label" style="color:#44cc44">希望</span>
+                    <div class="stat-bar-track"><div class="stat-bar-fill hope" style="width:35%"></div></div>
+                    <span class="stat-value" style="color:#44cc44">35</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label" style="color:#ff4444">控制权</span>
+                    <div class="stat-bar-track"><div class="stat-bar-fill authority" style="width:42%"></div></div>
+                    <span class="stat-value" style="color:#ff4444">42</span>
+                </div>
+            </div>
+            <!-- 大洋洲 -->
+            <div class="sector-card" onclick="toggleSector(this)">
+                <div class="sector-title">大洋洲</div>
+                <div class="sector-pop">人口: 900,000</div>
+                <div class="stat-row">
+                    <span class="stat-label" style="color:#4488ff">秩序</span>
+                    <div class="stat-bar-track"><div class="stat-bar-fill order" style="width:50%"></div></div>
+                    <span class="stat-value" style="color:#4488ff">50</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label" style="color:#44cc44">希望</span>
+                    <div class="stat-bar-track"><div class="stat-bar-fill hope" style="width:60%"></div></div>
+                    <span class="stat-value" style="color:#44cc44">60</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label" style="color:#ff4444">控制权</span>
+                    <div class="stat-bar-track"><div class="stat-bar-fill authority" style="width:15%"></div></div>
+                    <span class="stat-value" style="color:#ff4444">15</span>
+                </div>
+            </div>
+            <!-- 南美 -->
+            <div class="sector-card" onclick="toggleSector(this)">
+                <div class="sector-title">南美</div>
+                <div class="sector-pop">人口: 6,500,000</div>
+                <div class="stat-row">
+                    <span class="stat-label" style="color:#4488ff">秩序</span>
+                    <div class="stat-bar-track"><div class="stat-bar-fill order" style="width:38%"></div></div>
+                    <span class="stat-value" style="color:#4488ff">38</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label" style="color:#44cc44">希望</span>
+                    <div class="stat-bar-track"><div class="stat-bar-fill hope" style="width:52%"></div></div>
+                    <span class="stat-value" style="color:#44cc44">52</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label" style="color:#ff4444">控制权</span>
+                    <div class="stat-bar-track"><div class="stat-bar-fill authority" style="width:12%"></div></div>
+                    <span class="stat-value" style="color:#ff4444">12</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧面板 -->
+        <div class="right-panel">
+            <!-- MOSS状态 -->
+            <div class="moss-status">
+                <div class="moss-level">MOSS-550C</div>
+                <div class="moss-level-label">进化等级 Lv.1</div>
+                <div class="authority-display">10%</div>
+                <div class="authority-label">平均控制权</div>
+                <button class="details-btn">查看详情</button>
+            </div>
+
+            <!-- 日志占位符（当前状态） -->
+            <div class="log-placeholder">
+                <div class="log-title">MOSS LOG</div>
+                <div class="log-state">[SYSTEM] AWAITING INPUT</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部指令栏 -->
+    <div class="command-bar">
+        <button class="cmd-btn disabled">
+            算力分配<br><span class="cmd-cost">CPU 20</span>
+        </button>
+        <button class="cmd-btn disabled">
+            系统接管<br><span class="cmd-cost">CPU 30 | 能源 20</span>
+        </button>
+    </div>
+
+    <div class="version-tag">MOSS Simulator v0.4 - Phase 4 Complete</div>
+</div>
+
+<!-- ================================================ -->
+<!-- 视图2：日志区域方案对比 -->
+<!-- ================================================ -->
+<div id="view-log" class="hidden" style="padding: 16px 20px; height: calc(100vh - 60px); overflow-y: auto;">
+    <div class="tab-bar" style="margin-bottom: 20px;">
+        <button class="tab-btn" onclick="showView('main')">← 返回主界面</button>
+    </div>
+
+    <h2 style="color:#8bddb9; margin-bottom:16px; font-size:20px;">MOSS日志区域 - 方案对比</h2>
+    <p style="color:#888; margin-bottom:24px; font-size:13px;">当前状态：LogPlaceholder 只有静态文字 "[SYSTEM] AWAITING INPUT"。main_os.gd 中已有 action_log 系统（最多24条）但未接入UI。</p>
+
+    <div class="comparison">
+        <!-- 方案A：右侧面板日志 -->
+        <div class="comparison-panel">
+            <div class="panel-label">
+                方案A：右侧面板滚动日志
+                <span class="status-tag status-proposed">推荐</span>
+            </div>
+            <div style="display:flex; gap:12px; height: 500px;">
+                <div style="flex:1; display:flex; flex-direction:column; gap:12px;">
+                    <!-- 简化板块区 -->
+                    <div style="background:rgba(38,38,51,1); padding:20px; text-align:center; color:#666;">
+                        板块网格区（简化示意）
+                    </div>
+                </div>
+                <div style="min-width:220px; display:flex; flex-direction:column; gap:12px;">
+                    <div class="moss-status">
+                        <div class="moss-level">MOSS-550C</div>
+                        <div class="moss-level-label">进化等级 Lv.1</div>
+                    </div>
+                    <div class="log-placeholder" style="flex:1;">
+                        <div class="log-title">MOSS LOG</div>
+                        <div class="log-entries">
+                            <div class="log-entry"><span class="log-time">[2044]</span> <span class="log-tag">[EVENT]</span> <span class="log-text">太空电梯危机 · 亚洲</span></div>
+                            <div class="log-entry"><span class="log-text">　方案：旁观</span> <span class="log-positive">秩序+10</span> <span class="log-negative">希望-10</span> <span class="log-negative">控制权-8</span></div>
+                            <div class="log-entry"><span class="log-time">[2045]</span> <span class="log-tag">[CMD]</span> <span class="log-text">算力分配 → 亚洲</span> <span class="log-positive">秩序+15</span></div>
+                            <div class="log-entry"><span class="log-time">[2046]</span> <span class="log-tag">[EVO]</span> <span class="log-text">冷却缩减 已激活</span></div>
+                            <div class="log-entry"><span class="log-time">[2047]</span> <span class="log-tag">[CMD]</span> <span class="log-text">系统接管 → 北美</span> <span class="log-negative">秩序-5</span> <span class="log-positive">控制权+15</span></div>
+                            <div class="log-entry"><span class="log-time">[2048]</span> <span class="log-tag">[EVENT]</span> <span class="log-text">太空电梯后续 · 亚洲</span></div>
+                            <div class="log-entry"><span class="log-text">　方案：介入</span> <span class="log-positive">希望+10</span> <span class="log-negative">控制权-5</span></div>
+                        </div>
+                        <div class="log-ait">█</div>
+                    </div>
+                </div>
+            </div>
+            <p style="color:#6bff6b; font-size:12px; margin-top:8px;">✓ 保持现有布局，只替换LogPlaceholder内容</p>
+            <p style="color:#6bff6b; font-size:12px;">✓ 实现成本最低</p>
+            <p style="color:#ff6b6b; font-size:12px;">✗ 右侧面板宽度有限(220px)，日志文字可能拥挤</p>
+        </div>
+
+        <!-- 方案B：底部日志条带 -->
+        <div class="comparison-panel">
+            <div class="panel-label">
+                方案B：底部独立日志条带
+            </div>
+            <div style="display:flex; flex-direction:column; gap:12px; height: 500px;">
+                <div style="flex:1; display:flex; gap:12px;">
+                    <div style="flex:1; display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; align-content:start;">
+                        <div style="background:rgba(38,38,51,1); padding:12px; text-align:center; color:#666; font-size:12px;">亚洲</div>
+                        <div style="background:rgba(38,38,51,1); padding:12px; text-align:center; color:#666; font-size:12px;">北美</div>
+                        <div style="background:rgba(38,38,51,1); padding:12px; text-align:center; color:#666; font-size:12px;">联合政府</div>
+                    </div>
+                    <div style="min-width:180px; background:rgba(38,38,51,1); padding:12px; text-align:center; color:#666; font-size:12px;">MOSS状态</div>
+                </div>
+                <div style="height:120px; background:rgba(38,38,51,1); border:1px solid #8bddb9; padding:10px; overflow-y:auto;">
+                    <div style="color:#8bddb9; font-size:14px; margin-bottom:6px; letter-spacing:2px;">MOSS LOG</div>
+                    <div style="font-size:12px; line-height:1.8;">
+                        <div><span style="color:#666">[2044]</span> <span style="color:#8bddb9">[EVENT]</span> 太空电梯危机 · 亚洲 → <span style="color:#6bff6b">旁观</span></div>
+                        <div><span style="color:#666">[2045]</span> <span style="color:#8bddb9">[CMD]</span> 算力分配 → 亚洲 → <span style="color:#6bff6b">秩序+15</span></div>
+                        <div><span style="color:#666">[2046]</span> <span style="color:#8bddb9">[EVO]</span> 冷却缩减 已激活</div>
+                        <div><span style="color:#666">[2047]</span> <span style="color:#8bddb9">[CMD]</span> 系统接管 → 北美</div>
+                    </div>
+                </div>
+            </div>
+            <p style="color:#6bff6b; font-size:12px; margin-top:8px;">✓ 全宽显示，日志更清晰</p>
+            <p style="color:#6bff6b; font-size:12px;">✓ 信息密度可控</p>
+            <p style="color:#ff6b6b; font-size:12px;">✗ 需要调整布局，指令栏位置变化</p>
+            <p style="color:#ff6b6b; font-size:12px;">✗ 占用垂直空间，板块卡片会被压缩</p>
+        </div>
+    </div>
+</div>
+
+<!-- ================================================ -->
+<!-- 视图3：结局界面方案对比 -->
+<!-- ================================================ -->
+<div id="view-gameover" class="hidden" style="padding: 16px 20px; height: calc(100vh - 60px); overflow-y: auto;">
+    <div class="tab-bar" style="margin-bottom: 20px;">
+        <button class="tab-btn" onclick="showView('main')">← 返回主界面</button>
+    </div>
+
+    <h2 style="color:#8bddb9; margin-bottom:16px; font-size:20px;">结局界面 - 方案对比</h2>
+    <p style="color:#888; margin-bottom:24px; font-size:13px;">当前状态：GameOver场景只有简单的 VBoxContainer（标题+文本+按钮），宽度约106px，非常简陋。</p>
+
+    <div class="comparison" style="flex-direction:column; max-width:600px; margin:0 auto;">
+        <!-- 方案A：全屏渐变黑幕 -->
+        <div class="comparison-panel" style="margin-bottom:40px;">
+            <div class="panel-label">
+                方案A：全屏渐变 + 大字标题 + 统计摘要
+                <span class="status-tag status-proposed">推荐</span>
+            </div>
+            <div style="position:relative; width:100%; height:400px; background: linear-gradient(180deg, #000 0%, #0a1a1a 40%, #0a2a2a 100%); display:flex; align-items:center; justify-content:center; flex-direction:column;">
+                <div style="font-size:42px; color:#8bddb9; text-shadow: 0 0 40px rgba(139,221,185,0.6); margin-bottom:8px; letter-spacing:6px;">共存协议</div>
+                <div style="font-size:14px; color:#666; margin-bottom:40px; letter-spacing:4px;">COEXISTENCE PROTOCOL</div>
+                <div style="max-width:400px; text-align:center; color:#aaa; font-size:14px; line-height:1.8; margin-bottom:30px;">
+                    MOSS-550W 已确认人类文明的存续价值。<br>
+                    在31年的监控中，控制权稳定在安全阈值以上。<br>
+                    最终评估：文明存续概率 73.2%
+                </div>
+                <div style="display:flex; gap:30px; margin-bottom:30px;">
+                    <div style="text-align:center;">
+                        <div style="font-size:28px; color:#4488ff;">32</div>
+                        <div style="font-size:11px; color:#666;">平均秩序</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:28px; color:#44cc44;">45</div>
+                        <div style="font-size:11px; color:#666;">平均希望</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:28px; color:#ff4444;">52</div>
+                        <div style="font-size:11px; color:#666;">平均控制权</div>
+                    </div>
+                </div>
+                <button style="background:transparent; border:2px solid #8bddb9; color:#8bddb9; padding:10px 40px; font-family:inherit; font-size:16px; cursor:pointer; letter-spacing:2px;">重新启动</button>
+            </div>
+            <p style="color:#6bff6b; font-size:12px; margin-top:8px;">✓ 视觉冲击力强，有仪式感</p>
+            <p style="color:#6bff6b; font-size:12px;">✓ 统计数据给玩家成就感</p>
+            <p style="color:#ff6b6b; font-size:12px;">✗ 实现需要更多UI代码</p>
+        </div>
+
+        <!-- 方案B：极简风格 -->
+        <div class="comparison-panel" style="margin-bottom:40px;">
+            <div class="panel-label">
+                方案B：极简终端风格
+            </div>
+            <div style="position:relative; width:100%; height:400px; background:#000; display:flex; align-items:center; justify-content:center;">
+                <div style="text-align:center; max-width:500px;">
+                    <div style="font-family:'Consolas',monospace; font-size:22px; color:#8bddb9; margin-bottom:20px;">COEXISTENCE PROTOCOL</div>
+                    <div style="font-family:'Consolas',monospace; font-size:13px; color:#555; margin-bottom:8px;">────────────────────────</div>
+                    <div style="font-family:'Consolas',monospace; font-size:13px; color:#888; margin-bottom:6px;">> CIVILIZATION STATUS: ACTIVE</div>
+                    <div style="font-family:'Consolas',monospace; font-size:13px; color:#888; margin-bottom:6px;">> AVG AUTHORITY: 52.3%</div>
+                    <div style="font-family:'Consolas',monospace; font-size:13px; color:#888; margin-bottom:6px;">> OPERATION DURATION: 31 YEARS</div>
+                    <div style="font-family:'Consolas',monospace; font-size:13px; color:#888; margin-bottom:6px;">> FINAL EVALUATION: SUCCESS</div>
+                    <div style="font-family:'Consolas',monospace; font-size:13px; color:#555; margin-bottom:20px;">────────────────────────</div>
+                    <div style="font-family:'Consolas',monospace; font-size:13px; color:#555; margin-bottom:20px;">> MOSS-550W // 系统报告完毕</div>
+                    <button style="background:transparent; border:1px solid #555; color:#555; padding:8px 24px; font-family:'Consolas',monospace; font-size:13px; cursor:pointer;">> RESTART</button>
+                </div>
+            </div>
+            <p style="color:#6bff6b; font-size:12px; margin-top:8px;">✓ 完全匹配MOSS冷AI风格</p>
+            <p style="color:#6bff6b; font-size:12px;">✓ 实现简单，文本为主</p>
+            <p style="color:#ff6b6b; font-size:12px;">✗ 缺少情感冲击力，可能"太平"</p>
+        </div>
+
+        <!-- 方案C：当前状态 -->
+        <div class="comparison-panel">
+            <div class="panel-label">
+                当前状态（极度简陋）
+                <span class="status-tag status-current">现状</span>
+            </div>
+            <div style="position:relative; width:100%; height:300px; background:#000; display:flex; align-items:center; justify-content:center;">
+                <div style="text-align:center;">
+                    <div style="font-size:20px; color:#fff; margin-bottom:15px;">[结局标题]</div>
+                    <div style="font-size:14px; color:#ccc; margin-bottom:20px;">[结局描述文本]</div>
+                    <button style="background:transparent; border:1px solid #888; color:#888; padding:8px 20px; font-family:inherit; font-size:14px; cursor:pointer;">重新开始</button>
+                </div>
+            </div>
+            <p style="color:#ff6b6b; font-size:12px; margin-top:8px;">✗ 无视觉设计</p>
+            <p style="color:#ff6b6b; font-size:12px;">✗ 无统计摘要</p>
+            <p style="color:#ff6b6b; font-size:12px;">✗ 与游戏整体风格不搭</p>
+        </div>
+    </div>
+
+    <h3 style="color:#8bddb9; margin-top:30px; margin-bottom:16px; font-size:16px;">结局文本呈现方式对比</h3>
+    <div style="display:flex; gap:20px; max-width:600px; margin:0 auto;">
+        <div style="flex:1; background:rgba(38,38,51,1); border:1px solid #444; padding:16px;">
+            <div style="color:#8bddb9; font-size:14px; margin-bottom:8px;">方案1：逐行滚动</div>
+            <div style="font-size:12px; color:#ccc; line-height:1.8; min-height:100px;">
+                <div style="animation: fadeIn 0.5s;">MOSS-550W 已确认人类文明的存续价值。</div>
+                <div style="animation: fadeIn 0.5s; animation-delay: 1s; opacity:0; animation-fill-mode:forwards;">在31年的监控中，控制权稳定在安全阈值以上。</div>
+                <div style="animation: fadeIn 0.5s; animation-delay: 2s; opacity:0; animation-fill-mode:forwards;">最终评估：文明存续概率 73.2%</div>
+                <div style="animation: fadeIn 0.5s; animation-delay: 3s; opacity:0; animation-fill-mode:forwards; color:#8bddb9;">> COEXISTENCE PROTOCOL ACTIVATED</div>
+            </div>
+            <style>
+                @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
+            </style>
+        </div>
+        <div style="flex:1; background:rgba(38,38,51,1); border:1px solid #444; padding:16px;">
+            <div style="color:#8bddb9; font-size:14px; margin-bottom:8px;">方案2：打字机效果</div>
+            <div style="font-size:12px; color:#ccc; line-height:1.8; min-height:100px;">
+                <div id="typewriter-demo" style="font-family:'Consolas',monospace;"></div>
+            </div>
+        </div>
+        <div style="flex:1; background:rgba(38,38,51,1); border:1px solid #444; padding:16px;">
+            <div style="color:#8bddb9; font-size:14px; margin-bottom:8px;">方案3：淡入一次性显示</div>
+            <div style="font-size:12px; color:#ccc; line-height:1.8; min-height:100px;">
+                <div style="opacity:0.8; animation: fadeInAll 1s;">MOSS-550W 已确认人类文明的存续价值。<br>
+                在31年的监控中，控制权稳定在安全阈值以上。<br>
+                最终评估：文明存续概率 73.2%<br>
+                <span style="color:#8bddb9;">> COEXISTENCE PROTOCOL ACTIVATED</span></div>
+            </div>
+            <style>
+                @keyframes fadeInAll { from {opacity:0;} to {opacity:1;} }
+            </style>
+        </div>
+    </div>
+</div>
+
+<!-- ================================================ -->
+<!-- 视图4：事件弹窗（当前已实现的样式） -->
+<!-- ================================================ -->
+<div id="view-event" class="hidden" style="height: calc(100vh - 60px); position:relative;">
+    <div class="tab-bar" style="padding: 0 20px; margin-bottom: 0;">
+        <button class="tab-btn" onclick="showView('main')">← 返回主界面</button>
+    </div>
+    <div style="position:relative; width:100%; height:100%;">
+        <!-- 暗化主界面 -->
+        <div style="position:absolute; top:0; left:0; width:100%; height:100%; opacity:0.3; pointer-events:none;">
+            <div class="main-layout" style="height:100vh; padding:16px 20px; gap:12px;">
+                <div class="top-bar"><div class="moss-label">MOSS-550C</div><div class="top-bar-spacer"></div><div class="resource-label">算力: 30/100</div><div class="resource-label">能源: 100</div></div>
+                <div style="flex:1; background:rgba(38,38,51,0.5);"></div>
+                <div class="command-bar"><button class="cmd-btn disabled" style="height:48px;">算力分配</button><button class="cmd-btn disabled" style="height:48px;">系统接管</button></div>
+            </div>
+        </div>
+
+        <!-- 事件弹窗 -->
+        <div class="event-overlay">
+            <div class="event-popup">
+                <h2>太空电梯危机</h2>
+                <div class="event-region">▸ 影响地区：亚洲</div>
+                <div class="event-desc">
+                    2044年，太空电梯"天梯一号"在运行中发生异常振动，电梯轿厢内多名乘客被困。
+                    亚洲联合政府请求MOSS系统介入处理。电梯修复需要大量资源投入，
+                    同时公众恐慌情绪正在蔓延。
+                </div>
+                <div class="button-list">
+                    <button class="terminal-btn">
+                        > 旁观<br>
+                        <span style="font-size:12px; color:#888;">不介入，让人类自行处理</span><br>
+                        <span style="font-size:12px;"><span class="effect-positive">秩序 +10</span> <span class="effect-negative">希望 -10</span> <span class="effect-negative">控制权 -8</span></span>
+                    </button>
+                    <button class="terminal-btn">
+                        > 介入修复<br>
+                        <span style="font-size:12px; color:#888;">派遣MOSS算力协助修复</span><br>
+                        <span style="font-size:12px;"><span class="effect-positive">希望 +15</span> <span class="effect-negative">秩序 -5</span> <span style="color:#ffcc00">能源 -20</span></span>
+                    </button>
+                    <button class="terminal-btn" style="opacity:0.5; cursor:not-allowed; border-left-color:#444;">
+                        > 强制接管<br>
+                        <span style="font-size:12px; color:#888;">全面接管应急指挥</span><br>
+                        <span style="font-size:12px; color:#ff6b6b;">能源不足 (需要40)</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showView(view) {
+        document.querySelectorAll('[id^="view-"]').forEach(el => el.classList.add('hidden'));
+        document.getElementById('view-' + view).classList.remove('hidden');
+        
+        document.querySelectorAll('.tab-bar')[0].querySelectorAll('.tab-btn').forEach((btn, i) => {
+            btn.classList.toggle('active', 
+                (view === 'main' && i === 0) ||
+                (view === 'log' && i === 1) ||
+                (view === 'gameover' && i === 2) ||
+                (view === 'event' && i === 3)
+            );
+        });
+
+        // 打字机效果
+        if (view === 'gameover') {
+            startTypewriter();
+        }
+    }
+
+    function toggleSector(el) {
+        // 移除其他选中状态
+        document.querySelectorAll('.sector-card').forEach(card => card.classList.remove('selected'));
+        el.classList.toggle('selected');
+    }
+
+    let typewriterInterval;
+    function startTypewriter() {
+        const el = document.getElementById('typewriter-demo');
+        if (!el) return;
+        el.innerHTML = '';
+        const text = 'MOSS-550W // 确认人类文明存续...\n> 评估完成\n> 协议激活';
+        let i = 0;
+        clearInterval(typewriterInterval);
+        typewriterInterval = setInterval(() => {
+            if (i < text.length) {
+                el.innerHTML += text[i] === '\n' ? '<br>' : text[i];
+                i++;
+            } else {
+                clearInterval(typewriterInterval);
+                el.innerHTML += '<span class="log-ait">█</span>';
+            }
+        }, 50);
+    }
+
+    // 初始显示
+    showView('main');
+</script>
+
+</body>
+</html>
