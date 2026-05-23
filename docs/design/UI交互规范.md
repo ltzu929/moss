@@ -1,5 +1,7 @@
 # UI交互规范
 
+本文档只维护 UI 交互原则、界面行为标准和 UI 领域决策附录。视觉素材和 mockup 放在 `ui-mockup/`，跨领域决策流程见 `../dev/决策流程.md`。
+
 > UI相关决策的判断标准 + 决策记录区。
 
 ---
@@ -169,7 +171,7 @@
 3. 与流浪地球电影MOSS界面风格一致
 4. 与项目现有深青色背景风格统一
 
-**参考文件**：`docs/ui-mockup/event-button-styles.html`
+**参考文件**：`ui-mockup/event-button-styles.html`
 
 **相关约束**：主界面深青色背景、MOSS冷AI设定
 
