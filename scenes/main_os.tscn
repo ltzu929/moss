@@ -33,6 +33,18 @@ border_width_right = 2
 border_width_bottom = 2
 border_color = Color(0.5461479, 0.8684463, 0.8520485, 1)
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hud"]
+bg_color = Color(0.031, 0.067, 0.102, 0.88)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.118, 0.204, 0.267, 1)
+content_margin_left = 8
+content_margin_top = 8
+content_margin_right = 8
+content_margin_bottom = 8
+
 [node name="MainOS" type="Control" unique_id=1064400959]
 layout_mode = 3
 anchors_preset = 15
@@ -50,7 +62,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0, 0, 0, 1)
+color = Color(0.012, 0.027, 0.047, 1)
 
 [node name="MainLayout" type="VBoxContainer" parent="." unique_id=659819045]
 layout_mode = 1
@@ -193,6 +205,7 @@ layout_mode = 2
 script = ExtResource("16_b4a26")
 
 [node name="LogPlaceholder" type="Panel" parent="MainLayout/ContentRow/RightPanel" unique_id=809928747]
+theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
 custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
 size_flags_vertical = 3
@@ -232,6 +245,7 @@ theme_override_colors/font_color = Color(0.55, 0.866667, 0.85098, 1)
 text = "█"
 
 [node name="SolarSystemPanel" type="PanelContainer" parent="MainLayout/ContentRow/RightPanel" unique_id=1338734464]
+theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
 layout_mode = 2
 
 [node name="SolarMargin" type="MarginContainer" parent="MainLayout/ContentRow/RightPanel/SolarSystemPanel" unique_id=819545895]
@@ -247,12 +261,15 @@ layout_mode = 2
 [node name="SolarTitle" type="Label" parent="MainLayout/ContentRow/RightPanel/SolarSystemPanel/SolarMargin/SolarVBox" unique_id=1038345775]
 layout_mode = 2
 text = "太阳系态势"
+theme_override_colors/font_color = Color(0.545, 0.867, 0.851, 1)
 
 [node name="SolarPlaceholderLabel" type="Label" parent="MainLayout/ContentRow/RightPanel/SolarSystemPanel/SolarMargin/SolarVBox" unique_id=275244989]
 layout_mode = 2
 text = "SOLAR SYSTEM ORBIT PLACEHOLDER"
+theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
 
 [node name="GlobalOverviewPanel" type="PanelContainer" parent="MainLayout/ContentRow/RightPanel" unique_id=1462355212]
+theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
 layout_mode = 2
 
 [node name="GlobalOverviewMargin" type="MarginContainer" parent="MainLayout/ContentRow/RightPanel/GlobalOverviewPanel" unique_id=834417501]
@@ -268,28 +285,34 @@ layout_mode = 2
 [node name="GlobalOverviewTitle" type="Label" parent="MainLayout/ContentRow/RightPanel/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox" unique_id=1288679932]
 layout_mode = 2
 text = "全局信息"
+theme_override_colors/font_color = Color(0.545, 0.867, 0.851, 1)
 
 [node name="GlobalPopulationLabel" type="Label" parent="MainLayout/ContentRow/RightPanel/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox" unique_id=1044130409]
 unique_name_in_owner = true
 layout_mode = 2
 text = "全球人口: --"
+theme_override_colors/font_color = Color(0.722, 0.78, 0.839, 1)
 
 [node name="GlobalAuthorityLabel" type="Label" parent="MainLayout/ContentRow/RightPanel/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox" unique_id=862337580]
 unique_name_in_owner = true
 layout_mode = 2
 text = "平均控制权: --"
+theme_override_colors/font_color = Color(0.722, 0.78, 0.839, 1)
 
 [node name="GlobalStabilityLabel" type="Label" parent="MainLayout/ContentRow/RightPanel/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox" unique_id=1978933368]
 unique_name_in_owner = true
 layout_mode = 2
 text = "系统稳定性: --"
+theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
 
 [node name="GlobalThreatLabel" type="Label" parent="MainLayout/ContentRow/RightPanel/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox" unique_id=838219989]
 unique_name_in_owner = true
 layout_mode = 2
 text = "威胁等级: --"
+theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
 
 [node name="LeftPanel" type="PanelContainer" parent="MainLayout/ContentRow" unique_id=139479161]
+theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 3
@@ -309,6 +332,7 @@ size_flags_vertical = 3
 [node name="RegionDetailTitle" type="Label" parent="MainLayout/ContentRow/LeftPanel/LeftMargin/LeftVBox" unique_id=787011878]
 layout_mode = 2
 text = "区域详情"
+theme_override_colors/font_color = Color(0.545, 0.867, 0.851, 1)
 
 [node name="RegionMiniMap" type="PanelContainer" parent="MainLayout/ContentRow/LeftPanel/LeftMargin/LeftVBox" unique_id=604562749]
 layout_mode = 2
@@ -317,11 +341,13 @@ layout_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 text = "未选择区域"
+theme_override_colors/font_color = Color(0.722, 0.78, 0.839, 1)
 
 [node name="RegionDescriptionLabel" type="Label" parent="MainLayout/ContentRow/LeftPanel/LeftMargin/LeftVBox" unique_id=2074453506]
 unique_name_in_owner = true
 layout_mode = 2
 text = "选择底部区域卡片以查看详情。"
+theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
 
 [node name="RegionOrderLabel" type="Label" parent="MainLayout/ContentRow/LeftPanel/LeftMargin/LeftVBox" unique_id=307693293]
 layout_mode = 2
@@ -351,8 +377,10 @@ layout_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 text = "状态：待选择"
+theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
 
 [node name="CenterPanel" type="PanelContainer" parent="MainLayout/ContentRow" unique_id=1167394134]
+theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -375,6 +403,7 @@ layout_mode = 2
 [node name="GlobalViewTitle" type="Label" parent="MainLayout/ContentRow/CenterPanel/CenterMargin/CenterVBox/GlobalViewHeader" unique_id=1519660534]
 layout_mode = 2
 text = "全球态势图"
+theme_override_colors/font_color = Color(0.545, 0.867, 0.851, 1)
 
 [node name="GlobalMapSelectedLabel" type="Label" parent="MainLayout/ContentRow/CenterPanel/CenterMargin/CenterVBox/GlobalViewHeader" unique_id=1285288344]
 unique_name_in_owner = true
@@ -382,6 +411,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 text = "全球态势监控中"
 horizontal_alignment = 2
+theme_override_colors/font_color = Color(0.722, 0.78, 0.839, 1)
 
 [node name="GlobalMapPlaceholder" type="PanelContainer" parent="MainLayout/ContentRow/CenterPanel/CenterMargin/CenterVBox" unique_id=201009618]
 layout_mode = 2
@@ -393,6 +423,7 @@ layout_mode = 2
 text = "GLOBAL VIEW / EARTH STATUS PLACEHOLDER"
 horizontal_alignment = 1
 vertical_alignment = 1
+theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
 
 [node name="CommandButtonContainer" type="HBoxContainer" parent="MainLayout" unique_id=107053379]
 unique_name_in_owner = true
