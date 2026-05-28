@@ -1,29 +1,34 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://dlmkcdge21u4x"]
 
-[ext_resource type="Script" path="res://scripts/systems/main_os.gd" id="1_8e66l"]
-[ext_resource type="Script" path="res://scripts/resources/game_event.gd" id="2_0h44u"]
-[ext_resource type="PackedScene" path="res://scenes/sector_info.tscn" id="2_qcklt"]
-[ext_resource type="Resource" path="res://data/events/event_2044.tres" id="3_b37nj"]
-[ext_resource type="Resource" path="res://data/sector_asia.tres" id="3_sjuws"]
-[ext_resource type="Resource" path="res://data/sector_na.tres" id="4_lwoul"]
-[ext_resource type="Resource" path="res://data/sector_ueg.tres" id="5_8e66l"]
-[ext_resource type="Script" path="res://scripts/ui/year_progress.gd" id="5_tb2m2"]
-[ext_resource type="Resource" path="res://data/sector_africa.tres" id="6_africa"]
-[ext_resource type="Resource" path="res://data/sector_russia.tres" id="7_russia"]
-[ext_resource type="Script" path="res://scripts/resources/sector_info.gd" id="7_t5cjp"]
-[ext_resource type="Resource" path="res://data/sector_oceania.tres" id="8_oceania"]
-[ext_resource type="PackedScene" path="res://scenes/allocate_popup.tscn" id="9_a8ufc"]
-[ext_resource type="PackedScene" path="res://scenes/event_popup.tscn" id="9_b37nj"]
-[ext_resource type="Resource" path="res://data/sector_south_america.tres" id="9_southam"]
-[ext_resource type="PackedScene" path="res://scenes/evolution_popup.tscn" id="10_evopopup"]
+[ext_resource type="Script" uid="uid://ctakhimn50hdc" path="res://scripts/systems/main_os.gd" id="1_8e66l"]
+[ext_resource type="Script" uid="uid://dhndawkfhm8iq" path="res://scripts/resources/game_event.gd" id="2_0h44u"]
+[ext_resource type="PackedScene" uid="uid://xn0mj5mp0u12" path="res://scenes/sector_info.tscn" id="2_qcklt"]
+[ext_resource type="Resource" uid="uid://bgrmda00hq7ef" path="res://data/events/event_2044.tres" id="3_b37nj"]
+[ext_resource type="Resource" uid="uid://de5nghry0twj7" path="res://data/sector_asia.tres" id="3_sjuws"]
+[ext_resource type="Resource" uid="uid://c5g8pdsgsa214" path="res://data/sector_na.tres" id="4_lwoul"]
+[ext_resource type="Resource" uid="uid://dthd18iep6jve" path="res://data/sector_ueg.tres" id="5_8e66l"]
+[ext_resource type="Resource" uid="uid://cfrica001" path="res://data/sector_africa.tres" id="6_africa"]
+[ext_resource type="Resource" uid="uid://crussia001" path="res://data/sector_russia.tres" id="7_russia"]
+[ext_resource type="Resource" uid="uid://coceania001" path="res://data/sector_oceania.tres" id="8_oceania"]
+[ext_resource type="PackedScene" uid="uid://dellv4e6qlqpr" path="res://scenes/allocate_popup.tscn" id="9_a8ufc"]
+[ext_resource type="PackedScene" uid="uid://jls1m2vbj8iu" path="res://scenes/event_popup.tscn" id="9_b37nj"]
+[ext_resource type="Resource" uid="uid://csoutham001" path="res://data/sector_south_america.tres" id="9_southam"]
+[ext_resource type="PackedScene" uid="uid://d3hjloh5j0xx8" path="res://scenes/evolution_popup.tscn" id="10_evopopup"]
 [ext_resource type="PackedScene" path="res://scenes/evolution_notice.tscn" id="11_evonotice"]
-[ext_resource type="PackedScene" path="res://scenes/year_progress.tscn" id="12_yearprogress"]
+[ext_resource type="PackedScene" uid="uid://bqxj2k3n4m5p" path="res://scenes/year_progress.tscn" id="12_yearprogress"]
 [ext_resource type="PackedScene" path="res://scenes/moss_status_panel.tscn" id="13_mosspanel"]
-[ext_resource type="Script" path="res://scripts/ui/moss_status_panel.gd" id="16_b4a26"]
-[ext_resource type="Script" path="res://scripts/ui/event_popup.gd" id="18_h4qmq"]
-[ext_resource type="Script" path="res://scripts/ui/allocate_popup.gd" id="20_esgwd"]
-[ext_resource type="Script" path="res://scripts/ui/evolution_popup.gd" id="22_02igs"]
-[ext_resource type="Script" path="res://scripts/ui/evolution_notice.gd" id="24_oggm5"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hud"]
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0.031, 0.067, 0.102, 0.88)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.118, 0.204, 0.267, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yoxec"]
 bg_color = Color(0.1392164, 0.38237798, 0.39237434, 1)
@@ -32,18 +37,6 @@ border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
 border_color = Color(0.5461479, 0.8684463, 0.8520485, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hud"]
-bg_color = Color(0.031, 0.067, 0.102, 0.88)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.118, 0.204, 0.267, 1)
-content_margin_left = 8
-content_margin_top = 8
-content_margin_right = 8
-content_margin_bottom = 8
 
 [node name="MainOS" type="Control" unique_id=1064400959]
 layout_mode = 3
@@ -112,103 +105,34 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "进化 Lv.1"
 
-[node name="YearProgress" type="Control" parent="MainLayout" unique_id=2033000003 instance=ExtResource("12_yearprogress")]
+[node name="YearProgress" parent="MainLayout" unique_id=2033000003 instance=ExtResource("12_yearprogress")]
 unique_name_in_owner = true
 z_index = 10
 custom_minimum_size = Vector2(0, 34)
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 4
-script = ExtResource("5_tb2m2")
 
 [node name="ContentRow" type="HBoxContainer" parent="MainLayout" unique_id=741041614]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 12
 
-[node name="SectorInfoContainer" type="GridContainer" parent="MainLayout" unique_id=1437917960]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 128)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 4
-theme_override_constants/h_separation = 8
-theme_override_constants/v_separation = 8
-columns = 7
-
-[node name="SectorInfoAsia" type="Panel" parent="MainLayout/SectorInfoContainer" unique_id=845453540 instance=ExtResource("2_qcklt")]
-custom_minimum_size = Vector2(180, 130)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-script = ExtResource("7_t5cjp")
-data_card = ExtResource("3_sjuws")
-
-[node name="SectorInfoNa" type="Panel" parent="MainLayout/SectorInfoContainer" unique_id=680731091 instance=ExtResource("2_qcklt")]
-custom_minimum_size = Vector2(180, 130)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-script = ExtResource("7_t5cjp")
-data_card = ExtResource("4_lwoul")
-
-[node name="SectorInfoGovernment" type="Panel" parent="MainLayout/SectorInfoContainer" unique_id=883468909 instance=ExtResource("2_qcklt")]
-custom_minimum_size = Vector2(180, 130)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-script = ExtResource("7_t5cjp")
-data_card = ExtResource("5_8e66l")
-
-[node name="SectorInfoAfrica" type="Panel" parent="MainLayout/SectorInfoContainer" unique_id=1001 instance=ExtResource("2_qcklt")]
-custom_minimum_size = Vector2(180, 130)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-script = ExtResource("7_t5cjp")
-data_card = ExtResource("6_africa")
-
-[node name="SectorInfoRussia" type="Panel" parent="MainLayout/SectorInfoContainer" unique_id=1002 instance=ExtResource("2_qcklt")]
-custom_minimum_size = Vector2(180, 130)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-script = ExtResource("7_t5cjp")
-data_card = ExtResource("7_russia")
-
-[node name="SectorInfoOceania" type="Panel" parent="MainLayout/SectorInfoContainer" unique_id=1003 instance=ExtResource("2_qcklt")]
-custom_minimum_size = Vector2(180, 130)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-script = ExtResource("7_t5cjp")
-data_card = ExtResource("8_oceania")
-
-[node name="SectorInfoSouthAmerica" type="Panel" parent="MainLayout/SectorInfoContainer" unique_id=1004 instance=ExtResource("2_qcklt")]
-custom_minimum_size = Vector2(180, 130)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-script = ExtResource("7_t5cjp")
-data_card = ExtResource("9_southam")
-
 [node name="RightPanel" type="VBoxContainer" parent="MainLayout/ContentRow" unique_id=1407363358]
 custom_minimum_size = Vector2(340, 0)
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="MossStatusPanel" type="Panel" parent="MainLayout/ContentRow/RightPanel" unique_id=2033000004 instance=ExtResource("13_mosspanel")]
+[node name="MossStatusPanel" parent="MainLayout/ContentRow/RightPanel" unique_id=2033000004 instance=ExtResource("13_mosspanel")]
 unique_name_in_owner = true
 z_index = 10
 custom_minimum_size = Vector2(220, 150)
 layout_mode = 2
-script = ExtResource("16_b4a26")
 
 [node name="LogPlaceholder" type="Panel" parent="MainLayout/ContentRow/RightPanel" unique_id=809928747]
-theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
 custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
 
 [node name="LogVBox" type="VBoxContainer" parent="MainLayout/ContentRow/RightPanel/LogPlaceholder" unique_id=1875220548]
 layout_mode = 1
@@ -245,8 +169,8 @@ theme_override_colors/font_color = Color(0.55, 0.866667, 0.85098, 1)
 text = "█"
 
 [node name="SolarSystemPanel" type="PanelContainer" parent="MainLayout/ContentRow/RightPanel" unique_id=1338734464]
-theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
 layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
 
 [node name="SolarMargin" type="MarginContainer" parent="MainLayout/ContentRow/RightPanel/SolarSystemPanel" unique_id=819545895]
 layout_mode = 2
@@ -259,18 +183,20 @@ theme_override_constants/margin_bottom = 8
 layout_mode = 2
 
 [node name="SolarTitle" type="Label" parent="MainLayout/ContentRow/RightPanel/SolarSystemPanel/SolarMargin/SolarVBox" unique_id=1038345775]
+unique_name_in_owner = true
 layout_mode = 2
-text = "太阳系态势"
 theme_override_colors/font_color = Color(0.545, 0.867, 0.851, 1)
+text = "太阳系态势"
 
 [node name="SolarPlaceholderLabel" type="Label" parent="MainLayout/ContentRow/RightPanel/SolarSystemPanel/SolarMargin/SolarVBox" unique_id=275244989]
+unique_name_in_owner = true
 layout_mode = 2
-text = "SOLAR SYSTEM ORBIT PLACEHOLDER"
 theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
+text = "SOLAR SYSTEM ORBIT PLACEHOLDER"
 
 [node name="GlobalOverviewPanel" type="PanelContainer" parent="MainLayout/ContentRow/RightPanel" unique_id=1462355212]
-theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
 layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
 
 [node name="GlobalOverviewMargin" type="MarginContainer" parent="MainLayout/ContentRow/RightPanel/GlobalOverviewPanel" unique_id=834417501]
 layout_mode = 2
@@ -283,39 +209,40 @@ theme_override_constants/margin_bottom = 8
 layout_mode = 2
 
 [node name="GlobalOverviewTitle" type="Label" parent="MainLayout/ContentRow/RightPanel/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox" unique_id=1288679932]
+unique_name_in_owner = true
 layout_mode = 2
-text = "全局信息"
 theme_override_colors/font_color = Color(0.545, 0.867, 0.851, 1)
+text = "全局信息"
 
 [node name="GlobalPopulationLabel" type="Label" parent="MainLayout/ContentRow/RightPanel/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox" unique_id=1044130409]
 unique_name_in_owner = true
 layout_mode = 2
-text = "全球人口: --"
 theme_override_colors/font_color = Color(0.722, 0.78, 0.839, 1)
+text = "全球人口: --"
 
 [node name="GlobalAuthorityLabel" type="Label" parent="MainLayout/ContentRow/RightPanel/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox" unique_id=862337580]
 unique_name_in_owner = true
 layout_mode = 2
-text = "平均控制权: --"
 theme_override_colors/font_color = Color(0.722, 0.78, 0.839, 1)
+text = "平均控制权: --"
 
 [node name="GlobalStabilityLabel" type="Label" parent="MainLayout/ContentRow/RightPanel/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox" unique_id=1978933368]
 unique_name_in_owner = true
 layout_mode = 2
-text = "系统稳定性: --"
 theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
+text = "系统稳定性: --"
 
 [node name="GlobalThreatLabel" type="Label" parent="MainLayout/ContentRow/RightPanel/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox" unique_id=838219989]
 unique_name_in_owner = true
 layout_mode = 2
-text = "威胁等级: --"
 theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
+text = "威胁等级: --"
 
 [node name="LeftPanel" type="PanelContainer" parent="MainLayout/ContentRow" unique_id=139479161]
-theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
 
 [node name="LeftMargin" type="MarginContainer" parent="MainLayout/ContentRow/LeftPanel" unique_id=169280469]
 layout_mode = 2
@@ -330,26 +257,29 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="RegionDetailTitle" type="Label" parent="MainLayout/ContentRow/LeftPanel/LeftMargin/LeftVBox" unique_id=787011878]
+unique_name_in_owner = true
 layout_mode = 2
-text = "区域详情"
 theme_override_colors/font_color = Color(0.545, 0.867, 0.851, 1)
+text = "区域详情"
 
 [node name="RegionMiniMap" type="PanelContainer" parent="MainLayout/ContentRow/LeftPanel/LeftMargin/LeftVBox" unique_id=604562749]
+unique_name_in_owner = true
 layout_mode = 2
 
 [node name="RegionNameLabel" type="Label" parent="MainLayout/ContentRow/LeftPanel/LeftMargin/LeftVBox" unique_id=48540939]
 unique_name_in_owner = true
 layout_mode = 2
-text = "未选择区域"
 theme_override_colors/font_color = Color(0.722, 0.78, 0.839, 1)
+text = "未选择区域"
 
 [node name="RegionDescriptionLabel" type="Label" parent="MainLayout/ContentRow/LeftPanel/LeftMargin/LeftVBox" unique_id=2074453506]
 unique_name_in_owner = true
 layout_mode = 2
-text = "选择底部区域卡片以查看详情。"
 theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
+text = "选择底部区域卡片以查看详情。"
 
 [node name="RegionOrderLabel" type="Label" parent="MainLayout/ContentRow/LeftPanel/LeftMargin/LeftVBox" unique_id=307693293]
+unique_name_in_owner = true
 layout_mode = 2
 text = "秩序"
 
@@ -358,6 +288,7 @@ unique_name_in_owner = true
 layout_mode = 2
 
 [node name="RegionHopeLabel" type="Label" parent="MainLayout/ContentRow/LeftPanel/LeftMargin/LeftVBox" unique_id=1148205546]
+unique_name_in_owner = true
 layout_mode = 2
 text = "希望"
 
@@ -366,6 +297,7 @@ unique_name_in_owner = true
 layout_mode = 2
 
 [node name="RegionAuthorityLabel" type="Label" parent="MainLayout/ContentRow/LeftPanel/LeftMargin/LeftVBox" unique_id=576787291]
+unique_name_in_owner = true
 layout_mode = 2
 text = "控制权"
 
@@ -376,14 +308,14 @@ layout_mode = 2
 [node name="RegionRiskLabel" type="Label" parent="MainLayout/ContentRow/LeftPanel/LeftMargin/LeftVBox" unique_id=297267018]
 unique_name_in_owner = true
 layout_mode = 2
-text = "状态：待选择"
 theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
+text = "状态：待选择"
 
 [node name="CenterPanel" type="PanelContainer" parent="MainLayout/ContentRow" unique_id=1167394134]
-theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
 
 [node name="CenterMargin" type="MarginContainer" parent="MainLayout/ContentRow/CenterPanel" unique_id=177452011]
 layout_mode = 2
@@ -402,16 +334,16 @@ layout_mode = 2
 
 [node name="GlobalViewTitle" type="Label" parent="MainLayout/ContentRow/CenterPanel/CenterMargin/CenterVBox/GlobalViewHeader" unique_id=1519660534]
 layout_mode = 2
-text = "全球态势图"
 theme_override_colors/font_color = Color(0.545, 0.867, 0.851, 1)
+text = "全球态势图"
 
 [node name="GlobalMapSelectedLabel" type="Label" parent="MainLayout/ContentRow/CenterPanel/CenterMargin/CenterVBox/GlobalViewHeader" unique_id=1285288344]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.722, 0.78, 0.839, 1)
 text = "全球态势监控中"
 horizontal_alignment = 2
-theme_override_colors/font_color = Color(0.722, 0.78, 0.839, 1)
 
 [node name="GlobalMapPlaceholder" type="PanelContainer" parent="MainLayout/ContentRow/CenterPanel/CenterMargin/CenterVBox" unique_id=201009618]
 layout_mode = 2
@@ -420,10 +352,62 @@ size_flags_vertical = 3
 
 [node name="GlobalMapLabel" type="Label" parent="MainLayout/ContentRow/CenterPanel/CenterMargin/CenterVBox/GlobalMapPlaceholder" unique_id=49515459]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
 text = "GLOBAL VIEW / EARTH STATUS PLACEHOLDER"
 horizontal_alignment = 1
 vertical_alignment = 1
-theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
+
+[node name="SectorInfoContainer" type="GridContainer" parent="MainLayout" unique_id=1437917960]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 128)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+columns = 7
+
+[node name="SectorInfoAsia" parent="MainLayout/SectorInfoContainer" unique_id=845453540 instance=ExtResource("2_qcklt")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 130)
+size_flags_vertical = 3
+data_card = ExtResource("3_sjuws")
+
+[node name="SectorInfoNa" parent="MainLayout/SectorInfoContainer" unique_id=680731091 instance=ExtResource("2_qcklt")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 130)
+size_flags_vertical = 3
+data_card = ExtResource("4_lwoul")
+
+[node name="SectorInfoGovernment" parent="MainLayout/SectorInfoContainer" unique_id=883468909 instance=ExtResource("2_qcklt")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 130)
+size_flags_vertical = 3
+data_card = ExtResource("5_8e66l")
+
+[node name="SectorInfoAfrica" parent="MainLayout/SectorInfoContainer" unique_id=1001 instance=ExtResource("2_qcklt")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 130)
+size_flags_vertical = 3
+data_card = ExtResource("6_africa")
+
+[node name="SectorInfoRussia" parent="MainLayout/SectorInfoContainer" unique_id=1002 instance=ExtResource("2_qcklt")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 130)
+size_flags_vertical = 3
+data_card = ExtResource("7_russia")
+
+[node name="SectorInfoOceania" parent="MainLayout/SectorInfoContainer" unique_id=1003 instance=ExtResource("2_qcklt")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 130)
+size_flags_vertical = 3
+data_card = ExtResource("8_oceania")
+
+[node name="SectorInfoSouthAmerica" parent="MainLayout/SectorInfoContainer" unique_id=1004 instance=ExtResource("2_qcklt")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 130)
+size_flags_vertical = 3
+data_card = ExtResource("9_southam")
 
 [node name="CommandButtonContainer" type="HBoxContainer" parent="MainLayout" unique_id=107053379]
 unique_name_in_owner = true
@@ -435,11 +419,10 @@ theme_override_constants/separation = 12
 [node name="Timer" type="Timer" parent="." unique_id=984637322]
 autostart = true
 
-[node name="EventPopup" type="PanelContainer" parent="." unique_id=701897754 instance=ExtResource("9_b37nj")]
+[node name="EventPopup" parent="." unique_id=701897754 instance=ExtResource("9_b37nj")]
 unique_name_in_owner = true
 visible = false
 z_index = 30
-custom_minimum_size = Vector2(400, 550)
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -453,26 +436,15 @@ offset_bottom = 300.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_yoxec")
-script = ExtResource("18_h4qmq")
 
-[node name="AllocatePopup" type="PanelContainer" parent="." unique_id=1777844314 instance=ExtResource("9_a8ufc")]
+[node name="AllocatePopup" parent="." unique_id=1777844314 instance=ExtResource("9_a8ufc")]
 unique_name_in_owner = true
 z_index = 30
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -4.0
 offset_top = -60.5
-offset_right = 4.0
 offset_bottom = 60.5
-grow_horizontal = 2
-grow_vertical = 2
-script = ExtResource("20_esgwd")
 
-[node name="EvolutionPopup" type="PanelContainer" parent="." unique_id=1207531910 instance=ExtResource("10_evopopup")]
+[node name="EvolutionPopup" parent="." unique_id=1207531910 instance=ExtResource("10_evopopup")]
 unique_name_in_owner = true
 visible = false
 z_index = 30
@@ -488,9 +460,8 @@ offset_right = 200.0
 offset_bottom = 250.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("22_02igs")
 
-[node name="EvolutionNotice" type="PanelContainer" parent="." unique_id=1118723480 instance=ExtResource("11_evonotice")]
+[node name="EvolutionNotice" parent="." unique_id=1118723480 instance=ExtResource("11_evonotice")]
 unique_name_in_owner = true
 visible = false
 z_index = 30
@@ -506,7 +477,6 @@ offset_right = 150.0
 offset_bottom = 100.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("24_oggm5")
 
 [connection signal="pressed" from="MainLayout/TopBarContainer/EvolutionButton" to="." method="_on_evolution_button_pressed"]
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
