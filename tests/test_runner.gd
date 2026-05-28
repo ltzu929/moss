@@ -155,6 +155,14 @@ func _verify_scene_integrity() -> bool:
 		"%SectorInfoContainer",
 		"%EventPopup",
 		"%EvolutionNotice",
+		"%RegionNameLabel",
+		"%RegionDescriptionLabel",
+		"%RegionOrderBar",
+		"%RegionHopeBar",
+		"%RegionAuthorityBar",
+		"%GlobalMapSelectedLabel",
+		"%GlobalPopulationLabel",
+		"%GlobalAuthorityLabel",
 	]
 
 	for path in node_paths:
