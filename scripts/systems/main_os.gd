@@ -142,6 +142,7 @@ func _ready() -> void:
 
 	update_evolution_button()
 	update_global_resource_ui()
+	update_region_detail_ui()
 	update_command_buttons()
 
 func get_action_log() -> Array[Dictionary]:
@@ -532,6 +533,7 @@ func select_sector(sector: SectorInfo) -> void:
 	# 设置新选中
 	selected_sector = sector
 	selected_sector.set_selected(true)
+	update_region_detail_ui()
 	update_command_buttons()
 
 ## 取消选中状态
@@ -539,6 +541,7 @@ func deselect_sector() -> void:
 	if selected_sector != null:
 		selected_sector.set_selected(false)
 		selected_sector = null
+		update_region_detail_ui()
 		update_command_buttons()
 
 ## 板块点击回调 - 连接到SectorInfo的sector_clicked信号
@@ -716,6 +719,7 @@ func apply_consequences(
 			# 刷新UI显示
 			sector.update_display()
 			update_global_resource_ui()
+			update_region_detail_ui()
 
 			var lines: Array[String] = []
 			if option_text != "":
@@ -736,6 +740,123 @@ func apply_consequences(
 # ============================================================
 # UI更新函数
 # ============================================================
+
+## 安全设置文本节点内容
+## path 使用唯一节点路径，例如 "%RegionNameLabel"
+func _set_text_if_exists(path: String, text: String) -> void:
+	if not has_node(path):
+		return
+
+	var node := get_node(path)
+	node.set("text", text)
+
+
+## 安全设置进度条数值
+## path 使用唯一节点路径，例如 "%RegionOrderBar"
+func _set_progress_if_exists(path: String, value: int) -> void:
+	if not has_node(path):
+		return
+
+	var node := get_node(path)
+	if node is ProgressBar:
+		node.value = clampi(value, 0, 100)
+
+
+## 更新左侧区域详情面板
+## 未选择区域时显示空状态，选择区域后显示对应 SectorData
+func update_region_detail_ui() -> void:
+	if selected_sector == null or selected_sector.data_card == null:
+		_set_text_if_exists("%RegionNameLabel", "未选择区域")
+		_set_text_if_exists("%RegionDescriptionLabel", "选择底部区域卡片以查看详情。")
+		_set_text_if_exists("%RegionRiskLabel", "状态：待选择")
+		_set_text_if_exists("%GlobalMapSelectedLabel", "全球态势监控中")
+		_set_progress_if_exists("%RegionOrderBar", 0)
+		_set_progress_if_exists("%RegionHopeBar", 0)
+		_set_progress_if_exists("%RegionAuthorityBar", 0)
+		return
+
+	var data := selected_sector.data_card
+	_set_text_if_exists("%RegionNameLabel", data.region_name)
+	_set_text_if_exists("%RegionDescriptionLabel", data.description)
+	_set_text_if_exists("%RegionRiskLabel", _get_region_risk_text(data.authority))
+	_set_text_if_exists("%GlobalMapSelectedLabel", "当前监控：" + data.region_name)
+	_set_progress_if_exists("%RegionOrderBar", data.order)
+	_set_progress_if_exists("%RegionHopeBar", data.hope)
+	_set_progress_if_exists("%RegionAuthorityBar", data.authority)
+
+
+## 根据控制权生成区域风险文本
+func _get_region_risk_text(authority: int) -> String:
+	if authority < 20:
+		return "状态：高风险"
+	if authority < 40:
+		return "状态：不稳定"
+	if authority < 70:
+		return "状态：可控"
+	return "状态：稳定"
+
+
+## 格式化人口数字供 UI 显示
+## 例如 18000000 显示为 1800.0万
+func format_population_for_ui(value: int) -> String:
+	if value >= 100000000:
+		return "%.1f亿" % (float(value) / 100000000.0)
+
+	if value >= 10000:
+		return "%.1f万" % (float(value) / 10000.0)
+
+	return str(value)
+
+
+## 更新右侧全局信息面板
+## 从现有 SectorInfoContainer 中读取区域数据，不新增数据源
+func update_global_overview_ui() -> void:
+	if not has_node("%SectorInfoContainer"):
+		return
+
+	var sectors := %SectorInfoContainer.get_children()
+	var total_population := 0
+	var total_order := 0
+	var total_hope := 0
+	var total_authority := 0
+	var count := 0
+
+	for sector in sectors:
+		if sector.get("data_card") == null:
+			continue
+
+		total_population += sector.data_card.population
+		total_order += sector.data_card.order
+		total_hope += sector.data_card.hope
+		total_authority += sector.data_card.authority
+		count += 1
+
+	if count == 0:
+		_set_text_if_exists("%GlobalPopulationLabel", "全球人口: --")
+		_set_text_if_exists("%GlobalAuthorityLabel", "平均控制权: --")
+		_set_text_if_exists("%GlobalStabilityLabel", "系统稳定性: --")
+		_set_text_if_exists("%GlobalThreatLabel", "威胁等级: --")
+		return
+
+	var avg_order := floori(float(total_order) / float(count))
+	var avg_hope := floori(float(total_hope) / float(count))
+	var avg_authority := floori(float(total_authority) / float(count))
+	var stability := floori(float(avg_order + avg_hope + avg_authority) / 3.0)
+
+	_set_text_if_exists("%GlobalPopulationLabel", "全球人口: " + format_population_for_ui(total_population))
+	_set_text_if_exists("%GlobalAuthorityLabel", "平均控制权: %d%%" % avg_authority)
+	_set_text_if_exists("%GlobalStabilityLabel", "系统稳定性: %d%%" % stability)
+	_set_text_if_exists("%GlobalThreatLabel", "威胁等级: " + _get_global_threat_text(avg_authority))
+
+
+## 根据平均控制权生成全局威胁等级
+func _get_global_threat_text(avg_authority: int) -> String:
+	if avg_authority < 20:
+		return "高风险"
+	if avg_authority < 40:
+		return "中等"
+	return "稳定"
+
 
 ## 刷新顶部全局资源显示（年份、算力、能源）
 func update_global_resource_ui() -> void:
@@ -759,6 +880,8 @@ func update_global_resource_ui() -> void:
 		var moss_status_panel := get_node("%MossStatusPanel")
 		if moss_status_panel is MossStatusPanel:
 			moss_status_panel.update_display(evolution_level, get_average_authority())
+
+	update_global_overview_ui()
 
 ## 获取当前 MOSS 型号显示名称
 func get_moss_model_name() -> String:

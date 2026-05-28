@@ -388,6 +388,8 @@ func _run_all_assertions() -> void:
 
 	_assert_game_completion()
 	_assert_initial_state()
+	_assert_region_detail_sync()
+	_assert_global_overview_sync()
 	_assert_event_triggering()
 	_assert_evolution_unlocks()
 	_assert_resource_bounds()
@@ -527,6 +529,69 @@ func _assert_game_logic() -> void:
 	if _game_result == "domination":
 		var avg_auth: int = _main_os.get_average_authority()
 		_assert_true(avg_auth > 0 and avg_auth < 50, "统治结局时平均控制权应在0-50之间 (实际=%d)" % avg_auth, "game_logic")
+
+
+func _assert_region_detail_sync() -> void:
+	_log("[断言组] 区域详情同步")
+
+	if not _main_os.has_node("%SectorInfoContainer"):
+		_assert_true(false, "缺少区域卡片容器", "ui_layout")
+		return
+
+	if not _main_os.has_node("%RegionNameLabel"):
+		_assert_true(false, "缺少区域名称标签", "ui_layout")
+		return
+
+	var sectors: Array[Node] = _main_os.get_node("%SectorInfoContainer").get_children()
+	_assert_true(sectors.size() > 0, "至少应存在一个区域卡片", "ui_layout")
+	if sectors.is_empty():
+		return
+
+	var first_sector: SectorInfo = sectors[0] as SectorInfo
+	_assert_true(first_sector != null, "第一个区域卡片应是 SectorInfo", "ui_layout")
+	if first_sector == null:
+		return
+
+	_main_os.select_sector(first_sector)
+
+	var region_name_label: Label = _main_os.get_node("%RegionNameLabel")
+	_assert_eq(
+		region_name_label.text,
+		first_sector.data_card.region_name,
+		"区域详情名称应同步选中区域",
+		"ui_layout"
+	)
+
+	_main_os.deselect_sector()
+
+
+func _assert_global_overview_sync() -> void:
+	_log("[断言组] 全局信息同步")
+
+	if not _main_os.has_method("format_population_for_ui"):
+		_assert_true(false, "主控制器应提供人口格式化方法", "ui_layout")
+		return
+
+	if not _main_os.has_node("%GlobalPopulationLabel"):
+		_assert_true(false, "缺少全球人口标签", "ui_layout")
+		return
+
+	var total_population := 0
+	var sectors: Array[Node] = _main_os.get_node("%SectorInfoContainer").get_children()
+	for sector in sectors:
+		if sector.get("data_card") != null:
+			total_population += sector.data_card.population
+
+	_main_os.update_global_resource_ui()
+
+	var population_label: Label = _main_os.get_node("%GlobalPopulationLabel")
+	var expected_text: String = "全球人口: " + _main_os.format_population_for_ui(total_population)
+	_assert_eq(
+		population_label.text,
+		expected_text,
+		"全球人口应由所有区域人口合计生成",
+		"ui_layout"
+	)
 
 # ============================================================
 # 日志与测试结束
