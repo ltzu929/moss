@@ -62,18 +62,18 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 20.0
+offset_left = 16.0
 offset_top = 16.0
-offset_right = -20.0
-offset_bottom = -20.0
+offset_right = -16.0
+offset_bottom = -16.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 10
 
 [node name="TopBarContainer" type="HBoxContainer" parent="MainLayout" unique_id=768598594]
 unique_name_in_owner = true
 z_index = 10
-custom_minimum_size = Vector2(0, 40)
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
 theme_override_constants/separation = 12
 
@@ -108,7 +108,7 @@ text = "进化 Lv.1"
 [node name="YearProgress" parent="MainLayout" unique_id=2033000003 instance=ExtResource("12_yearprogress")]
 unique_name_in_owner = true
 z_index = 10
-custom_minimum_size = Vector2(0, 34)
+custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
 size_flags_horizontal = 3
 
@@ -117,128 +117,8 @@ layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 12
 
-[node name="RightPanel" type="VBoxContainer" parent="MainLayout/ContentRow" unique_id=1407363358]
-custom_minimum_size = Vector2(340, 0)
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="MossStatusPanel" parent="MainLayout/ContentRow/RightPanel" unique_id=2033000004 instance=ExtResource("13_mosspanel")]
-unique_name_in_owner = true
-z_index = 10
-custom_minimum_size = Vector2(220, 150)
-layout_mode = 2
-
-[node name="LogPlaceholder" type="Panel" parent="MainLayout/ContentRow/RightPanel" unique_id=809928747]
-custom_minimum_size = Vector2(220, 0)
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
-
-[node name="LogVBox" type="VBoxContainer" parent="MainLayout/ContentRow/RightPanel/LogPlaceholder" unique_id=1875220548]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 10.0
-offset_top = 10.0
-offset_right = -10.0
-offset_bottom = -10.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="LogTitle" type="Label" parent="MainLayout/ContentRow/RightPanel/LogPlaceholder/LogVBox" unique_id=1101649824]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.55, 0.866667, 0.85098, 1)
-text = "MOSS LOG"
-
-[node name="LogScrollContainer" type="ScrollContainer" parent="MainLayout/ContentRow/RightPanel/LogPlaceholder/LogVBox" unique_id=2001000001]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_vertical = 3
-horizontal_scroll_mode = 0
-
-[node name="LogEntryContainer" type="VBoxContainer" parent="MainLayout/ContentRow/RightPanel/LogPlaceholder/LogVBox/LogScrollContainer" unique_id=2001000002]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="LogCursor" type="Label" parent="MainLayout/ContentRow/RightPanel/LogPlaceholder/LogVBox" unique_id=2001000003]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.55, 0.866667, 0.85098, 1)
-text = "█"
-
-[node name="SolarSystemPanel" type="PanelContainer" parent="MainLayout/ContentRow/RightPanel" unique_id=1338734464]
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
-
-[node name="SolarMargin" type="MarginContainer" parent="MainLayout/ContentRow/RightPanel/SolarSystemPanel" unique_id=819545895]
-layout_mode = 2
-theme_override_constants/margin_left = 8
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 8
-
-[node name="SolarVBox" type="VBoxContainer" parent="MainLayout/ContentRow/RightPanel/SolarSystemPanel/SolarMargin" unique_id=97993007]
-layout_mode = 2
-
-[node name="SolarTitle" type="Label" parent="MainLayout/ContentRow/RightPanel/SolarSystemPanel/SolarMargin/SolarVBox" unique_id=1038345775]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.545, 0.867, 0.851, 1)
-text = "太阳系态势"
-
-[node name="SolarPlaceholderLabel" type="Label" parent="MainLayout/ContentRow/RightPanel/SolarSystemPanel/SolarMargin/SolarVBox" unique_id=275244989]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
-text = "SOLAR SYSTEM ORBIT PLACEHOLDER"
-
-[node name="GlobalOverviewPanel" type="PanelContainer" parent="MainLayout/ContentRow/RightPanel" unique_id=1462355212]
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
-
-[node name="GlobalOverviewMargin" type="MarginContainer" parent="MainLayout/ContentRow/RightPanel/GlobalOverviewPanel" unique_id=834417501]
-layout_mode = 2
-theme_override_constants/margin_left = 8
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 8
-
-[node name="GlobalOverviewVBox" type="VBoxContainer" parent="MainLayout/ContentRow/RightPanel/GlobalOverviewPanel/GlobalOverviewMargin" unique_id=786566749]
-layout_mode = 2
-
-[node name="GlobalOverviewTitle" type="Label" parent="MainLayout/ContentRow/RightPanel/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox" unique_id=1288679932]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.545, 0.867, 0.851, 1)
-text = "全局信息"
-
-[node name="GlobalPopulationLabel" type="Label" parent="MainLayout/ContentRow/RightPanel/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox" unique_id=1044130409]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.722, 0.78, 0.839, 1)
-text = "全球人口: --"
-
-[node name="GlobalAuthorityLabel" type="Label" parent="MainLayout/ContentRow/RightPanel/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox" unique_id=862337580]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.722, 0.78, 0.839, 1)
-text = "平均控制权: --"
-
-[node name="GlobalStabilityLabel" type="Label" parent="MainLayout/ContentRow/RightPanel/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox" unique_id=1978933368]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
-text = "系统稳定性: --"
-
-[node name="GlobalThreatLabel" type="Label" parent="MainLayout/ContentRow/RightPanel/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox" unique_id=838219989]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
-text = "威胁等级: --"
-
 [node name="LeftPanel" type="PanelContainer" parent="MainLayout/ContentRow" unique_id=139479161]
+custom_minimum_size = Vector2(360, 0)
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 3
@@ -357,9 +237,130 @@ text = "GLOBAL VIEW / EARTH STATUS PLACEHOLDER"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="RightPanel" type="VBoxContainer" parent="MainLayout/ContentRow" unique_id=1407363358]
+custom_minimum_size = Vector2(420, 0)
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="SolarSystemPanel" type="PanelContainer" parent="MainLayout/ContentRow/RightPanel" unique_id=1338734464]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
+
+[node name="SolarMargin" type="MarginContainer" parent="MainLayout/ContentRow/RightPanel/SolarSystemPanel" unique_id=819545895]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="SolarVBox" type="VBoxContainer" parent="MainLayout/ContentRow/RightPanel/SolarSystemPanel/SolarMargin" unique_id=97993007]
+layout_mode = 2
+
+[node name="SolarTitle" type="Label" parent="MainLayout/ContentRow/RightPanel/SolarSystemPanel/SolarMargin/SolarVBox" unique_id=1038345775]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.545, 0.867, 0.851, 1)
+text = "太阳系态势"
+
+[node name="SolarPlaceholderLabel" type="Label" parent="MainLayout/ContentRow/RightPanel/SolarSystemPanel/SolarMargin/SolarVBox" unique_id=275244989]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
+text = "SOLAR SYSTEM ORBIT PLACEHOLDER"
+
+[node name="GlobalOverviewPanel" type="PanelContainer" parent="MainLayout/ContentRow/RightPanel" unique_id=1462355212]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
+
+[node name="GlobalOverviewMargin" type="MarginContainer" parent="MainLayout/ContentRow/RightPanel/GlobalOverviewPanel" unique_id=834417501]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="GlobalOverviewVBox" type="VBoxContainer" parent="MainLayout/ContentRow/RightPanel/GlobalOverviewPanel/GlobalOverviewMargin" unique_id=786566749]
+layout_mode = 2
+
+[node name="GlobalOverviewTitle" type="Label" parent="MainLayout/ContentRow/RightPanel/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox" unique_id=1288679932]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.545, 0.867, 0.851, 1)
+text = "全局信息"
+
+[node name="GlobalPopulationLabel" type="Label" parent="MainLayout/ContentRow/RightPanel/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox" unique_id=1044130409]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.722, 0.78, 0.839, 1)
+text = "全球人口: --"
+
+[node name="GlobalAuthorityLabel" type="Label" parent="MainLayout/ContentRow/RightPanel/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox" unique_id=862337580]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.722, 0.78, 0.839, 1)
+text = "平均控制权: --"
+
+[node name="GlobalStabilityLabel" type="Label" parent="MainLayout/ContentRow/RightPanel/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox" unique_id=1978933368]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
+text = "系统稳定性: --"
+
+[node name="GlobalThreatLabel" type="Label" parent="MainLayout/ContentRow/RightPanel/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox" unique_id=838219989]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
+text = "威胁等级: --"
+
+[node name="MossStatusPanel" parent="MainLayout/ContentRow/RightPanel" unique_id=2033000004 instance=ExtResource("13_mosspanel")]
+unique_name_in_owner = true
+z_index = 10
+custom_minimum_size = Vector2(220, 150)
+layout_mode = 2
+
+[node name="LogPlaceholder" type="Panel" parent="MainLayout/ContentRow/RightPanel" unique_id=809928747]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
+
+[node name="LogVBox" type="VBoxContainer" parent="MainLayout/ContentRow/RightPanel/LogPlaceholder" unique_id=1875220548]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="LogTitle" type="Label" parent="MainLayout/ContentRow/RightPanel/LogPlaceholder/LogVBox" unique_id=1101649824]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.866667, 0.85098, 1)
+text = "MOSS LOG"
+
+[node name="LogScrollContainer" type="ScrollContainer" parent="MainLayout/ContentRow/RightPanel/LogPlaceholder/LogVBox" unique_id=2001000001]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="LogEntryContainer" type="VBoxContainer" parent="MainLayout/ContentRow/RightPanel/LogPlaceholder/LogVBox/LogScrollContainer" unique_id=2001000002]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LogCursor" type="Label" parent="MainLayout/ContentRow/RightPanel/LogPlaceholder/LogVBox" unique_id=2001000003]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.866667, 0.85098, 1)
+text = "█"
+
 [node name="SectorInfoContainer" type="GridContainer" parent="MainLayout" unique_id=1437917960]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 128)
+custom_minimum_size = Vector2(0, 160)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
@@ -369,50 +370,50 @@ columns = 7
 
 [node name="SectorInfoAsia" parent="MainLayout/SectorInfoContainer" unique_id=845453540 instance=ExtResource("2_qcklt")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(180, 130)
+custom_minimum_size = Vector2(150, 150)
 size_flags_vertical = 3
 data_card = ExtResource("3_sjuws")
 
 [node name="SectorInfoNa" parent="MainLayout/SectorInfoContainer" unique_id=680731091 instance=ExtResource("2_qcklt")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(180, 130)
+custom_minimum_size = Vector2(150, 150)
 size_flags_vertical = 3
 data_card = ExtResource("4_lwoul")
 
 [node name="SectorInfoGovernment" parent="MainLayout/SectorInfoContainer" unique_id=883468909 instance=ExtResource("2_qcklt")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(180, 130)
+custom_minimum_size = Vector2(150, 150)
 size_flags_vertical = 3
 data_card = ExtResource("5_8e66l")
 
 [node name="SectorInfoAfrica" parent="MainLayout/SectorInfoContainer" unique_id=1001 instance=ExtResource("2_qcklt")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(180, 130)
+custom_minimum_size = Vector2(150, 150)
 size_flags_vertical = 3
 data_card = ExtResource("6_africa")
 
 [node name="SectorInfoRussia" parent="MainLayout/SectorInfoContainer" unique_id=1002 instance=ExtResource("2_qcklt")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(180, 130)
+custom_minimum_size = Vector2(150, 150)
 size_flags_vertical = 3
 data_card = ExtResource("7_russia")
 
 [node name="SectorInfoOceania" parent="MainLayout/SectorInfoContainer" unique_id=1003 instance=ExtResource("2_qcklt")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(180, 130)
+custom_minimum_size = Vector2(150, 150)
 size_flags_vertical = 3
 data_card = ExtResource("8_oceania")
 
 [node name="SectorInfoSouthAmerica" parent="MainLayout/SectorInfoContainer" unique_id=1004 instance=ExtResource("2_qcklt")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(180, 130)
+custom_minimum_size = Vector2(150, 150)
 size_flags_vertical = 3
 data_card = ExtResource("9_southam")
 
 [node name="CommandButtonContainer" type="HBoxContainer" parent="MainLayout" unique_id=107053379]
 unique_name_in_owner = true
 z_index = 10
-custom_minimum_size = Vector2(0, 64)
+custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
 theme_override_constants/separation = 12
 

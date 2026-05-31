@@ -152,7 +152,10 @@ func _verify_scene_integrity() -> bool:
 	# 检查核心节点
 	var node_paths: Array[String] = [
 		"Timer",
+		"%TopBarContainer",
+		"MainLayout/ContentRow",
 		"%SectorInfoContainer",
+		"%CommandButtonContainer",
 		"%EventPopup",
 		"%EvolutionNotice",
 		"%RegionNameLabel",
@@ -171,6 +174,9 @@ func _verify_scene_integrity() -> bool:
 			ok = false
 		else:
 			_log("[ OK ] 节点存在: %s" % path)
+
+	ok = _verify_hud_layout_contract() and ok
+	ok = _verify_1080p_layout_contract() and ok
 
 	# 检查板块初始控制权
 	if _main_os.has_node("%SectorInfoContainer"):
@@ -203,6 +209,100 @@ func _verify_scene_integrity() -> bool:
 	_log("[INFO] 事件数量: %d" % event_count)
 	for event in _main_os.all_events:
 		_log("  事件: %s (年份=%d)" % [event.event_title, event.event_time])
+
+	return ok
+
+
+func _verify_1080p_layout_contract() -> bool:
+	var ok: bool = true
+
+	var viewport_width := int(ProjectSettings.get_setting("display/window/size/viewport_width", 0))
+	var viewport_height := int(ProjectSettings.get_setting("display/window/size/viewport_height", 0))
+	_assert_eq(viewport_width, 1920, "窗口宽度应按1080P设计为1920", "ui_layout")
+	_assert_eq(viewport_height, 1080, "窗口高度应按1080P设计为1080", "ui_layout")
+	ok = (viewport_width == 1920) and ok
+	ok = (viewport_height == 1080) and ok
+
+	var top_bar: HBoxContainer = _main_os.get_node("%TopBarContainer") as HBoxContainer
+	var header_height := top_bar.custom_minimum_size.y
+	_assert_true(header_height >= 56.0 and header_height <= 72.0, "顶部状态栏高度应适配1080P HUD", "ui_layout")
+	ok = (header_height >= 56.0 and header_height <= 72.0) and ok
+
+	var left_panel: PanelContainer = _main_os.get_node("MainLayout/ContentRow/LeftPanel") as PanelContainer
+	var right_panel: VBoxContainer = _main_os.get_node("MainLayout/ContentRow/RightPanel") as VBoxContainer
+	_assert_eq(int(left_panel.custom_minimum_size.x), 360, "左侧区域详情宽度应为360", "ui_layout")
+	_assert_eq(int(right_panel.custom_minimum_size.x), 420, "右侧信息栏宽度应为420", "ui_layout")
+	ok = (int(left_panel.custom_minimum_size.x) == 360) and ok
+	ok = (int(right_panel.custom_minimum_size.x) == 420) and ok
+
+	var sector_container: GridContainer = _main_os.get_node("%SectorInfoContainer") as GridContainer
+	_assert_eq(int(sector_container.custom_minimum_size.y), 160, "底部区域卡片栏高度应为160", "ui_layout")
+	ok = (int(sector_container.custom_minimum_size.y) == 160) and ok
+
+	var command_container: HBoxContainer = _main_os.get_node("%CommandButtonContainer") as HBoxContainer
+	_assert_true(command_container.custom_minimum_size.y <= 36.0, "底部命令栏不应挤压1080P主视图", "ui_layout")
+	ok = (command_container.custom_minimum_size.y <= 36.0) and ok
+
+	return ok
+
+
+func _verify_hud_layout_contract() -> bool:
+	var ok: bool = true
+
+	if not _main_os.has_node("MainLayout/ContentRow"):
+		_assert_true(false, "缺少主内容行", "ui_layout")
+		return false
+
+	var content_row: HBoxContainer = _main_os.get_node("MainLayout/ContentRow") as HBoxContainer
+	var content_order: Array[String] = ["LeftPanel", "CenterPanel", "RightPanel"]
+	ok = _assert_child_order(
+		content_row,
+		content_order,
+		"主内容三栏"
+	) and ok
+
+	if not _main_os.has_node("MainLayout/ContentRow/RightPanel"):
+		_assert_true(false, "缺少右侧信息栏", "ui_layout")
+		return false
+
+	var right_panel: VBoxContainer = _main_os.get_node("MainLayout/ContentRow/RightPanel") as VBoxContainer
+	var right_panel_order: Array[String] = ["SolarSystemPanel", "GlobalOverviewPanel", "MossStatusPanel", "LogPlaceholder"]
+	ok = _assert_child_order(
+		right_panel,
+		right_panel_order,
+		"右侧信息栏"
+	) and ok
+
+	if _main_os.has_node("%TopBarContainer"):
+		var top_bar: HBoxContainer = _main_os.get_node("%TopBarContainer") as HBoxContainer
+		var readable_top_bar := top_bar.custom_minimum_size.y >= 56.0
+		_assert_true(readable_top_bar, "顶部状态栏高度应保持宽松", "ui_layout")
+		ok = readable_top_bar and ok
+	else:
+		_assert_true(false, "缺少顶部状态栏", "ui_layout")
+		ok = false
+
+	return ok
+
+
+func _assert_child_order(parent: Node, expected_names: Array[String], description: String) -> bool:
+	var ok: bool = true
+
+	for index in range(expected_names.size()):
+		if parent.get_child_count() <= index:
+			_assert_true(false, "%s缺少第%d个子节点" % [description, index + 1], "ui_layout")
+			ok = false
+			continue
+
+		var actual_name := str(parent.get_child(index).name)
+		var expected_name := expected_names[index]
+		_assert_eq(
+			actual_name,
+			expected_name,
+			"%s第%d项应为%s" % [description, index + 1, expected_name],
+			"ui_layout"
+		)
+		ok = (actual_name == expected_name) and ok
 
 	return ok
 
