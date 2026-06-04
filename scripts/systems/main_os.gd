@@ -1010,6 +1010,16 @@ func show_end_screen(title: String, message: String, result: String = "failed") 
 	var avg_order := _get_average_stat("order")
 	var avg_hope := _get_average_stat("hope")
 	var avg_authority := get_average_authority()
+	var total_regions := 0
+	var controlled_regions := 0
+
+	for sector in %SectorInfoContainer.get_children():
+		if sector.get("data_card") == null:
+			continue
+
+		total_regions += 1
+		if sector.data_card.authority > 0:
+			controlled_regions += 1
 
 	# 加载结局场景并创建实例
 	var end_screen_scene := load("res://scenes/game_over.tscn")
@@ -1019,7 +1029,19 @@ func show_end_screen(title: String, message: String, result: String = "failed") 
 	add_child(end_screen_instance)
 
 	# 设置文本内容，传递统计数据和结局类型
-	end_screen_instance.show_end(title, message, result, avg_order, avg_hope, avg_authority)
+	end_screen_instance.show_end(
+		title,
+		message,
+		result,
+		avg_order,
+		avg_hope,
+		avg_authority,
+		current_year,
+		evolution_level,
+		triggered_events.size(),
+		controlled_regions,
+		total_regions
+	)
 
 	# 连接重新开始信号
 	end_screen_instance.restart_requested.connect(_on_restart_requested)
