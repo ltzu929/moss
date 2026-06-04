@@ -4,7 +4,6 @@
 *.tmp
 
 # IDE and tool configs (personal dev environment)
-.idea/
 .vscode/
 .claude/
 .codex/

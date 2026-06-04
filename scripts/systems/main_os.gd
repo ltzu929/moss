@@ -24,6 +24,7 @@ const INITIAL_CPU: int = 30
 const INITIAL_ENERGY: int = 100
 const INITIAL_MAX_CPU: int = 100
 const INITIAL_CPU_RECOVERY_RATE: int = 10
+const END_YEAR: int = 2075
 
 ## 进化指令名称
 const COMMAND_ENERGY_CONVERT: String = "能源转换"
@@ -36,7 +37,7 @@ const ACTION_LOG_LIMIT: int = 24
 # ============================================================
 
 ## 当前年份 (2044-2075)
-## 每年递增，到达2075触发结局判定
+## 每年递增，到达2075先触发终局事件，再结算结局
 var current_year: int = 2044
 
 ## 当前算力 (MOSS的核心资源)
@@ -618,10 +619,10 @@ func get_command_unavailable_reason(cmd: CommandData) -> String:
 
 ## 计时器回调函数 - 游戏核心循环
 ## 每秒触发一次（Timer节点配置），负责：
-##   1. 年份递增
-##   2. 能源恢复
-##   3. 事件触发检查
-##   4. 时间推进
+##   1. 事件触发检查
+##   2. 时间推进
+##   3. 能源恢复
+##   4. 冷却、进化和UI更新
 ##   5. 胜负判定
 func _on_timer_timeout() -> void:
 	# 游戏已结束，禁止任何操作
@@ -663,6 +664,11 @@ func _on_timer_timeout() -> void:
 			# 玩家决策完成，恢复时间流动
 			$Timer.start()
 
+	# 终局年份需要先处理对应事件，再进入结局结算
+	if current_year >= END_YEAR:
+		check_game_end()
+		return
+
 	# === 第二步：时间推进 ===
 	current_year += 1
 	current_energy += 10  # 每年能源自然恢复
@@ -674,7 +680,10 @@ func _on_timer_timeout() -> void:
 	update_command_buttons()  # 更新指令按钮状态
 
 	# === 第三步：胜负判定 ===
-	check_game_end()
+	if current_year < END_YEAR:
+		check_game_end()
+	else:
+		_check_game_failure()
 
 # ============================================================
 # 事件后果处理
@@ -921,18 +930,31 @@ func get_average_authority() -> int:
 ## 检查游戏是否应该结束
 ## 触发条件:
 ##   1. 平均控制权 ≤ 0 → Game Over
-##   2. 年份 ≥ 2075 → 结局判定
+##   2. 年份 ≥ END_YEAR → 结局判定
 func check_game_end() -> void:
 	var avg_authority := get_average_authority()
 
 	# 负判定：控制权丧失
-	if avg_authority <= 0:
-		trigger_game_over()
+	if _check_game_failure(avg_authority):
 		return
 
 	# 胜判定：时间到达终点
-	if current_year >= 2075:
+	if current_year >= END_YEAR:
 		trigger_ending(avg_authority)
+
+## 检查控制权失败状态
+## 参数: avg_authority - 已计算的平均控制权；默认重新计算
+## 返回: true 表示已触发失败结局
+func _check_game_failure(avg_authority: int = -1) -> bool:
+	var authority := avg_authority
+	if authority < 0:
+		authority = get_average_authority()
+
+	if authority <= 0:
+		trigger_game_over()
+		return true
+
+	return false
 
 ## 触发失败结局
 ## 原因: 所有板块控制权归零，MOSS系统崩溃

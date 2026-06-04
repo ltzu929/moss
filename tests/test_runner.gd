@@ -521,21 +521,10 @@ func _assert_event_triggering() -> void:
 	_log("[断言组] 事件触发")
 	_log("  事件日志: %s" % str(_event_log))
 
-	# 注意：2075年的事件(木星引力危机)在当前游戏逻辑下无法触发
-	# 原因：事件检查在年份递增之前，但check_game_end()在递增后立即调用
-	# 当current_year从2074递增到2075时，check_game_end()触发游戏结束
-	# 下一个timer tick永远不会执行，因此2075年的事件无法触发
-	var expected_years: Array[int] = [2044, 2053, 2058, 2065, 2070]
+	var expected_years: Array[int] = [2044, 2053, 2058, 2065, 2070, 2075]
 	for year in expected_years:
 		var triggered: bool = (year in _event_log)
 		_assert_true(triggered, "年份%d应有事件触发" % year, "event_triggering")
-
-	# 2075年事件无法触发（已知游戏逻辑问题）
-	_assert_true(
-		2075 not in _event_log,
-		"2075年事件不应触发（游戏在年份达到2075时结束）",
-		"event_triggering"
-	)
 
 
 func _assert_evolution_unlocks() -> void:
