@@ -149,14 +149,20 @@ layout_mode = 2
 [node name="RegionNameLabel" type="Label" parent="MainLayout/ContentRow/LeftPanel/LeftMargin/LeftVBox" unique_id=48540939]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.722, 0.78, 0.839, 1)
 text = "未选择区域"
+clip_text = true
+autowrap_mode = 3
 
 [node name="RegionDescriptionLabel" type="Label" parent="MainLayout/ContentRow/LeftPanel/LeftMargin/LeftVBox" unique_id=2074453506]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
 text = "选择底部区域卡片以查看详情。"
+clip_text = true
+autowrap_mode = 3
 
 [node name="RegionOrderLabel" type="Label" parent="MainLayout/ContentRow/LeftPanel/LeftMargin/LeftVBox" unique_id=307693293]
 unique_name_in_owner = true
@@ -188,8 +194,11 @@ layout_mode = 2
 [node name="RegionRiskLabel" type="Label" parent="MainLayout/ContentRow/LeftPanel/LeftMargin/LeftVBox" unique_id=297267018]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
 text = "状态：待选择"
+clip_text = true
+autowrap_mode = 3
 
 [node name="CenterPanel" type="PanelContainer" parent="MainLayout/ContentRow" unique_id=1167394134]
 layout_mode = 2
