@@ -40,9 +40,6 @@ const START_YEAR: int = 2044
 ## 打字机动画是否正在运行
 var _is_typing: bool = false
 
-## 打字机完成回调
-var _on_type_complete: Callable = Callable()
-
 # ============================================================
 # 生命周期函数
 # ============================================================
@@ -151,7 +148,7 @@ func show_end(
 	# 启动打字机效果
 	var end_message := get_node("%EndMessage") as Label
 	if end_message != null:
-		_start_typewriter(message, end_message, result)
+		_start_typewriter(message, end_message)
 
 ## 隐藏结局界面
 func hide_end() -> void:
@@ -162,7 +159,7 @@ func hide_end() -> void:
 # ============================================================
 
 ## 设置背景渐变
-func _set_background_gradient(top_color: Color, bottom_color: Color) -> void:
+func _set_background_gradient(top_color: Color, _bottom_color: Color) -> void:
 	var bg := $BackgroundGradient as ColorRect
 	if bg != null:
 		bg.color = top_color
@@ -190,7 +187,7 @@ func _set_label_color(path: String, color: Color) -> void:
 		label.add_theme_color_override("font_color", color)
 
 ## 打字机效果：逐字显示文本
-func _start_typewriter(full_text: String, target_label: Label, result: String) -> void:
+func _start_typewriter(full_text: String, target_label: Label) -> void:
 	_is_typing = true
 	var chars := full_text.length()
 

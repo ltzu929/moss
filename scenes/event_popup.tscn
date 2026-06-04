@@ -12,16 +12,16 @@ border_width_bottom = 2
 border_color = Color(0.5461479, 0.8684463, 0.8520485, 1)
 
 [node name="PanelContainer" type="PanelContainer" unique_id=1899550411]
-custom_minimum_size = Vector2(640, 680)
+custom_minimum_size = Vector2(500, 580)
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -320.0
-offset_top = -340.0
-offset_right = 320.0
-offset_bottom = 340.0
+offset_left = -250.0
+offset_top = -290.0
+offset_right = 250.0
+offset_bottom = 290.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_yoxec")
@@ -40,20 +40,21 @@ horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="TextureRect" type="TextureRect" parent="VBoxContainer" unique_id=1836477145]
-custom_minimum_size = Vector2(0, 260)
+custom_minimum_size = Vector2(0, 170)
 layout_mode = 2
 size_flags_horizontal = 3
 texture = ExtResource("1_fu0u0")
-expand_mode = 5
+expand_mode = 1
+stretch_mode = 5
 
 [node name="DescritionPancel" type="PanelContainer" parent="VBoxContainer" unique_id=736978058]
-custom_minimum_size = Vector2(0, 120)
+custom_minimum_size = Vector2(0, 104)
 layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="RichTextLabel" type="RichTextLabel" parent="VBoxContainer/DescritionPancel" unique_id=1618949943]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 110)
+custom_minimum_size = Vector2(0, 94)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -62,7 +63,7 @@ text = "The [color=yellow]event[/color]  descrition"
 fit_content = false
 
 [node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer" unique_id=46400191]
-custom_minimum_size = Vector2(0, 190)
+custom_minimum_size = Vector2(0, 170)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
