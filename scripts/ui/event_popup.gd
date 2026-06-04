@@ -26,6 +26,8 @@ func popup_event(event: GameEvent, current_energy: int) -> void:
 
 func add_custom_button(opt: EventOption, region: String, index: int) -> void:
 	var new_button := Button.new()
+	new_button.custom_minimum_size = Vector2(0, 52)
+	new_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	new_button.text = opt.button_text
 	new_button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 
