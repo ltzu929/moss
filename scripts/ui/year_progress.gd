@@ -3,6 +3,8 @@
 class_name YearProgress
 extends Control
 
+const MossTheme := preload("res://scripts/ui/moss_ui_theme.gd")
+
 # ============================================================
 # 常量
 # ============================================================
@@ -46,19 +48,15 @@ func update_progress(current_year: int) -> void:
 # ============================================================
 
 ## 设置进度条的自定义样式
-## 填充颜色: #4488ff (蓝色)
-## 背景颜色: #333333 (深灰色)
+## 使用低饱和青蓝细条，与全局终端主题一致
 func _setup_progress_bar_style() -> void:
-	# 创建背景样式
-	var bg_style := StyleBoxFlat.new()
-	bg_style.bg_color = Color("#333333")
-	bg_style.set_corner_radius_all(4)
-
-	# 创建填充样式
-	var fill_style := StyleBoxFlat.new()
-	fill_style.bg_color = Color("#4488ff")
-	fill_style.set_corner_radius_all(4)
-
-	# 应用样式到进度条
-	progress_bar.add_theme_stylebox_override("background", bg_style)
-	progress_bar.add_theme_stylebox_override("fill", fill_style)
+	progress_bar.add_theme_stylebox_override(
+		"background",
+		MossTheme.progress_background_style()
+	)
+	progress_bar.add_theme_stylebox_override(
+		"fill",
+		MossTheme.progress_fill_style(Color(0.22, 0.48, 0.58, 1.0))
+	)
+	start_label.add_theme_color_override("font_color", MossTheme.TEXT_SECONDARY)
+	end_label.add_theme_color_override("font_color", MossTheme.TEXT_SECONDARY)

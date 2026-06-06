@@ -3,6 +3,8 @@
 class_name CommandButton
 extends Button
 
+const MossTheme := preload("res://scripts/ui/moss_ui_theme.gd")
+
 # ============================================================
 # 信号定义
 # ============================================================
@@ -34,6 +36,7 @@ var has_selected_sector: bool = false
 # ============================================================
 
 func _ready() -> void:
+	_apply_terminal_style()
 	if command_data != null:
 		text = command_data.command_name
 		update_state()
@@ -95,3 +98,41 @@ func _pressed() -> void:
 func setup(cmd: CommandData) -> void:
 	command_data = cmd
 	text = cmd.command_name
+	_apply_terminal_style()
+
+
+## 统一指令按钮为细边框系统操作样式
+func _apply_terminal_style() -> void:
+	custom_minimum_size = Vector2(118, 32)
+	add_theme_font_size_override("font_size", 14)
+	add_theme_color_override("font_color", MossTheme.TEXT_PRIMARY)
+	add_theme_color_override("font_hover_color", Color("#d7e5ec"))
+	add_theme_color_override("font_disabled_color", Color(0.32, 0.38, 0.42, 1.0))
+	add_theme_stylebox_override(
+		"normal",
+		MossTheme.button_style(
+			Color(0.022, 0.050, 0.066, 0.94),
+			MossTheme.BORDER
+		)
+	)
+	add_theme_stylebox_override(
+		"hover",
+		MossTheme.button_style(
+			Color(0.040, 0.090, 0.108, 0.98),
+			MossTheme.ACCENT_CYAN
+		)
+	)
+	add_theme_stylebox_override(
+		"pressed",
+		MossTheme.button_style(
+			Color(0.015, 0.038, 0.050, 1.0),
+			MossTheme.ACCENT_CYAN
+		)
+	)
+	add_theme_stylebox_override(
+		"disabled",
+		MossTheme.button_style(
+			Color(0.018, 0.028, 0.035, 0.82),
+			Color(0.12, 0.16, 0.18, 1.0)
+		)
+	)
