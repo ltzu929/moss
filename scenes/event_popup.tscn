@@ -1,75 +1,219 @@
 [gd_scene format=3 uid="uid://jls1m2vbj8iu"]
 
-[ext_resource type="Texture2D" uid="uid://cwid5jpq5okjk" path="res://icon.svg" id="1_fu0u0"]
-[ext_resource type="Script" uid="uid://c0i11ic4aqi82" path="res://scripts/ui/event_popup.gd" id="1_yoxec"]
+[ext_resource type="Texture2D" uid="uid://b0a26ww4028b8" path="res://assets/ui/event_fallback_flood.png" id="1_fallback"]
+[ext_resource type="Script" uid="uid://c0i11ic4aqi82" path="res://scripts/ui/event_popup.gd" id="1_script"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yoxec"]
-bg_color = Color(0.1392164, 0.38237798, 0.39237434, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.5461479, 0.8684463, 0.8520485, 1)
+[sub_resource type="StyleBoxFlat" id="StyleBackdrop"]
+bg_color = Color(0.004, 0.009, 0.014, 0.78)
 
-[node name="PanelContainer" type="PanelContainer" unique_id=1899550411]
-custom_minimum_size = Vector2(500, 580)
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -250.0
-offset_top = -290.0
-offset_right = 250.0
-offset_bottom = 290.0
+[sub_resource type="StyleBoxFlat" id="StyleReport"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0.018, 0.047, 0.066, 0.985)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.263, 0.607, 0.663, 0.9)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleImage"]
+bg_color = Color(0.008, 0.025, 0.037, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.13, 0.31, 0.38, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleDescription"]
+bg_color = Color(0.023, 0.058, 0.077, 0.88)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.102, 0.226, 0.278, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleTooltip"]
+bg_color = Color(0.025, 0.067, 0.085, 0.99)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.349, 0.702, 0.745, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+shadow_color = Color(0, 0, 0, 0.55)
+shadow_size = 8
+
+[node name="EventPopup" type="PanelContainer" unique_id=740628263]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_yoxec")
-script = ExtResource("1_yoxec")
+theme_override_styles/panel = SubResource("StyleBackdrop")
+script = ExtResource("1_script")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=610590833]
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=1339765129]
 layout_mode = 2
-theme_override_constants/separation = 10
+mouse_filter = 2
 
-[node name="EventTitle" type="Label" parent="VBoxContainer" unique_id=1810285909]
+[node name="MainPanel" type="PanelContainer" parent="CenterContainer" unique_id=512124178]
+custom_minimum_size = Vector2(1120, 780)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleReport")
+
+[node name="MainMargin" type="MarginContainer" parent="CenterContainer/MainPanel" unique_id=1001495299]
+layout_mode = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 24
+
+[node name="MainVBox" type="VBoxContainer" parent="CenterContainer/MainPanel/MainMargin" unique_id=66412811]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ReportLabel" type="Label" parent="CenterContainer/MainPanel/MainMargin/MainVBox" unique_id=456416627]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.361, 0.675, 0.725, 1)
+theme_override_font_sizes/font_size = 14
+text = "事件简报"
+
+[node name="HeaderRow" type="HBoxContainer" parent="CenterContainer/MainPanel/MainMargin/MainVBox" unique_id=211526313]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="EventTitle" type="Label" parent="CenterContainer/MainPanel/MainMargin/MainVBox/HeaderRow" unique_id=309429125]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "event title"
-horizontal_alignment = 1
-autowrap_mode = 3
+theme_override_colors/font_color = Color(0.78, 0.84, 0.89, 1)
+theme_override_font_sizes/font_size = 30
+text = "事件标题"
+text_overrun_behavior = 3
 
-[node name="TextureRect" type="TextureRect" parent="VBoxContainer" unique_id=1836477145]
-custom_minimum_size = Vector2(0, 170)
+[node name="EventLevelLabel" type="Label" parent="CenterContainer/MainPanel/MainMargin/MainVBox/HeaderRow" unique_id=960912878]
+unique_name_in_owner = true
 layout_mode = 2
-size_flags_horizontal = 3
-texture = ExtResource("1_fu0u0")
+theme_override_colors/font_color = Color(0.69, 0.31, 0.33, 1)
+theme_override_font_sizes/font_size = 16
+text = "重大事件"
+vertical_alignment = 1
+
+[node name="EventMetaLabel" type="Label" parent="CenterContainer/MainPanel/MainMargin/MainVBox" unique_id=1561690939]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.42, 0.51, 0.58, 1)
+theme_override_font_sizes/font_size = 13
+text = "事件区域：--  /  记录时间：--"
+
+[node name="HeaderDivider" type="ColorRect" parent="CenterContainer/MainPanel/MainMargin/MainVBox" unique_id=198012904]
+custom_minimum_size = Vector2(0, 1)
+layout_mode = 2
+color = Color(0.12, 0.29, 0.35, 1)
+
+[node name="ImageFrame" type="PanelContainer" parent="CenterContainer/MainPanel/MainMargin/MainVBox" unique_id=441149252]
+custom_minimum_size = Vector2(0, 300)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleImage")
+
+[node name="EventImage" type="TextureRect" parent="CenterContainer/MainPanel/MainMargin/MainVBox/ImageFrame" unique_id=1387508571]
+unique_name_in_owner = true
+layout_mode = 2
+texture = ExtResource("1_fallback")
 expand_mode = 1
-stretch_mode = 5
+stretch_mode = 6
 
-[node name="DescritionPancel" type="PanelContainer" parent="VBoxContainer" unique_id=736978058]
-custom_minimum_size = Vector2(0, 104)
+[node name="DescriptionFrame" type="PanelContainer" parent="CenterContainer/MainPanel/MainMargin/MainVBox" unique_id=905254813]
+custom_minimum_size = Vector2(0, 112)
 layout_mode = 2
-size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleDescription")
 
-[node name="RichTextLabel" type="RichTextLabel" parent="VBoxContainer/DescritionPancel" unique_id=1618949943]
+[node name="DescriptionMargin" type="MarginContainer" parent="CenterContainer/MainPanel/MainMargin/MainVBox/DescriptionFrame" unique_id=1904223064]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="RichTextLabel" type="RichTextLabel" parent="CenterContainer/MainPanel/MainMargin/MainVBox/DescriptionFrame/DescriptionMargin" unique_id=625573232]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 94)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+theme_override_colors/default_color = Color(0.68, 0.74, 0.79, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.5)
+theme_override_font_sizes/normal_font_size = 16
 bbcode_enabled = true
-text = "The [color=yellow]event[/color]  descrition"
-fit_content = false
+text = "事件描述"
+scroll_active = false
 
-[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer" unique_id=46400191]
-custom_minimum_size = Vector2(0, 170)
+[node name="OptionsHeader" type="HBoxContainer" parent="CenterContainer/MainPanel/MainMargin/MainVBox" unique_id=2017078728]
+layout_mode = 2
+
+[node name="OptionsTitle" type="Label" parent="CenterContainer/MainPanel/MainMargin/MainVBox/OptionsHeader" unique_id=1504644893]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.45, 0.75, 0.79, 1)
+theme_override_font_sizes/font_size = 14
+text = "可执行方案"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="CenterContainer/MainPanel/MainMargin/MainVBox" unique_id=403242803]
+custom_minimum_size = Vector2(0, 210)
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 3
+horizontal_scroll_mode = 0
 
-[node name="OptionList" type="VBoxContainer" parent="VBoxContainer/ScrollContainer" unique_id=1425223369]
+[node name="OptionList" type="VBoxContainer" parent="CenterContainer/MainPanel/MainMargin/MainVBox/ScrollContainer" unique_id=873534015]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 8
+
+[node name="OverlayLayer" type="Control" parent="." unique_id=229455400]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="ImpactTooltip" type="PanelContainer" parent="OverlayLayer" unique_id=1840389035]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(250, 146)
+layout_mode = 0
+offset_right = 250.0
+offset_bottom = 146.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleTooltip")
+
+[node name="TooltipMargin" type="MarginContainer" parent="OverlayLayer/ImpactTooltip" unique_id=2104574341]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
+
+[node name="TooltipVBox" type="VBoxContainer" parent="OverlayLayer/ImpactTooltip/TooltipMargin" unique_id=71228951]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TooltipTitle" type="Label" parent="OverlayLayer/ImpactTooltip/TooltipMargin/TooltipVBox" unique_id=601341183]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.45, 0.78, 0.82, 1)
+theme_override_font_sizes/font_size = 14
+text = "预计影响  PROJECTED IMPACT"
+
+[node name="ImpactTooltipContent" type="Label" parent="OverlayLayer/ImpactTooltip/TooltipMargin/TooltipVBox" unique_id=1571426966]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.71, 0.77, 0.82, 1)
+theme_override_font_sizes/font_size = 15
+text = "秩序 +0
+希望 +0
+控制权 +0"

@@ -15,4 +15,10 @@ class_name GameEvent
 @export var event_region: String = "事件地区"
 @export var event_description: String = "事件描述"
 
+## 事件专属图片；未配置时弹窗使用项目占位图
+@export var event_image: Texture2D
+
+## 事件等级文本，仅影响报告显示，不改变玩法结算
+@export_enum("一般事件", "重大事件", "高危事件") var event_level: String = "重大事件"
+
 @export var options:Array[EventOption]
