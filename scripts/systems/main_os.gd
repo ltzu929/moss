@@ -19,6 +19,7 @@ var _typewriter_queue: Array[Dictionary] = []
 var _typewriter_active: bool = false
 
 ## 游戏初始常量
+const MossTheme := preload("res://scripts/ui/moss_ui_theme.gd")
 const INITIAL_YEAR: int = 2044
 const INITIAL_CPU: int = 30
 const INITIAL_ENERGY: int = 100
@@ -97,6 +98,9 @@ var action_log: Array[Dictionary] = []
 ## 已触发的事件ID列表（防止重复触发）
 var triggered_events: Array[String] = []
 
+## 重大事件期间的临时地球聚焦区域
+var _event_focus_region: String = ""
+
 # ============================================================
 # 信号定义
 # ============================================================
@@ -126,20 +130,17 @@ func _ready() -> void:
 	# 连接所有板块的点击信号
 	connect_sector_signals()
 	cache_initial_sector_states()
+	setup_strategic_views()
 
 	# 初始化指令按钮
 	setup_command_buttons()
+	setup_main_ui_theme()
 
 	# 连接进化弹窗信号
 	if has_node("%EvolutionPopup"):
 		var popup := get_node("%EvolutionPopup")
 		if popup.get("purchase_requested") != null:
 			popup.purchase_requested.connect(_on_purchase_requested)
-
-	if has_node("%MossStatusPanel"):
-		var moss_status_panel := get_node("%MossStatusPanel")
-		if moss_status_panel is MossStatusPanel:
-			moss_status_panel.details_requested.connect(_on_moss_details_requested)
 
 	update_evolution_button()
 	update_global_resource_ui()
@@ -499,10 +500,6 @@ func update_evolution_button() -> void:
 			btn.text = "进化 Lv." + str(evolution_level)
 			btn.tooltip_text = "查看已解锁能力并购买新指令"
 
-## 右侧状态面板“查看详情”按钮回调
-func _on_moss_details_requested() -> void:
-	show_evolution_popup()
-
 ## 进化按钮点击回调
 func _on_evolution_button_pressed() -> void:
 	show_evolution_popup()
@@ -523,6 +520,32 @@ func connect_sector_signals() -> void:
 	for sector in sectors:
 		if sector.get("sector_clicked") != null:
 			sector.sector_clicked.connect(_on_sector_clicked)
+
+
+## 初始化中央战略地图和右上地球聚焦窗口
+func setup_strategic_views() -> void:
+	if has_node("%WorldMapView"):
+		var world_map := get_node("%WorldMapView")
+		if world_map.has_signal("region_selected"):
+			world_map.region_selected.connect(_on_world_map_region_selected)
+
+	_sync_strategic_views()
+
+
+## 中央地图点击区域时复用现有板块选中逻辑
+func _on_world_map_region_selected(region_name: String) -> void:
+	var sector := _find_sector_by_region(region_name)
+	if sector != null:
+		select_sector(sector)
+
+
+## 按区域名称查找现有 SectorInfo 节点
+func _find_sector_by_region(region_name: String) -> SectorInfo:
+	for child in %SectorInfoContainer.get_children():
+		if child is SectorInfo and child.data_card != null:
+			if child.data_card.region_name == region_name:
+				return child
+	return null
 
 ## 设置选中板块
 ## 参数: sector - 被点击的板块节点
@@ -639,6 +662,9 @@ func _on_timer_timeout() -> void:
 
 			# 事件触发时暂停时间，等待玩家决策
 			$Timer.stop()
+			var previous_selected_sector := selected_sector
+			_event_focus_region = event.event_region
+			_sync_orbital_focus()
 
 			# 标记事件已触发
 			triggered_events.append(event.event_title)
@@ -660,6 +686,14 @@ func _on_timer_timeout() -> void:
 				event.event_title,
 				selected_opt.button_text
 			)
+
+			# 恢复事件发生前的玩家选区和地球聚焦
+			_event_focus_region = ""
+			if previous_selected_sector != null:
+				select_sector(previous_selected_sector)
+			else:
+				deselect_sector()
+			_sync_orbital_focus()
 
 			# 玩家决策完成，恢复时间流动
 			$Timer.start()
@@ -771,6 +805,70 @@ func _set_progress_if_exists(path: String, value: int) -> void:
 		node.value = clampi(value, 0, 100)
 
 
+## 统一主界面现有控件的颜色、细边框和状态条样式
+func setup_main_ui_theme() -> void:
+	var bars: Array[ProgressBar] = []
+	var bar_colors: Array[Color] = []
+	for path in ["%RegionOrderBar", "%RegionHopeBar", "%RegionAuthorityBar"]:
+		if has_node(path):
+			bars.append(get_node(path) as ProgressBar)
+	bar_colors = [MossTheme.ORDER, MossTheme.HOPE, MossTheme.AUTHORITY]
+
+	for i in range(mini(bars.size(), bar_colors.size())):
+		var bar := bars[i]
+		bar.custom_minimum_size.y = 16.0
+		bar.add_theme_stylebox_override(
+			"background",
+			MossTheme.progress_background_style()
+		)
+		bar.add_theme_stylebox_override(
+			"fill",
+			MossTheme.progress_fill_style(bar_colors[i])
+		)
+		bar.add_theme_color_override("font_color", MossTheme.TEXT_PRIMARY)
+		bar.add_theme_font_size_override("font_size", 12)
+
+	if has_node("%ComputationalLabel"):
+		%ComputationalLabel.add_theme_color_override(
+			"font_color",
+			MossTheme.TEXT_PRIMARY
+		)
+	if has_node("%EnergyLabel"):
+		%EnergyLabel.add_theme_color_override("font_color", MossTheme.ACCENT_GOLD)
+	if has_node("%MossLabel"):
+		%MossLabel.add_theme_color_override("font_color", MossTheme.DANGER)
+		%MossLabel.add_theme_font_size_override("font_size", 16)
+
+	if has_node("%EvolutionButton"):
+		var evolution_button := %EvolutionButton as Button
+		evolution_button.custom_minimum_size = Vector2(120.0, 40.0)
+		evolution_button.add_theme_color_override(
+			"font_color",
+			MossTheme.TEXT_PRIMARY
+		)
+		evolution_button.add_theme_stylebox_override(
+			"normal",
+			MossTheme.button_style(
+				Color(0.023, 0.050, 0.065, 0.94),
+				MossTheme.BORDER
+			)
+		)
+		evolution_button.add_theme_stylebox_override(
+			"hover",
+			MossTheme.button_style(
+				Color(0.043, 0.095, 0.112, 0.98),
+				MossTheme.ACCENT_CYAN
+			)
+		)
+		evolution_button.add_theme_stylebox_override(
+			"pressed",
+			MossTheme.button_style(
+				Color(0.016, 0.038, 0.050, 1.0),
+				MossTheme.ACCENT_CYAN
+			)
+		)
+
+
 ## 更新左侧区域详情面板
 ## 未选择区域时显示空状态，选择区域后显示对应 SectorData
 func update_region_detail_ui() -> void:
@@ -782,6 +880,7 @@ func update_region_detail_ui() -> void:
 		_set_progress_if_exists("%RegionOrderBar", 0)
 		_set_progress_if_exists("%RegionHopeBar", 0)
 		_set_progress_if_exists("%RegionAuthorityBar", 0)
+		_sync_strategic_views()
 		return
 
 	var data := selected_sector.data_card
@@ -792,6 +891,57 @@ func update_region_detail_ui() -> void:
 	_set_progress_if_exists("%RegionOrderBar", data.order)
 	_set_progress_if_exists("%RegionHopeBar", data.hope)
 	_set_progress_if_exists("%RegionAuthorityBar", data.authority)
+	_sync_strategic_views()
+
+
+## 同步地图状态、地图选区和地球聚焦
+func _sync_strategic_views() -> void:
+	_sync_world_map_states()
+	_sync_orbital_focus()
+
+
+## 将现有区域数据快照传给中央战略地图
+func _sync_world_map_states() -> void:
+	if not has_node("%WorldMapView"):
+		return
+
+	var world_map := get_node("%WorldMapView")
+	var states: Dictionary = {}
+	for sector in %SectorInfoContainer.get_children():
+		if sector.get("data_card") == null:
+			continue
+
+		states[sector.data_card.region_name] = {
+			"order": sector.data_card.order,
+			"hope": sector.data_card.hope,
+			"authority": sector.data_card.authority,
+		}
+
+	if world_map.has_method("set_region_states"):
+		world_map.set_region_states(states)
+
+	var selected_region := ""
+	if selected_sector != null and selected_sector.data_card != null:
+		selected_region = selected_sector.data_card.region_name
+	if world_map.has_method("set_selected_region"):
+		world_map.set_selected_region(selected_region)
+
+
+## 地球窗口优先显示事件区域，否则显示当前选区
+func _sync_orbital_focus() -> void:
+	if not has_node("%RegionOrbitalView"):
+		return
+
+	var region_name := _event_focus_region
+	if region_name == "":
+		if selected_sector != null and selected_sector.data_card != null:
+			region_name = selected_sector.data_card.region_name
+		else:
+			region_name = "全球"
+
+	var orbital_view := get_node("%RegionOrbitalView")
+	if orbital_view.has_method("focus_region"):
+		orbital_view.focus_region(region_name)
 
 
 ## 根据控制权生成区域风险文本
@@ -885,12 +1035,8 @@ func update_global_resource_ui() -> void:
 		if year_progress is YearProgress:
 			year_progress.update_progress(current_year)
 
-	if has_node("%MossStatusPanel"):
-		var moss_status_panel := get_node("%MossStatusPanel")
-		if moss_status_panel is MossStatusPanel:
-			moss_status_panel.update_display(evolution_level, get_average_authority())
-
 	update_global_overview_ui()
+	_sync_world_map_states()
 
 ## 获取当前 MOSS 型号显示名称
 func get_moss_model_name() -> String:
