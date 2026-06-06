@@ -166,6 +166,8 @@ func _verify_scene_integrity() -> bool:
 		"%GlobalMapSelectedLabel",
 		"%GlobalPopulationLabel",
 		"%GlobalAuthorityLabel",
+		"%WorldMapView",
+		"%RegionOrbitalView",
 	]
 
 	for path in node_paths:
@@ -177,6 +179,7 @@ func _verify_scene_integrity() -> bool:
 
 	ok = _verify_hud_layout_contract() and ok
 	ok = _verify_1080p_layout_contract() and ok
+	ok = _verify_strategic_ui_contract() and ok
 
 	# 检查板块初始控制权
 	if _main_os.has_node("%SectorInfoContainer"):
@@ -209,6 +212,69 @@ func _verify_scene_integrity() -> bool:
 	_log("[INFO] 事件数量: %d" % event_count)
 	for event in _main_os.all_events:
 		_log("  事件: %s (年份=%d)" % [event.event_title, event.event_time])
+
+	return ok
+
+
+func _verify_strategic_ui_contract() -> bool:
+	var ok: bool = true
+
+	if _main_os.has_node("%WorldMapView"):
+		var world_map: Control = _main_os.get_node("%WorldMapView") as Control
+		var supports_selection := (
+			world_map != null
+			and world_map.has_signal("region_selected")
+			and world_map.has_method("set_selected_region")
+			and world_map.has_method("set_region_states")
+		)
+		_assert_true(supports_selection, "世界地图应支持区域选择和状态同步", "strategic_ui")
+		ok = supports_selection and ok
+	else:
+		_assert_true(false, "缺少可点击世界地图组件", "strategic_ui")
+		ok = false
+
+	if _main_os.has_node("%RegionOrbitalView"):
+		var orbital_view: Control = _main_os.get_node("%RegionOrbitalView") as Control
+		var supports_focus := (
+			orbital_view != null
+			and orbital_view.has_method("focus_region")
+			and orbital_view.has_method("get_focused_region")
+		)
+		_assert_true(supports_focus, "地球窗口应支持区域聚焦", "strategic_ui")
+		ok = supports_focus and ok
+	else:
+		_assert_true(false, "缺少区域地球视图", "strategic_ui")
+		ok = false
+
+	var event_popup: PanelContainer = _main_os.get_node("%EventPopup") as PanelContainer
+	if event_popup == null:
+		_assert_true(false, "缺少事件弹窗", "strategic_ui")
+		return false
+
+	var popup_nodes: Array[String] = [
+		"%EventImage",
+		"%EventLevelLabel",
+		"%ImpactTooltip",
+	]
+	for path in popup_nodes:
+		var exists := event_popup.has_node(path)
+		_assert_true(exists, "事件弹窗应包含节点 %s" % path, "strategic_ui")
+		ok = exists and ok
+
+	var supports_preview := (
+		event_popup.has_method("get_impact_preview_delay")
+		and event_popup.has_method("format_option_impact")
+	)
+	_assert_true(supports_preview, "事件弹窗应提供延迟影响预览接口", "strategic_ui")
+	ok = supports_preview and ok
+
+	var event_data := GameEvent.new()
+	var property_names: Array[String] = []
+	for property in event_data.get_property_list():
+		property_names.append(str(property["name"]))
+	var supports_event_art := "event_image" in property_names and "event_level" in property_names
+	_assert_true(supports_event_art, "事件数据应支持专属图片和事件等级", "strategic_ui")
+	ok = supports_event_art and ok
 
 	return ok
 
@@ -266,7 +332,11 @@ func _verify_hud_layout_contract() -> bool:
 		return false
 
 	var right_panel: VBoxContainer = _main_os.get_node("MainLayout/ContentRow/RightPanel") as VBoxContainer
-	var right_panel_order: Array[String] = ["SolarSystemPanel", "GlobalOverviewPanel", "MossStatusPanel", "LogPlaceholder"]
+	var right_panel_order: Array[String] = [
+		"RegionOrbitalPanel",
+		"GlobalOverviewPanel",
+		"LogPlaceholder",
+	]
 	ok = _assert_child_order(
 		right_panel,
 		right_panel_order,
@@ -282,7 +352,53 @@ func _verify_hud_layout_contract() -> bool:
 		_assert_true(false, "缺少顶部状态栏", "ui_layout")
 		ok = false
 
+	var has_moss_status_panel := _main_os.has_node("%MossStatusPanel")
+	_assert_true(
+		not has_moss_status_panel,
+		"右栏不应保留独立 MossStatusPanel",
+		"ui_layout"
+	)
+	ok = not has_moss_status_panel and ok
+
+	if _main_os.has_node("MainLayout/ContentRow/RightPanel/LogPlaceholder"):
+		var log_panel: Control = _main_os.get_node(
+			"MainLayout/ContentRow/RightPanel/LogPlaceholder"
+		) as Control
+		var log_expands := (
+			log_panel != null
+			and log_panel.size_flags_vertical == Control.SIZE_EXPAND_FILL
+		)
+		_assert_true(log_expands, "MOSS LOG 应填满右栏剩余高度", "ui_layout")
+		ok = log_expands and ok
+
+	if _main_os.has_node("%SectorInfoContainer"):
+		for sector_node in _main_os.get_node("%SectorInfoContainer").get_children():
+			var sector := sector_node as SectorInfo
+			if sector == null:
+				continue
+
+			var whole_card_clickable := (
+				sector.mouse_filter == Control.MOUSE_FILTER_STOP
+				and _all_control_descendants_ignore_mouse(sector)
+			)
+			_assert_true(
+				whole_card_clickable,
+				"%s 卡片整个矩形都应由根节点接收点击" % sector.name,
+				"ui_layout"
+			)
+			ok = whole_card_clickable and ok
+
 	return ok
+
+
+func _all_control_descendants_ignore_mouse(parent: Node) -> bool:
+	for child in parent.get_children():
+		if child is Control:
+			if child.mouse_filter != Control.MOUSE_FILTER_IGNORE:
+				return false
+		if not _all_control_descendants_ignore_mouse(child):
+			return false
+	return true
 
 
 func _assert_child_order(parent: Node, expected_names: Array[String], description: String) -> bool:
@@ -740,4 +856,4 @@ func _finish_test() -> void:
 	_log("=== 测试结束 ===")
 
 	# 退出游戏
-	get_tree().quit()
+	get_tree().quit(_failed)
