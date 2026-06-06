@@ -12,15 +12,12 @@
 - 核心循环：2044→2075 年逐年推进，事件弹窗会暂停 Timer 并等待玩家选择，随后更新资源、冷却、进化和结局。
 - 自动化播放测试：`tests/test_runner.tscn` + `tests/test_runner.gd`，详见 `docs/dev/测试指南.md`。
 
-## 当前版本状态
-
-第一版已完成核心骨架、MOSS 指令系统、进化系统、事件内容和自动化播放测试基础设施。当前重点是情感打磨、整合测试和后续主控制器解耦。
 
 ## 全局工作原则
 
 1. 技术细节优先查阅 `docs/`，不要把专题内容继续堆回根 `CLAUDE.md`。
 2. 游戏数据优先使用 `.tres` 资源文件，避免在代码中硬编码可配置内容。
-3. 不要手动编辑 `.tscn` 场景文件；场景结构通过 Godot 编辑器或 Godot MCP 工具调整。
+3. 可以手动编辑 `.tscn` 场景文件；但是场景结构最好通过 Godot MCP 工具调整。
 4. 注释、调试信息、UI 文本、事件数据使用中文；代码标识符使用英文。
 5. 修改 GDScript 前先查 `docs/dev/代码规范.md`；修改主循环、信号或数据类前先查 `docs/dev/技术架构.md`。
 6. 声称完成前必须按 `docs/dev/测试指南.md` 做对应验证。
@@ -47,10 +44,10 @@
 
 ```text
 docs/
-├── dev/       # 工程实现、架构、测试、开发流程
-├── design/    # 数值、UI、内容写作规范
-├── lore/      # 世界观、资料来源、时间线素材
-└── archive/   # 历史 checklist、superpowers specs/plans
+├── dev/          # 工程实现、架构、测试、开发流程
+├── design/       # 数值、UI、内容写作规范
+├── lore/         # 世界观、资料来源、时间线素材
+└── superpower/   # 历史specs/plans
 ```
 
 ## 项目结构总览
@@ -61,7 +58,7 @@ docs/
 res://
 ├── data/      # .tres 数据资源
 ├── scripts/   # resources / systems / ui / utils
-├── scenes/    # Godot 场景文件，避免手动编辑 .tscn
+├── scenes/    # Godot 场景文件
 ├── tests/     # 自动化播放测试
 ├── docs/      # 项目文档与设计资料
 └── assets/    # 资源素材
