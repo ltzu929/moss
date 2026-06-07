@@ -1,65 +1,56 @@
-# MOSS模拟器 - AI协作入口
+# MOSS 模拟器 - AI 协作入口
 
 ## 项目概述
 
-这是一个基于 Godot 4.x 的策略模拟游戏，玩家扮演 MOSS AI 管理人类文明。
+这是一个基于 Godot 4.6 和 GDScript 的策略叙事游戏。玩家扮演从 550C、550W 逐步演化为 MOSS 的守护者 AI，在 2044 至 2075 年的危机中权衡文明存续、人类自主权和 MOSS 控制权。
+
+首个可玩版本只提供 MOSS 视角。当前开发重点不是扩充阵营或系统数量，而是让早期选择真实改变后续事件和结局。
 
 ## 快速了解
 
-- 引擎：Godot 4.x，脚本语言为 GDScript。
-- 主场景：`scenes/main_os.tscn`。
-- 主控制器：`scripts/systems/main_os.gd`，当前承担主循环、事件、指令、进化、胜负判定等核心逻辑。
-- 核心循环：2044→2075 年逐年推进，事件弹窗会暂停 Timer 并等待玩家选择，随后更新资源、冷却、进化和结局。
-- 自动化播放测试：`tests/test_runner.tscn` + `tests/test_runner.gd`，详见 `docs/dev/测试指南.md`。
+- 主场景：`scenes/main_os.tscn`
+- 主控制器：`scripts/systems/main_os.gd`
+- 核心数据：`data/` 下的 `.tres` 资源
+- 自动化播放测试：`tests/test_runner.tscn` + `tests/test_runner.gd`
+- 当前路线图：`docs/dev/开发流程.md`
+- 产品设计入口：`docs/design/游戏设计.md`
 
+## 工作原则
 
-## 全局工作原则
+1. 一个项目事实只在一个权威文档中维护，其他文档使用链接。
+2. 明确区分“当前实现”“已确认设计”“待专项设计”和“近期不做”。
+3. 游戏配置优先使用 `.tres` 资源，避免把可配置内容硬编码到脚本。
+4. 场景结构优先通过 Godot 编辑器或 Godot MCP 调整；必要时可以谨慎编辑 `.tscn`，修改后必须验证场景可加载。
+5. 注释、调试信息、UI 文本、事件数据和项目文档使用中文；代码标识符使用英文。
+6. 修改 GDScript 前查阅 `docs/dev/代码规范.md`；修改主循环、信号或数据类前查阅 `docs/dev/技术架构.md`。
+7. 声称完成前，按 `docs/dev/测试指南.md` 执行与改动范围对应的验证。
+8. 不把候选事件链、标签名称、科技树结构或架构拆分写成既定结论。
 
-1. 技术细节优先查阅 `docs/`，不要把专题内容继续堆回根 `CLAUDE.md`。
-2. 游戏数据优先使用 `.tres` 资源文件，避免在代码中硬编码可配置内容。
-3. 可以手动编辑 `.tscn` 场景文件；但是场景结构最好通过 Godot MCP 工具调整。
-4. 注释、调试信息、UI 文本、事件数据使用中文；代码标识符使用英文。
-5. 修改 GDScript 前先查 `docs/dev/代码规范.md`；修改主循环、信号或数据类前先查 `docs/dev/技术架构.md`。
-6. 声称完成前必须按 `docs/dev/测试指南.md` 做对应验证。
+## 文档索引
 
-## 文档查阅索引
+| 任务 | 权威文档 |
+|------|----------|
+| 游戏定位、核心体验、系统边界 | `docs/design/游戏设计.md` |
+| 当前目标、工作顺序、不做事项 | `docs/dev/开发流程.md` |
+| 事件、决策标签、事件链、台词、结局 | `docs/design/游戏内容规范.md` |
+| 指令、进化与未来科技树 | `docs/design/科技树设计.md` |
+| UI 结构、交互和视觉规则 | `docs/design/UI交互规范.md` |
+| 当前数值与平衡原则 | `docs/design/数值设计.md` |
+| 目录结构和文件职责 | `docs/dev/项目结构.md` |
+| 主循环、接口和数据类 | `docs/dev/技术架构.md` |
+| 自动化测试 | `docs/dev/测试指南.md` |
+| Godot、MCP 和 LSP 环境 | `docs/dev/开发环境.md` |
+| GDScript 代码规范 | `docs/dev/代码规范.md` |
+| 世界观来源可信度与使用边界 | `docs/lore/世界观资料来源与设定分级.md` |
+| 2044 至 2075 事件素材 | `docs/lore/流浪地球：2044-2075灾难编年史.md` |
 
-| 任务类型 | 先查阅 |
-|---------|--------|
-| 当前版本目标和阶段进度 | `docs/dev/开发流程.md` |
-| 目录结构和关键文件职责 | `docs/dev/项目结构.md` |
-| GDScript 代码风格、类型、注释 | `docs/dev/代码规范.md` |
-| 主循环、弹窗信号、数据类 | `docs/dev/技术架构.md` |
-| 自动化播放测试 | `docs/dev/测试指南.md` |
-| Godot/GDScript LSP 配置 | `docs/dev/开发环境.md` |
-| 数值设计或平衡调整 | `docs/design/数值设计.md` |
-| UI 交互设计 | `docs/design/UI交互规范.md` |
-| 事件、台词、结局内容 | `docs/design/游戏内容规范.md` |
-| 世界观总览 | `docs/lore/世界观.md` |
-| 资料来源和设定分级 | `docs/lore/世界观资料来源与设定分级.md` |
-| 2044-2075 时间线素材 | `docs/lore/流浪地球：2044-2075灾难编年史.md` |
-| 历史 checklist / 旧计划 | `docs/archive/` |
-
-## docs 目录分类
+## 文档目录
 
 ```text
 docs/
-├── dev/          # 工程实现、架构、测试、开发流程
-├── design/       # 数值、UI、内容写作规范
-├── lore/         # 世界观、资料来源、时间线素材
-└── superpower/   # 历史specs/plans
+├── dev/       # 当前路线、工程结构、架构、环境与测试
+├── design/    # 产品、内容、科技树、UI 与数值规则
+└── lore/      # 世界观来源、时间线素材与原著文本
 ```
 
-## 项目结构总览
-
-详见 `docs/dev/项目结构.md`。根目录只保留总览：
-
-```text
-res://
-├── data/      # .tres 数据资源
-├── scripts/   # resources / systems / ui / utils
-├── scenes/    # Godot 场景文件
-├── tests/     # 自动化播放测试
-├── docs/      # 项目文档与设计资料
-└── assets/    # 资源素材
-```
+不保留无持续参考价值的旧计划、空白模板或历史方案。
