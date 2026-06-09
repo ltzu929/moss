@@ -4,6 +4,7 @@
 
 [resource]
 script = ExtResource("1_t1oxr")
+command_id = "takeover"
 command_name = "系统接管"
 description = "深度介入板块管理，提升MOSS控制权"
 cpu_cost = 30

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="TechNodeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/tech_node_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+node_id = "human_civilization_self_sustain"
+display_name = "文明自持"
+description = "人类文明获得脱离 MOSS 控制仍能独立运转的能力。"
+effect_text = "自治恢复提高至每年 +2、上限 60；满足社会状态时可在控制权归零后存续。"
+route = 2
+stage = 2
+prerequisite_ids = Array[String](["human_autonomy_network", "human_emergency_training"])
+tags = Array[String](["human_core"])

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="TechNodeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/tech_node_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+node_id = "managed_irreplaceable_protocol"
+display_name = "不可替代协议"
+description = "MOSS 成为文明基础设施不可替代的控制核心。"
+effect_text = "全局接管升级：所有区域秩序 +5、控制权 +8。"
+risk_text = "所有区域希望 -5，并决定 MOSS 托管结局。"
+route = 0
+stage = 2
+prerequisite_ids = Array[String](["managed_infrastructure", "managed_global_network"])
+tags = Array[String](["managed_core"])
