@@ -108,7 +108,7 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 52
 theme_override_colors/font_color = Color(1, 0.267, 0.267, 1)
-text = "MOSS统治完成"
+text = "MOSS 协议结算"
 horizontal_alignment = 1
 
 [node name="EndSubtitle" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/Header"]
@@ -339,11 +339,11 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.78, 0.84, 1)
 text = "结束年份: --"
 
-[node name="DetailEvolutionValue" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/DetailsPanel/DetailsMargin/DetailsVBox"]
+[node name="DetailTechnologyValue" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/DetailsPanel/DetailsMargin/DetailsVBox"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.78, 0.84, 1)
-text = "最终进化等级: --"
+text = "最终科技阶段: --"
 
 [node name="DetailAuthorityValue" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/DetailsPanel/DetailsMargin/DetailsVBox"]
 unique_name_in_owner = true

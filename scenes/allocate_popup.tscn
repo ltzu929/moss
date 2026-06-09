@@ -38,10 +38,16 @@ layout_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 
+[node name="CombinedButton" type="Button" parent="VBoxContainer2/VBoxContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+
 [node name="CancelButton" type="Button" parent="VBoxContainer2/VBoxContainer" unique_id=400173149]
 unique_name_in_owner = true
 layout_mode = 2
 
 [connection signal="pressed" from="VBoxContainer2/VBoxContainer/OrderButton" to="." method="_on_order_button_pressed"]
 [connection signal="pressed" from="VBoxContainer2/VBoxContainer/HopeButton" to="." method="_on_hope_button_pressed"]
+[connection signal="pressed" from="VBoxContainer2/VBoxContainer/CombinedButton" to="." method="_on_combined_button_pressed"]
 [connection signal="pressed" from="VBoxContainer2/VBoxContainer/CancelButton" to="." method="_on_cancel_button_pressed"]

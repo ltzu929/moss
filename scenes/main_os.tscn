@@ -13,11 +13,11 @@
 [ext_resource type="PackedScene" uid="uid://dellv4e6qlqpr" path="res://scenes/allocate_popup.tscn" id="9_a8ufc"]
 [ext_resource type="PackedScene" uid="uid://jls1m2vbj8iu" path="res://scenes/event_popup.tscn" id="9_b37nj"]
 [ext_resource type="Resource" uid="uid://csoutham001" path="res://data/sector_south_america.tres" id="9_southam"]
-[ext_resource type="PackedScene" uid="uid://d3hjloh5j0xx8" path="res://scenes/evolution_popup.tscn" id="10_evopopup"]
-[ext_resource type="PackedScene" path="res://scenes/evolution_notice.tscn" id="11_evonotice"]
 [ext_resource type="PackedScene" uid="uid://bqxj2k3n4m5p" path="res://scenes/year_progress.tscn" id="12_yearprogress"]
 [ext_resource type="Script" path="res://scripts/ui/world_map_view.gd" id="14_worldmap"]
 [ext_resource type="Script" path="res://scripts/ui/region_orbital_view.gd" id="15_orbital"]
+[ext_resource type="Script" path="res://scripts/systems/technology_system.gd" id="16_technology"]
+[ext_resource type="PackedScene" path="res://scenes/technology_screen.tscn" id="17_technology_screen"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hud"]
 content_margin_left = 8.0
@@ -57,6 +57,10 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.012, 0.027, 0.047, 1)
+
+[node name="TechnologySystem" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("16_technology")
 
 [node name="MainLayout" type="VBoxContainer" parent="." unique_id=659819045]
 layout_mode = 1
@@ -101,10 +105,10 @@ layout_mode = 2
 text = "能源:100"
 vertical_alignment = 1
 
-[node name="EvolutionButton" type="Button" parent="MainLayout/TopBarContainer" unique_id=888888001]
+[node name="TechnologyButton" type="Button" parent="MainLayout/TopBarContainer" unique_id=888888001]
 unique_name_in_owner = true
 layout_mode = 2
-text = "进化 Lv.1"
+text = "科技协议 1"
 
 [node name="YearProgress" parent="MainLayout" unique_id=2033000003 instance=ExtResource("12_yearprogress")]
 unique_name_in_owner = true
@@ -443,39 +447,7 @@ layout_mode = 1
 offset_top = -60.5
 offset_bottom = 60.5
 
-[node name="EvolutionPopup" parent="." unique_id=1207531910 instance=ExtResource("10_evopopup")]
-unique_name_in_owner = true
-visible = false
-z_index = 30
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -200.0
-offset_top = -250.0
-offset_right = 200.0
-offset_bottom = 250.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="TechnologyScreen" parent="." instance=ExtResource("17_technology_screen")]
 
-[node name="EvolutionNotice" parent="." unique_id=1118723480 instance=ExtResource("11_evonotice")]
-unique_name_in_owner = true
-visible = false
-z_index = 30
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -150.0
-offset_top = -100.0
-offset_right = 150.0
-offset_bottom = 100.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[connection signal="pressed" from="MainLayout/TopBarContainer/EvolutionButton" to="." method="_on_evolution_button_pressed"]
+[connection signal="pressed" from="MainLayout/TopBarContainer/TechnologyButton" to="." method="_on_technology_button_pressed"]
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
