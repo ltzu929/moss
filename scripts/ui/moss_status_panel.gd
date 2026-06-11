@@ -26,6 +26,7 @@ signal details_requested
 # 生命周期
 # ============================================================
 
+## 连接详情按钮点击信号
 func _ready() -> void:
 	details_button.pressed.connect(_on_details_pressed)
 
@@ -34,7 +35,7 @@ func _ready() -> void:
 # ============================================================
 
 ## 更新显示内容
-## 参数: level - 进化等级（1-3）
+## 参数: level - 科技阶段（1-3）
 ## 参数: authority_percent - 平均控制权百分比
 func update_display(level: int, authority_percent: int) -> void:
 	level_label.text = "Lv." + str(level)
@@ -44,5 +45,6 @@ func update_display(level: int, authority_percent: int) -> void:
 # 私有方法/回调
 # ============================================================
 
+## 转发详情按钮点击事件
 func _on_details_pressed() -> void:
 	details_requested.emit()

@@ -15,7 +15,10 @@ signal restart_requested
 
 ## 结局类型对应的颜色方案
 const COLOR_COEXISTENCE := Color(0.545, 0.867, 0.835, 1)  # 青绿色 #8bddb9
-const COLOR_DOMINATION := Color(1.0, 0.27, 0.27, 1)  # 红色 #ff4444
+## MOSS 托管结局强调色
+const COLOR_MANAGED := Color(0.62, 0.30, 0.33, 1)
+## 人类自主结局强调色
+const COLOR_HUMAN := Color(0.74, 0.65, 0.41, 1)
 const COLOR_FAILED := Color(0.4, 0.4, 0.4, 1)  # 灰色 #666666
 
 ## 打字机速度（秒/字符）
@@ -25,8 +28,10 @@ const TYPE_LINE_PAUSE: float = 0.1
 ## 背景渐变颜色
 const GRAD_TOP_COEXISTENCE := Color(0, 0, 0, 1)
 const GRAD_BOTTOM_COEXISTENCE := Color(0.04, 0.17, 0.17, 1)
-const GRAD_TOP_DOMINATION := Color(0.1, 0, 0, 1)
-const GRAD_BOTTOM_DOMINATION := Color(0.2, 0.05, 0.05, 1)
+const GRAD_TOP_MANAGED := Color(0.1, 0, 0, 1)
+const GRAD_BOTTOM_MANAGED := Color(0.2, 0.05, 0.05, 1)
+const GRAD_TOP_HUMAN := Color(0.05, 0.04, 0.01, 1)
+const GRAD_BOTTOM_HUMAN := Color(0.14, 0.12, 0.05, 1)
 const GRAD_TOP_FAILED := Color(0, 0, 0, 1)
 const GRAD_BOTTOM_FAILED := Color(0.05, 0.05, 0.05, 1)
 
@@ -54,12 +59,18 @@ func _ready() -> void:
 
 ## 显示结局界面
 ## 参数:
-##   title      - 结局标题（"失败"、"共存协议"、"MOSS统治"）
+##   title      - 结局标题（"失败"、"共存协议"、"MOSS 托管"、"人类自主"）
 ##   message    - 结局描述文本
-##   result     - 结局类型 ("failed"/"coexistence"/"domination")
+##   result     - 结局类型 ("failed"/"coexistence"/"managed"/"human_autonomy")
 ##   avg_order  - 平均秩序值
 ##   avg_hope   - 平均希望值
 ##   avg_authority - 平均控制权值
+##   final_year - 结束年份
+##   final_technology_stage - 最终科技阶段（1-3）
+##   event_count - 已触发事件数量
+##   controlled_regions - 仍受 MOSS 控制的区域数量
+##   total_regions - 区域总数
+##   technology_summary - 最终科技路线和核心协议摘要
 func show_end(
 	title: String,
 	message: String,
@@ -68,10 +79,11 @@ func show_end(
 	avg_hope: int = 0,
 	avg_authority: int = 0,
 	final_year: int = 0,
-	final_evolution_level: int = 1,
+	final_technology_stage: int = 1,
 	event_count: int = 0,
 	controlled_regions: int = 0,
-	total_regions: int = 0
+	total_regions: int = 0,
+	technology_summary: String = ""
 ) -> void:
 	# 设置统计数值
 	_set_label_text("%StatOrderValue", str(avg_order))
@@ -91,12 +103,18 @@ func show_end(
 			milestone_text = "共存协议"
 			visual_title = "EARTH COEXISTENCE VIEW PLACEHOLDER"
 			_set_background_gradient(GRAD_TOP_COEXISTENCE, GRAD_BOTTOM_COEXISTENCE)
-		"domination":
-			title_color = COLOR_DOMINATION
-			subtitle_text = "DOMINATION PROTOCOL"
-			milestone_text = "统治确立"
+		"managed":
+			title_color = COLOR_MANAGED
+			subtitle_text = "MOSS CUSTODIAN PROTOCOL"
+			milestone_text = "全域托管"
 			visual_title = "MOSS ORBITAL VIEW PLACEHOLDER"
-			_set_background_gradient(GRAD_TOP_DOMINATION, GRAD_BOTTOM_DOMINATION)
+			_set_background_gradient(GRAD_TOP_MANAGED, GRAD_BOTTOM_MANAGED)
+		"human_autonomy":
+			title_color = COLOR_HUMAN
+			subtitle_text = "HUMAN AUTONOMY PROTOCOL"
+			milestone_text = "文明自持"
+			visual_title = "HUMAN CIVILIZATION VIEW PLACEHOLDER"
+			_set_background_gradient(GRAD_TOP_HUMAN, GRAD_BOTTOM_HUMAN)
 		_:
 			title_color = COLOR_FAILED
 			subtitle_text = "SYSTEM FAILURE"
@@ -112,7 +130,7 @@ func show_end(
 	_set_label_text("%EndSubtitle", subtitle_text)
 
 	# 设置协议状态与详情
-	_set_label_text("%ProtocolBadgeLabel", "Lv.%d 控制权: %d%%" % [final_evolution_level, avg_authority])
+	_set_label_text("%ProtocolBadgeLabel", "阶段 %d  控制权: %d%%" % [final_technology_stage, avg_authority])
 	_set_label_color("%ProtocolBadgeLabel", title_color)
 	_set_label_text("%MilestoneResult", milestone_text)
 	_set_label_color("%MilestoneResult", title_color)
@@ -125,7 +143,13 @@ func show_end(
 		_set_label_text("%DetailDurationValue", "游戏时段: --")
 		_set_label_text("%DetailEndYearValue", "结束年份: --")
 
-	_set_label_text("%DetailEvolutionValue", "最终进化等级: Lv.%d" % final_evolution_level)
+	_set_label_text(
+		"%DetailTechnologyValue",
+		"最终形态: %s\n%s" % [
+			["550C", "550W", "MOSS"][clampi(final_technology_stage - 1, 0, 2)],
+			technology_summary,
+		]
+	)
 	_set_label_text("%DetailAuthorityValue", "最终控制权: %d%%" % avg_authority)
 
 	if total_regions > 0:

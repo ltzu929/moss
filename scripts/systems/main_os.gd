@@ -27,10 +27,12 @@ const INITIAL_MAX_CPU: int = 100
 const INITIAL_CPU_RECOVERY_RATE: int = 10
 const END_YEAR: int = 2075
 
-## 进化指令名称
-const COMMAND_ENERGY_CONVERT: String = "能源转换"
-const COMMAND_GLOBAL_TAKEOVER: String = "全局接管"
-const COMMAND_CRISIS_PREDICT: String = "危机预测"
+## 稳定指令ID
+const COMMAND_ALLOCATE: String = "allocate"
+const COMMAND_TAKEOVER: String = "takeover"
+const COMMAND_ENERGY_CONVERT: String = "energy_convert"
+const COMMAND_GLOBAL_TAKEOVER: String = "global_takeover"
+const COMMAND_TECHNOLOGY_AID: String = "technology_aid"
 const ACTION_LOG_LIMIT: int = 24
 
 # ============================================================
@@ -54,29 +56,20 @@ var current_energy: int = 100
 var is_game_over: bool = false
 
 # ============================================================
-# 进化系统状态
+# 科技系统派生状态
 # ============================================================
 
-## 当前进化等级 (1=初始, 2=进化, 3=终极)
-var evolution_level: int = 1
+## 当前科技阶段（1=550C，2=550W，3=MOSS）
+var technology_stage_level: int = 1
 
-## 已解锁的被动能力ID列表
-var unlocked_passives: Array[String] = []
-
-## 已购买解锁的指令ID列表
-var unlocked_evolution_commands: Array[String] = []
-
-## 算力上限（初始100，可通过进化突破到150）
+## 算力上限（初始100，可通过科技突破更高）
 var max_cpu: int = 100
 
-## 算力恢复速率（初始10，可通过进化提升）
+## 算力恢复速率（初始10，可通过科技提升）
 var cpu_recovery_rate: int = 10
 
-## 冷却缩减值（初始0，可通过进化增加）
+## 冷却缩减值（初始0，可通过科技增加）
 var cooldown_reduction: int = 0
-
-## 所有进化能力数据（从磁盘加载）
-var all_evolutions: Array[EvolutionData] = []
 
 # ============================================================
 # 指令系统状态
@@ -106,7 +99,7 @@ var _event_focus_region: String = ""
 # ============================================================
 
 ## 游戏结束信号
-## 参数: result - 结局类型 ("failed"/"coexistence"/"domination")
+## 参数: result - 结局类型 ("failed"/"coexistence"/"managed"/"human_autonomy")
 ## 参数: message - 结局描述文本
 signal game_ended(result: String, message: String)
 
@@ -123,9 +116,10 @@ func _ready() -> void:
 	available_commands.clear()
 	load_commands_from_disk()
 
-	# 初始化进化能力列表
-	all_evolutions.clear()
-	load_evolutions_from_disk()
+	# 初始化科技系统
+	%TechnologySystem.load_nodes_from_disk()
+	%TechnologySystem.node_activated.connect(_on_technology_node_activated)
+	%TechnologySystem.stage_changed.connect(_on_technology_stage_changed)
 
 	# 连接所有板块的点击信号
 	connect_sector_signals()
@@ -136,13 +130,8 @@ func _ready() -> void:
 	setup_command_buttons()
 	setup_main_ui_theme()
 
-	# 连接进化弹窗信号
-	if has_node("%EvolutionPopup"):
-		var popup := get_node("%EvolutionPopup")
-		if popup.get("purchase_requested") != null:
-			popup.purchase_requested.connect(_on_purchase_requested)
-
-	update_evolution_button()
+	refresh_technology_effects()
+	update_technology_button()
 	update_global_resource_ui()
 	update_region_detail_ui()
 	update_command_buttons()
@@ -176,7 +165,7 @@ func log_command_result(cmd: CommandData, lines: Array[String]) -> void:
 	append_signed_change(lines, "算力", -cmd.cpu_cost)
 	append_signed_change(lines, "能源", -cmd.energy_cost)
 
-	var cooldown: int = command_cooldowns.get(cmd.command_name, 0)
+	var cooldown: int = command_cooldowns.get(cmd.command_id, 0)
 	if cooldown > 0:
 		lines.append("冷却 %d 年" % cooldown)
 
@@ -276,239 +265,236 @@ func load_commands_from_disk() -> void:
 			if cmd is CommandData:
 				available_commands.append(cmd)
 				# 初始化冷却状态为0
-				command_cooldowns[cmd.command_name] = 0
+				command_cooldowns[cmd.command_id] = 0
 
 		file_name = dir.get_next()
 
 # ============================================================
-# 进化能力加载系统
+# 科技系统接入
 # ============================================================
 
-## 从硬盘目录加载所有进化能力资源文件
-## 自动扫描 res://data/evolution/ 下的 .tres 文件
-func load_evolutions_from_disk() -> void:
-	var path := "res://data/evolution/"
-	var dir := DirAccess.open(path)
+## 判断稳定指令 ID 是否已经存在于可用指令列表
+## 返回 true 表示指令已加载或已由科技节点解锁
+func has_command_id(command_id: String) -> bool:
+	for cmd in available_commands:
+		if cmd.command_id == command_id:
+			return true
+	return false
 
-	if not dir:
-		push_warning("进化能力目录不存在: " + path)
-		return
 
-	dir.list_dir_begin()
-	var file_name := dir.get_next()
+## 判断算力分配是否已开放综合调度选项
+func can_allocate_combined() -> bool:
+	return %TechnologySystem.has_tag("managed_decision")
 
-	while file_name != "":
-		if not dir.current_is_dir() and file_name.ends_with(".tres"):
-			var evolution := load(path + file_name)
 
-			if evolution is EvolutionData:
-				all_evolutions.append(evolution)
+## 返回事件数值经过科技减损后的结果
+## 仅减轻秩序和希望的负面变化，正面变化及其他属性保持不变
+func get_technology_adjusted_event_delta(delta: int, stat: String) -> int:
+	if delta >= 0:
+		return delta
+	if stat not in ["order", "hope"]:
+		return delta
+	if not %TechnologySystem.has_tag("human_event_mitigation"):
+		return delta
+	return ceili(float(delta) * 0.75)
 
-		file_name = dir.get_next()
 
-## 每年检查进化能力自动解锁
-## 遍历所有被动能力，检查是否满足解锁条件
-func check_evolution_unlocks() -> void:
-	var unlocked_any: bool = false
-	var unlocked_names: Array[String] = []
+## 从当前激活节点重新计算资源上限、恢复率、冷却和科技指令
+func refresh_technology_effects() -> void:
+	max_cpu = (
+		INITIAL_MAX_CPU + 50
+		if %TechnologySystem.has_tag("max_cpu_bonus")
+		else INITIAL_MAX_CPU
+	)
+	cpu_recovery_rate = (
+		INITIAL_CPU_RECOVERY_RATE + 5
+		if %TechnologySystem.has_tag("cpu_recovery_bonus")
+		else INITIAL_CPU_RECOVERY_RATE
+	)
+	cooldown_reduction = (
+		1 if %TechnologySystem.has_tag("core_recursive") else 0
+	)
+	current_cpu = mini(current_cpu, max_cpu)
+	technology_stage_level = int(%TechnologySystem.get_stage()) + 1
 
-	for evolution in all_evolutions:
-		if not evolution.is_passive:
-			continue
-
-		if evolution.ability_id in unlocked_passives:
-			continue
-
-		if evolution.cpu_threshold > 0 and current_cpu < evolution.cpu_threshold:
-			continue
-
-		if evolution.authority_threshold > 0:
-			var avg_auth := get_average_authority()
-			if avg_auth < evolution.authority_threshold:
-				continue
-
-		unlocked_passives.append(evolution.ability_id)
-		apply_evolution_effect(evolution)
-		unlocked_any = true
-		unlocked_names.append(evolution.ability_name)
-
-	if unlocked_any:
-		update_evolution_level()
-		update_evolution_button()
-		# 显示进化通知弹窗
-		$Timer.stop()
-		%EvolutionNotice.show_notice(unlocked_names)
-		await %EvolutionNotice.notice_confirmed
-		$Timer.start()
-
-## 应用进化能力效果
-## 参数: evolution - 进化能力数据
-func apply_evolution_effect(evolution: EvolutionData) -> void:
-	if evolution.cooldown_reduction > 0:
-		cooldown_reduction += evolution.cooldown_reduction
-
-	if evolution.max_cpu_bonus > 0:
-		max_cpu += evolution.max_cpu_bonus
-
-	if evolution.recovery_bonus > 0:
-		cpu_recovery_rate += evolution.recovery_bonus
-
-## 更新进化等级
-## 根据已解锁被动能力数量确定等级
-func update_evolution_level() -> void:
-	var passive_count := unlocked_passives.size()
-
-	if passive_count >= 3:
-		evolution_level = 3
-	elif passive_count >= 1:
-		evolution_level = 2
-	else:
-		evolution_level = 1
-
-## 购买解锁进化指令
-## 参数: evolution - 进化能力数据
-## 返回: true表示购买成功
-func purchase_evolution_command(evolution: EvolutionData) -> bool:
-	if evolution.is_passive:
-		return false
-
-	if evolution.ability_id in unlocked_evolution_commands:
-		return false
-
-	if current_cpu < evolution.purchase_cpu_cost:
-		return false
-
-	if current_energy < evolution.purchase_energy_cost:
-		return false
-
-	current_cpu -= evolution.purchase_cpu_cost
-	current_energy -= evolution.purchase_energy_cost
-
-	unlocked_evolution_commands.append(evolution.ability_id)
-
-	var unlocked_command := create_evolution_command(evolution)
-	if unlocked_command != null and not has_command_named(unlocked_command.command_name):
-		available_commands.append(unlocked_command)
-		command_cooldowns[unlocked_command.command_name] = 0
-		setup_command_buttons()
-		update_command_buttons()
-
-	var lines: Array[String] = ["解锁指令：%s" % evolution.unlocks_command_name]
-	append_signed_change(lines, "算力", -evolution.purchase_cpu_cost)
-	append_signed_change(lines, "能源", -evolution.purchase_energy_cost)
-	record_action("evolution", "进化解锁", "\n".join(lines))
-
+	_reset_base_command_values()
+	_sync_technology_commands()
+	setup_command_buttons()
+	update_command_buttons()
 	update_global_resource_ui()
 
-	return true
 
-## 根据进化数据创建对应的运行时指令
-## 参数: evolution - 进化能力数据
-## 返回: 创建成功时返回指令数据，失败时返回null
-func create_evolution_command(evolution: EvolutionData) -> CommandData:
+## 将基础指令恢复为默认数值，再应用科技标签提供的覆盖效果
+func _reset_base_command_values() -> void:
+	var allocate := _get_command_by_id(COMMAND_ALLOCATE)
+	if allocate != null:
+		allocate.cpu_cost = 20
+		allocate.order_delta = 15
+		allocate.hope_delta = 15
+		allocate.set_meta("combined_enabled", can_allocate_combined())
+
+	var takeover := _get_command_by_id(COMMAND_TAKEOVER)
+	if takeover != null:
+		takeover.cpu_cost = 30
+		takeover.energy_cost = 20
+		takeover.authority_delta = 10
+		takeover.hope_delta = 0
+		if %TechnologySystem.has_tag("managed_infrastructure"):
+			takeover.cpu_cost = 25
+			takeover.energy_cost = 15
+			takeover.authority_delta = 15
+			takeover.hope_delta = -5
+
+
+## 同步由科技标签控制的运行时指令
+func _sync_technology_commands() -> void:
+	_sync_command_unlock(
+		COMMAND_ENERGY_CONVERT,
+		%TechnologySystem.has_tag("unlock_energy_convert")
+	)
+	_sync_command_unlock(
+		COMMAND_GLOBAL_TAKEOVER,
+		%TechnologySystem.has_tag("unlock_global_takeover")
+	)
+	_sync_command_unlock(
+		COMMAND_TECHNOLOGY_AID,
+		%TechnologySystem.has_tag("unlock_technology_aid")
+	)
+
+
+## 按科技解锁状态添加或移除指定运行时指令
+## should_exist 为 true 时创建缺失指令，为 false 时移除已有指令
+func _sync_command_unlock(command_id: String, should_exist: bool) -> void:
+	if should_exist and not has_command_id(command_id):
+		var cmd := _create_technology_command(command_id)
+		if cmd != null:
+			available_commands.append(cmd)
+			command_cooldowns[command_id] = 0
+	elif not should_exist and has_command_id(command_id):
+		for index in range(available_commands.size() - 1, -1, -1):
+			if available_commands[index].command_id == command_id:
+				available_commands.remove_at(index)
+				command_cooldowns.erase(command_id)
+
+
+## 根据稳定指令 ID 创建科技解锁的运行时指令数据
+## 未识别 ID 时返回 null
+func _create_technology_command(command_id: String) -> CommandData:
 	var cmd := CommandData.new()
-	cmd.command_name = evolution.unlocks_command_name
-	cmd.is_allocate_type = false
-
-	match evolution.unlocks_command_name:
+	cmd.command_id = command_id
+	match command_id:
 		COMMAND_ENERGY_CONVERT:
-			cmd.description = "消耗20能源，将其转化为10算力"
-			cmd.cpu_cost = 0
+			cmd.command_name = "能源转换"
+			cmd.description = "消耗20能源，将其转换为算力"
 			cmd.energy_cost = 20
 			cmd.cooldown_years = 2
 		COMMAND_GLOBAL_TAKEOVER:
-			cmd.description = "消耗30算力和10能源，对所有板块控制权+5"
+			cmd.command_name = "全局接管"
+			cmd.description = "对全部区域执行统一接管"
 			cmd.cpu_cost = 30
 			cmd.energy_cost = 10
 			cmd.cooldown_years = 5
-		COMMAND_CRISIS_PREDICT:
-			cmd.description = "预测未来5年内将发生的重大危机"
-			cmd.cpu_cost = 0
-			cmd.energy_cost = 0
-			cmd.cooldown_years = 0
+		COMMAND_TECHNOLOGY_AID:
+			cmd.command_name = "技术援助"
+			cmd.description = "向区域开放技术，提高自治能力并降低MOSS控制"
+			cmd.cpu_cost = 20
+			cmd.energy_cost = 10
+			cmd.order_delta = 10
+			cmd.hope_delta = 10
+			cmd.authority_delta = -3
+			cmd.cooldown_years = 4
 		_:
-			push_warning("未知的进化指令: " + evolution.unlocks_command_name)
 			return null
-
 	return cmd
 
-## 判断某个指令是否已存在于可用指令列表中
-## 参数: command_name - 指令名称
-func has_command_named(command_name: String) -> bool:
+
+## 根据稳定指令 ID 查找可用指令；不存在时返回 null
+func _get_command_by_id(command_id: String) -> CommandData:
 	for cmd in available_commands:
-		if cmd.command_name == command_name:
-			return true
+		if cmd.command_id == command_id:
+			return cmd
+	return null
 
-	return false
 
-## 判断指令是否必须先选中板块
-## 参数: cmd - 指令数据
+## 判断指令执行前是否必须选中目标板块
 func command_requires_selected_sector(cmd: CommandData) -> bool:
-	match cmd.command_name:
-		COMMAND_ENERGY_CONVERT, COMMAND_GLOBAL_TAKEOVER, COMMAND_CRISIS_PREDICT:
+	return cmd.command_id not in [
+		COMMAND_ENERGY_CONVERT,
+		COMMAND_GLOBAL_TAKEOVER,
+	]
+
+
+## 更新科技按钮显示的可用协议点和提示文本
+func update_technology_button() -> void:
+	if not has_node("%TechnologyButton"):
+		return
+	var btn := %TechnologyButton as Button
+	btn.text = "科技协议  %d" % %TechnologySystem.get_available_points()
+	btn.tooltip_text = "打开科技控制台"
+
+
+## 科技节点激活回调：重算效果、刷新按钮并记录操作
+func _on_technology_node_activated(node_id: String) -> void:
+	refresh_technology_effects()
+	update_technology_button()
+	var node_data: TechNodeData = %TechnologySystem.get_node_data(node_id)
+	if node_data != null:
+		record_action("technology", "协议激活", node_data.display_name)
+
+
+## 科技阶段变化回调：同步状态面板等级
+func _on_technology_stage_changed(stage: TechNodeData.Stage) -> void:
+	technology_stage_level = int(stage) + 1
+	update_global_resource_ui()
+
+
+## 应用人类自主路线提供的年度秩序和希望恢复
+## 普通节点恢复到 50，上位核心节点恢复到 60
+func _apply_human_autonomy_recovery() -> void:
+	if not %TechnologySystem.has_tag("human_autonomy_recovery"):
+		return
+
+	var recovery := 1
+	var recovery_cap := 50
+	if %TechnologySystem.has_tag("human_core"):
+		recovery = 2
+		recovery_cap = 60
+
+	for sector in %SectorInfoContainer.get_children():
+		if sector.get("data_card") == null:
+			continue
+		sector.data_card.order = mini(
+			recovery_cap,
+			sector.data_card.order + recovery
+		)
+		sector.data_card.hope = mini(
+			recovery_cap,
+			sector.data_card.hope + recovery
+		)
+		sector.update_display()
+
+
+## 科技按钮回调：无其他模态界面时打开科技控制台
+func _on_technology_button_pressed() -> void:
+	if _can_open_technology_screen() and has_node("%TechnologyScreen"):
+		%TechnologyScreen.open_screen(
+			%TechnologySystem,
+			current_cpu,
+			current_energy,
+			get_average_authority(),
+			current_year,
+			$Timer
+		)
+
+
+## 判断当前游戏状态是否允许打开科技控制台
+func _can_open_technology_screen() -> bool:
+	if is_game_over:
+		return false
+	for path in ["%EventPopup", "%AllocatePopup"]:
+		if has_node(path) and get_node(path).visible:
 			return false
-		_:
-			return true
-
-## 获取进化进度（用于UI）
-## 返回: 包含进度百分比和下一个解锁能力的字典
-func get_evolution_progress() -> Dictionary:
-	var result := {
-		"cpu_progress": 0.0,
-		"authority_progress": 0.0,
-		"next_passive": null
-	}
-
-	for evolution in all_evolutions:
-		if not evolution.is_passive:
-			continue
-		if evolution.ability_id in unlocked_passives:
-			continue
-
-		result["next_passive"] = evolution
-
-		if evolution.cpu_threshold > 0:
-			result["cpu_progress"] = float(current_cpu) / float(evolution.cpu_threshold)
-
-		if evolution.authority_threshold > 0:
-			var avg_auth := get_average_authority()
-			result["authority_progress"] = float(avg_auth) / float(evolution.authority_threshold)
-
-		break
-
-	return result
-
-# ============================================================
-# 进化弹窗管理
-# ============================================================
-
-## 显示进化弹窗
-func show_evolution_popup() -> void:
-	$Timer.stop()
-	%EvolutionPopup.all_evolutions_ref = all_evolutions
-	%EvolutionPopup.unlocked_passives_ref = unlocked_passives
-	%EvolutionPopup.unlocked_commands_ref = unlocked_evolution_commands
-	%EvolutionPopup.show_popup(evolution_level, current_cpu, current_energy)
-	await %EvolutionPopup.popup_closed
-	$Timer.start()
-
-## 更新进化按钮显示
-func update_evolution_button() -> void:
-	if has_node("%EvolutionButton"):
-		var btn := get_node("%EvolutionButton")
-		if btn is Button:
-			btn.text = "进化 Lv." + str(evolution_level)
-			btn.tooltip_text = "查看已解锁能力并购买新指令"
-
-## 进化按钮点击回调
-func _on_evolution_button_pressed() -> void:
-	show_evolution_popup()
-
-## 购买请求回调
-## 参数: evolution - 进化能力数据
-func _on_purchase_requested(evolution: EvolutionData) -> void:
-	if purchase_evolution_command(evolution):
-		%EvolutionPopup.show_popup(evolution_level, current_cpu, current_energy)
+	return not %TechnologyScreen.visible
 
 # ============================================================
 # 板块选中管理
@@ -604,7 +590,7 @@ func is_command_available(cmd: CommandData) -> bool:
 		return false
 
 	# 检查冷却
-	if command_cooldowns.get(cmd.command_name, 0) > 0:
+	if command_cooldowns.get(cmd.command_id, 0) > 0:
 		return false
 
 	# 检查算力
@@ -624,7 +610,7 @@ func get_command_unavailable_reason(cmd: CommandData) -> String:
 	if command_requires_selected_sector(cmd) and selected_sector == null:
 		return "请先选择板块"
 
-	var cooldown: int = command_cooldowns.get(cmd.command_name, 0)
+	var cooldown: int = command_cooldowns.get(cmd.command_id, 0)
 	if cooldown > 0:
 		return "冷却中（剩余%d年）" % cooldown
 
@@ -645,7 +631,7 @@ func get_command_unavailable_reason(cmd: CommandData) -> String:
 ##   1. 事件触发检查
 ##   2. 时间推进
 ##   3. 能源恢复
-##   4. 冷却、进化和UI更新
+##   4. 冷却、科技研究和 UI 更新
 ##   5. 胜负判定
 func _on_timer_timeout() -> void:
 	# 游戏已结束，禁止任何操作
@@ -705,13 +691,16 @@ func _on_timer_timeout() -> void:
 
 	# === 第二步：时间推进 ===
 	current_year += 1
-	current_energy += 10  # 每年能源自然恢复
-	current_cpu += cpu_recovery_rate      # 每年算力恢复
-	current_cpu = mini(current_cpu, max_cpu)  # 算力上限（可通过进化提升）
-	update_cooldowns()    # 更新指令冷却
-	check_evolution_unlocks()  # 检查进化解锁
+	current_energy += 10
+	current_cpu += cpu_recovery_rate
+	current_cpu = mini(current_cpu, max_cpu)
+	update_cooldowns()
+	_apply_human_autonomy_recovery()
+	if %TechnologySystem.grant_research_for_year(current_year):
+		record_action("technology", "研究完成", "获得 1 点协议点")
+		update_technology_button()
 	update_global_resource_ui()
-	update_command_buttons()  # 更新指令按钮状态
+	update_command_buttons()
 
 	# === 第三步：胜负判定 ===
 	if current_year < END_YEAR:
@@ -738,6 +727,8 @@ func apply_consequences(
 	event_title: String = "",
 	option_text: String = ""
 ) -> void:
+	order_delta = get_technology_adjusted_event_delta(order_delta, "order")
+	hope_delta = get_technology_adjusted_event_delta(hope_delta, "hope")
 	var sectors := %SectorInfoContainer.get_children()
 	var found := false
 
@@ -839,28 +830,28 @@ func setup_main_ui_theme() -> void:
 		%MossLabel.add_theme_color_override("font_color", MossTheme.DANGER)
 		%MossLabel.add_theme_font_size_override("font_size", 16)
 
-	if has_node("%EvolutionButton"):
-		var evolution_button := %EvolutionButton as Button
-		evolution_button.custom_minimum_size = Vector2(120.0, 40.0)
-		evolution_button.add_theme_color_override(
+	if has_node("%TechnologyButton"):
+		var technology_button := %TechnologyButton as Button
+		technology_button.custom_minimum_size = Vector2(120.0, 40.0)
+		technology_button.add_theme_color_override(
 			"font_color",
 			MossTheme.TEXT_PRIMARY
 		)
-		evolution_button.add_theme_stylebox_override(
+		technology_button.add_theme_stylebox_override(
 			"normal",
 			MossTheme.button_style(
 				Color(0.023, 0.050, 0.065, 0.94),
 				MossTheme.BORDER
 			)
 		)
-		evolution_button.add_theme_stylebox_override(
+		technology_button.add_theme_stylebox_override(
 			"hover",
 			MossTheme.button_style(
 				Color(0.043, 0.095, 0.112, 0.98),
 				MossTheme.ACCENT_CYAN
 			)
 		)
-		evolution_button.add_theme_stylebox_override(
+		technology_button.add_theme_stylebox_override(
 			"pressed",
 			MossTheme.button_style(
 				Color(0.016, 0.038, 0.050, 1.0),
@@ -1040,7 +1031,7 @@ func update_global_resource_ui() -> void:
 
 ## 获取当前 MOSS 型号显示名称
 func get_moss_model_name() -> String:
-	match evolution_level:
+	match technology_stage_level:
 		1:
 			return "MOSS-550C"
 		2:
@@ -1096,11 +1087,48 @@ func _check_game_failure(avg_authority: int = -1) -> bool:
 	if authority < 0:
 		authority = get_average_authority()
 
-	if authority <= 0:
+	var avg_order := _get_average_stat("order")
+	var avg_hope := _get_average_stat("hope")
+	if should_fail_from_authority(authority, avg_order, avg_hope):
 		trigger_game_over()
 		return true
 
 	return false
+
+
+## 判断控制权归零时是否立即失败
+## 文明自持核心允许社会状态稳定时继续运行
+func should_fail_from_authority(
+	authority: int,
+	avg_order: int,
+	avg_hope: int
+) -> bool:
+	if authority > 0:
+		return false
+	if not %TechnologySystem.has_tag("human_core"):
+		return true
+	return avg_order < 40 or avg_hope < 40
+
+
+## 根据科技核心、控制权、秩序和希望判定最终结局类型
+## 返回 managed、human_autonomy、coexistence 或 failed
+func determine_ending_type(
+	authority: int,
+	avg_order: int,
+	avg_hope: int
+) -> String:
+	if %TechnologySystem.has_tag("managed_core") and authority >= 50:
+		return "managed"
+	if (
+		%TechnologySystem.has_tag("human_core")
+		and authority < 25
+		and avg_order >= 50
+		and avg_hope >= 50
+	):
+		return "human_autonomy"
+	if authority > 0 and avg_order >= 40 and avg_hope >= 40:
+		return "coexistence"
+	return "failed"
 
 ## 触发失败结局
 ## 原因: 所有板块控制权归零，MOSS系统崩溃
@@ -1112,27 +1140,29 @@ func trigger_game_over() -> void:
 	game_ended.emit("failed", "控制权丧失，人类文明覆灭。")
 	show_end_screen("失败", "控制权丧失，人类文明覆灭。\nMOSS系统终止运行。", "failed")
 
-## 触发胜利结局
-## 参数: authority - 当前平均控制权，决定结局类型
-## 分支:
-##   ≥ 50: 共存结局（MOSS与人类合作）
-##   < 50: 统治结局（MOSS接管文明）
+## 触发终局判定并显示对应结局
+## 参数: authority - 当前平均控制权
+## 结局由科技核心、控制权、平均秩序和平均希望共同决定
 func trigger_ending(authority: int) -> void:
 	is_game_over = true
 	$Timer.stop()
 
-	var result: String
-	var message: String
-	var title: String
+	var avg_order := _get_average_stat("order")
+	var avg_hope := _get_average_stat("hope")
+	var result := determine_ending_type(authority, avg_order, avg_hope)
+	var title := "失败"
+	var message := "文明系统未能维持稳定。\nMOSS 协议终止运行。"
 
-	if authority >= 50:
-		result = "coexistence"
-		title = "共存协议"
-		message = "MOSS与人类达成共存协议。\n地球踏上新的征程。"
-	else:
-		result = "domination"
-		title = "MOSS统治"
-		message = "MOSS接管人类文明。\n理性战胜了感性。"
+	match result:
+		"managed":
+			title = "MOSS 托管"
+			message = "人类文明进入 MOSS 全域托管。\n存续效率取代了自主决策。"
+		"human_autonomy":
+			title = "人类自主"
+			message = "人类文明获得独立存续能力。\nMOSS 完成使命并退出控制核心。"
+		"coexistence":
+			title = "共存协议"
+			message = "MOSS 与人类保持有限协作。\n文明在控制与自主之间继续前进。"
 
 	record_action("ending", result, message)
 	game_ended.emit(result, message)
@@ -1146,7 +1176,7 @@ func trigger_ending(authority: int) -> void:
 ## 参数:
 ##   title   - 界面标题（"失败"或"结局"）
 ##   message - 结局描述文本
-##   result  - 结局类型 ("failed"/"coexistence"/"domination")
+##   result  - 结局类型 ("failed"/"coexistence"/"managed"/"human_autonomy")
 func show_end_screen(title: String, message: String, result: String = "failed") -> void:
 	# 如果已有实例，先移除
 	if end_screen_instance != null:
@@ -1183,14 +1213,43 @@ func show_end_screen(title: String, message: String, result: String = "failed") 
 		avg_hope,
 		avg_authority,
 		current_year,
-		evolution_level,
+		technology_stage_level,
 		triggered_events.size(),
 		controlled_regions,
-		total_regions
+		total_regions,
+		_get_technology_summary()
 	)
 
 	# 连接重新开始信号
 	end_screen_instance.restart_requested.connect(_on_restart_requested)
+
+
+## 汇总三条科技路线的激活数量和核心协议，用于结局界面
+func _get_technology_summary() -> String:
+	var route_counts := {
+		TechNodeData.Route.MANAGED: 0,
+		TechNodeData.Route.CORE: 0,
+		TechNodeData.Route.HUMAN: 0,
+	}
+	for node_id in %TechnologySystem.get_active_node_ids():
+		var node_data: TechNodeData = %TechnologySystem.get_node_data(node_id)
+		if node_data != null:
+			route_counts[node_data.route] += 1
+
+	var cores: Array[String] = []
+	if %TechnologySystem.has_tag("managed_core"):
+		cores.append("不可替代协议")
+	if %TechnologySystem.has_tag("core_recursive"):
+		cores.append("递归优化")
+	if %TechnologySystem.has_tag("human_core"):
+		cores.append("文明自持")
+	var core_text := "无核心协议" if cores.is_empty() else " / ".join(cores)
+	return "托管 %d  核心 %d  人类 %d\n核心：%s" % [
+		route_counts[TechNodeData.Route.MANAGED],
+		route_counts[TechNodeData.Route.CORE],
+		route_counts[TechNodeData.Route.HUMAN],
+		core_text,
+	]
 
 ## 计算所有板块某项属性的平均值
 func _get_average_stat(stat_name: String) -> int:
@@ -1232,20 +1291,16 @@ func _on_restart_requested() -> void:
 	triggered_events.clear()
 	deselect_sector()
 
-	# 重置进化状态
-	evolution_level = 1
-	unlocked_passives.clear()
-	unlocked_evolution_commands.clear()
-	max_cpu = INITIAL_MAX_CPU
-	cpu_recovery_rate = INITIAL_CPU_RECOVERY_RATE
-	cooldown_reduction = 0
+	# 重置科技状态
+	%TechnologySystem.reset()
+	technology_stage_level = 1
 
 	# 重置指令状态
 	command_cooldowns.clear()
 	available_commands.clear()
 	load_commands_from_disk()
-	setup_command_buttons()
-	update_evolution_button()
+	refresh_technology_effects()
+	update_technology_button()
 
 	# 重置所有板块数据到初始值
 	restore_sector_states()
@@ -1256,6 +1311,11 @@ func _on_restart_requested() -> void:
 
 	# 恢复时间流动
 	$Timer.start()
+
+
+## 测试入口：执行与玩家重开相同的状态清理
+func restart_game_for_test() -> void:
+	_on_restart_requested()
 
 # ============================================================
 # 指令执行系统
@@ -1274,7 +1334,7 @@ func execute_command(cmd: CommandData) -> bool:
 
 	# 启动冷却
 	var adjusted_cooldown := maxi(0, cmd.cooldown_years - cooldown_reduction)
-	command_cooldowns[cmd.command_name] = adjusted_cooldown
+	command_cooldowns[cmd.command_id] = adjusted_cooldown
 
 	# 刷新资源UI
 	update_global_resource_ui()
@@ -1299,6 +1359,13 @@ func apply_command_effect(cmd: CommandData, effect_type: String = "") -> void:
 		elif effect_type == "hope":
 			selected_sector.data_card.hope += cmd.hope_delta
 			append_signed_change(lines, "希望", cmd.hope_delta)
+		elif effect_type == "combined" and can_allocate_combined():
+			selected_sector.data_card.order += 10
+			selected_sector.data_card.hope += 10
+			selected_sector.data_card.authority += 2
+			append_signed_change(lines, "秩序", 10)
+			append_signed_change(lines, "希望", 10)
+			append_signed_change(lines, "控制权", 2)
 	else:
 		# 其他指令直接应用所有效果
 		selected_sector.data_card.order += cmd.order_delta
@@ -1340,56 +1407,46 @@ func _on_command_button_pressed(cmd: CommandData) -> void:
 		if command_requires_selected_sector(cmd):
 			apply_command_effect(cmd)
 		else:
-			await apply_special_command_effect(cmd)
+			apply_special_command_effect(cmd)
 
 		update_command_buttons()
 
 ## 应用无需选中板块的特殊指令效果
 ## 参数: cmd - 指令数据
 func apply_special_command_effect(cmd: CommandData) -> void:
-	match cmd.command_name:
+	match cmd.command_id:
 		COMMAND_ENERGY_CONVERT:
-			current_cpu += 10
+			var gain := 15 if %TechnologySystem.has_tag("core_recursive") else 10
+			current_cpu += gain
 			current_cpu = mini(current_cpu, max_cpu)
 			update_global_resource_ui()
 			var energy_lines: Array[String] = []
-			append_signed_change(energy_lines, "算力", 10)
+			append_signed_change(energy_lines, "算力", gain)
 			log_command_result(cmd, energy_lines)
 		COMMAND_GLOBAL_TAKEOVER:
 			var sectors := %SectorInfoContainer.get_children()
 			var affected_count := 0
+			var authority_gain := (
+				8 if %TechnologySystem.has_tag("managed_core") else 5
+			)
 			for sector in sectors:
 				if sector.get("data_card") == null:
 					continue
-				sector.data_card.authority += 5
+				sector.data_card.authority += authority_gain
+				if %TechnologySystem.has_tag("managed_core"):
+					sector.data_card.order += 5
+					sector.data_card.hope -= 5
 				sector.data_card.clamp_values()
 				sector.update_display()
 				affected_count += 1
 			update_global_resource_ui()
-			var takeover_lines: Array[String] = ["影响板块：全区域（%d）" % affected_count, "每个区域 控制权 +5"]
+			var takeover_lines: Array[String] = [
+				"影响板块：全区域（%d）" % affected_count,
+				"每个区域 控制权 +%d" % authority_gain,
+			]
+			if %TechnologySystem.has_tag("managed_core"):
+				takeover_lines.append("每个区域 秩序 +5 / 希望 -5")
 			log_command_result(cmd, takeover_lines)
-		COMMAND_CRISIS_PREDICT:
-			await show_crisis_prediction()
-
-## 显示未来5年内的事件预测
-func show_crisis_prediction() -> void:
-	var prediction_lines: Array[String] = []
-	var end_year := current_year + 5
-
-	for event in all_events:
-		if event.event_time > current_year and event.event_time <= end_year:
-			prediction_lines.append("%d - %s" % [event.event_time, event.event_title])
-
-	var message := "未来5年内暂无已知重大危机。"
-	if not prediction_lines.is_empty():
-		message = "\n".join(prediction_lines)
-
-	record_action("command", COMMAND_CRISIS_PREDICT, message)
-
-	$Timer.stop()
-	%EvolutionNotice.show_message("危机预测", message)
-	await %EvolutionNotice.notice_confirmed
-	$Timer.start()
 
 # ============================================================
 # 指令按钮管理
@@ -1463,8 +1520,8 @@ func _add_log_entry_to_ui(entry: Dictionary) -> void:
 			full_text += " [EVENT]"
 		"command":
 			full_text += " [CMD]"
-		"evolution":
-			full_text += " [EVO]"
+		"technology":
+			full_text += " [TECH]"
 		"ending":
 			full_text += " [END]"
 		_:
@@ -1526,7 +1583,7 @@ func _process_typewriter_queue() -> void:
 			text_color = Color(0.545, 0.867, 0.835)  # 青色 #8bddb9
 		"command":
 			text_color = Color(0.4, 0.7, 1.0)  # 蓝色
-		"evolution":
+		"technology":
 			text_color = Color(0.42, 0.8, 0.27)  # 绿色
 		"ending":
 			text_color = Color(1.0, 0.42, 0.42)  # 红色

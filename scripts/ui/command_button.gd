@@ -57,7 +57,7 @@ func update_state() -> void:
 		return
 
 	# 检查冷却
-	var cooldown: int = cooldowns_ref.get(command_data.command_name, 0)
+	var cooldown: int = cooldowns_ref.get(command_data.command_id, 0)
 	if cooldown > 0:
 		disabled = true
 		tooltip_text = "冷却中（剩余%d年）" % cooldown

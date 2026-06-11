@@ -8,7 +8,9 @@ extends Resource
 # ============================================================
 
 @export_group("基础信息")
-## 指令名称，用于冷却字典的键和UI显示
+## 稳定指令标识，用于逻辑、冷却和科技解锁
+@export var command_id: String = ""
+## 指令名称，仅用于 UI 显示
 @export var command_name: String = "指令名称"
 ## 指令描述，用于tooltip提示
 @export var description: String = "指令描述"

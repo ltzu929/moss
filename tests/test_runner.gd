@@ -1,6 +1,6 @@
 ## 自动化播放测试脚本 - MOSS模拟器核心循环验证
 ## 通过加速Timer和自动响应弹窗信号，驱动游戏完整播放
-## 验证：事件触发、状态变化、进化解锁、结局判定
+## 验证：事件触发、状态变化、科技进度、结局判定
 extends Control
 
 # ============================================================
@@ -47,9 +47,6 @@ var _last_tracked_year: int = 2044
 ## 事件触发日志 {年份: 事件标题}
 var _event_log: Dictionary = {}
 
-## 进化解锁日志
-var _evolution_log: Array[String] = []
-
 ## 自动选择的事件选项索引
 var _auto_choice: int = 0
 
@@ -61,7 +58,6 @@ var _assertions_done: bool = false
 
 ## 弹窗自动响应标记（防止重复响应）
 var _event_popup_responding: bool = false
-var _evo_notice_responding: bool = false
 var _alloc_popup_responding: bool = false
 
 # ============================================================
@@ -157,7 +153,8 @@ func _verify_scene_integrity() -> bool:
 		"%SectorInfoContainer",
 		"%CommandButtonContainer",
 		"%EventPopup",
-		"%EvolutionNotice",
+		"%TechnologySystem",
+		"%TechnologyScreen",
 		"%RegionNameLabel",
 		"%RegionDescriptionLabel",
 		"%RegionOrderBar",
@@ -433,7 +430,7 @@ func _record_initial_state() -> void:
 	_log("  能源: %d" % _main_os.current_energy)
 	_log("  最大算力: %d" % _main_os.max_cpu)
 	_log("  恢复率: %d" % _main_os.cpu_recovery_rate)
-	_log("  进化等级: %d" % _main_os.evolution_level)
+	_log("  科技阶段: %d" % _main_os.technology_stage_level)
 	_log("  平均控制权: %d" % _main_os.get_average_authority())
 
 # ============================================================
@@ -457,13 +454,6 @@ func _poll_popups() -> void:
 		if event_popup != null and event_popup.visible:
 			_event_popup_responding = true
 			_respond_to_event_popup(event_popup)
-
-	# 检测进化通知
-	if not _evo_notice_responding:
-		var evo_notice: EvolutionNotice = _main_os.get_node("%EvolutionNotice")
-		if evo_notice != null and evo_notice.visible:
-			_evo_notice_responding = true
-			_respond_to_evo_notice(evo_notice)
 
 	# 检测算力分配弹窗
 	if not _alloc_popup_responding:
@@ -491,23 +481,6 @@ func _respond_to_event_popup(event_popup: PanelContainer) -> void:
 	event_popup.option_selected.emit(_auto_choice)
 	event_popup.hide()
 	_event_popup_responding = false
-
-
-func _respond_to_evo_notice(evo_notice: EvolutionNotice) -> void:
-	await get_tree().process_frame
-	await get_tree().process_frame
-
-	# 记录进化解锁
-	for pid in _main_os.unlocked_passives:
-		if pid not in _evolution_log:
-			_evolution_log.append(pid)
-
-	_log("  [EVO] 自动确认进化通知: %s" % str(_main_os.unlocked_passives))
-
-	# 发出确认信号并隐藏弹窗
-	evo_notice.notice_confirmed.emit()
-	evo_notice.hide()
-	_evo_notice_responding = false
 
 
 func _respond_to_alloc_popup(alloc_popup: AllocatePopup) -> void:
@@ -607,7 +580,7 @@ func _run_all_assertions() -> void:
 	_assert_region_detail_sync()
 	_assert_global_overview_sync()
 	_assert_event_triggering()
-	_assert_evolution_unlocks()
+	_assert_technology_progress()
 	_assert_resource_bounds()
 	_assert_final_state()
 	_assert_game_logic()
@@ -620,7 +593,7 @@ func _assert_game_completion() -> void:
 	_assert_true(_game_ended, "游戏应正常结束", "game_completion")
 	if _game_ended:
 		_assert_true(
-			_game_result in ["failed", "coexistence", "domination"],
+			_game_result in ["failed", "coexistence", "managed", "human_autonomy"],
 			"游戏结果应是有效类型: %s" % _game_result,
 			"game_completion"
 		)
@@ -643,31 +616,27 @@ func _assert_event_triggering() -> void:
 		_assert_true(triggered, "年份%d应有事件触发" % year, "event_triggering")
 
 
-func _assert_evolution_unlocks() -> void:
-	_log("[断言组] 进化解锁")
-	_log("  解锁列表: %s" % str(_evolution_log))
-
-	# passive_cooldown: cpu>=50时解锁（约在2046年达到）
-	_assert_true(
-		"passive_cooldown" in _evolution_log,
-		"passive_cooldown应在CPU>=50时解锁",
-		"evolution"
+## 验证科技节点加载、年度协议点累计和无操作时的激活状态
+func _assert_technology_progress() -> void:
+	_log("[断言组] 科技研究")
+	var technology: TechnologySystem = _main_os.get_node("%TechnologySystem")
+	_assert_eq(
+		technology.get_all_nodes().size(),
+		12,
+		"应加载12个科技节点",
+		"technology"
 	)
-
-	# passive_recovery: cpu>=70时解锁（约在2048年达到）
-	_assert_true(
-		"passive_recovery" in _evolution_log,
-		"passive_recovery应在CPU>=70时解锁",
-		"evolution"
+	_assert_eq(
+		technology.get_available_points(),
+		8,
+		"2075年前应累计8个协议点",
+		"technology"
 	)
-
-	# passive_max_cpu: 平均控制权>=25时解锁
-	# 注意：在当前测试策略（总是选择选项0）下，平均控制权不足25
-	# 因此passive_max_cpu不会解锁，这是正确的游戏行为
-	_assert_true(
-		"passive_max_cpu" not in _evolution_log,
-		"passive_max_cpu在平均控制权不足25时不应解锁",
-		"evolution"
+	_assert_eq(
+		technology.get_active_node_ids().size(),
+		0,
+		"自动通关未操作科技树时不应自动激活节点",
+		"technology"
 	)
 
 
@@ -690,7 +659,7 @@ func _assert_final_state() -> void:
 	_log("  最终能源: %d" % _main_os.current_energy)
 	_log("  最终恢复率: %d" % _main_os.cpu_recovery_rate)
 	_log("  最终冷却缩减: %d" % _main_os.cooldown_reduction)
-	_log("  最终进化等级: %d" % _main_os.evolution_level)
+	_log("  最终科技阶段: %d" % _main_os.technology_stage_level)
 	_log("  最终平均控制权: %d" % _main_os.get_average_authority())
 
 	if _game_ended:
@@ -698,18 +667,20 @@ func _assert_final_state() -> void:
 
 		var avg_auth: int = _main_os.get_average_authority()
 
-		if _game_result == "failed":
-			_assert_true(avg_auth <= 0, "失败结局时平均控制权应<=0 (实际=%d)" % avg_auth, "final_state")
-		elif _game_result == "coexistence":
-			_assert_true(avg_auth >= 50, "共存结局时平均控制权应>=50 (实际=%d)" % avg_auth, "final_state")
-		elif _game_result == "domination":
-			_assert_true(avg_auth < 50 and avg_auth > 0, "统治结局时控制权应0-50之间 (实际=%d)" % avg_auth, "final_state")
+		var avg_order: int = _main_os._get_average_stat("order")
+		var avg_hope: int = _main_os._get_average_stat("hope")
+		_assert_eq(
+			_game_result,
+			_main_os.determine_ending_type(avg_auth, avg_order, avg_hope),
+			"结局应与四类判定规则一致",
+			"final_state"
+		)
 
 
 func _assert_game_logic() -> void:
 	_log("[断言组] 游戏逻辑")
 
-	if _game_result in ["coexistence", "domination"]:
+	if _game_result in ["coexistence", "managed", "human_autonomy"]:
 		_assert_true(
 			_main_os.current_year >= 2075,
 			"非失败结局时年份应>=2075 (实际=%d)" % _main_os.current_year,
@@ -727,13 +698,7 @@ func _assert_game_logic() -> void:
 		"game_logic"
 	)
 
-	# 检查max_cpu: passive_max_cpu在当前策略下不会解锁
-	_assert_eq(_main_os.max_cpu, 100, "未解锁passive_max_cpu时最大算力应为100", "game_logic")
-
-	# 统治结局验证
-	if _game_result == "domination":
-		var avg_auth: int = _main_os.get_average_authority()
-		_assert_true(avg_auth > 0 and avg_auth < 50, "统治结局时平均控制权应在0-50之间 (实际=%d)" % avg_auth, "game_logic")
+	_assert_eq(_main_os.max_cpu, 100, "未激活并行核心时最大算力应为100", "game_logic")
 
 
 func _assert_region_detail_sync() -> void:
@@ -845,10 +810,13 @@ func _finish_test() -> void:
 		_log("最终CPU: %d" % _main_os.current_cpu)
 		_log("最终能源: %d" % _main_os.current_energy)
 		_log("最终平均控制权: %d" % _main_os.get_average_authority())
-		_log("进化等级: %d" % _main_os.evolution_level)
-		_log("已解锁被动: %s" % str(_main_os.unlocked_passives))
+		_log("最终科技阶段: %d" % _main_os.technology_stage_level)
+		_log(
+			"科技节点: %s" % str(
+				_main_os.get_node("%TechnologySystem").get_active_node_ids()
+			)
+		)
 		_log("事件日志: %s" % str(_event_log))
-		_log("进化解锁日志: %s" % str(_evolution_log))
 	else:
 		_log("MainOS实例不可用")
 
