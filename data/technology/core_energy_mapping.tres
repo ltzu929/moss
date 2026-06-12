@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="TechNodeData" format=3]
+[gd_resource type="Resource" script_class="TechNodeData" format=3 uid="uid://cghtsi4s00knl"]
 
-[ext_resource type="Script" path="res://scripts/resources/tech_node_data.gd" id="1"]
+[ext_resource type="Script" uid="uid://cif42nwhtrcfy" path="res://scripts/resources/tech_node_data.gd" id="1"]
 
 [resource]
 script = ExtResource("1")
@@ -9,5 +9,4 @@ display_name = "能量映射"
 description = "建立能源与计算资源之间的动态映射。"
 effect_text = "解锁“能源转换”指令：20 能源转换为 10 算力。"
 route = 1
-stage = 0
 tags = Array[String](["unlock_energy_convert"])

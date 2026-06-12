@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="TechNodeData" format=3]
+[gd_resource type="Resource" script_class="TechNodeData" format=3 uid="uid://dewm5e2gy26xc"]
 
-[ext_resource type="Script" path="res://scripts/resources/tech_node_data.gd" id="1"]
+[ext_resource type="Script" uid="uid://cif42nwhtrcfy" path="res://scripts/resources/tech_node_data.gd" id="1"]
 
 [resource]
 script = ExtResource("1")
@@ -9,5 +9,4 @@ display_name = "开放技术接口"
 description = "向人类组织开放可独立运行的技术与训练接口。"
 effect_text = "解锁“技术援助”：目标区域秩序 +10、希望 +10、控制权 -3。"
 route = 2
-stage = 0
 tags = Array[String](["unlock_technology_aid"])
