@@ -171,7 +171,6 @@ func _build_interface() -> void:
 	body.add_child(_build_routes_panel())
 	body.add_child(_build_matrix_panel())
 	body.add_child(_build_details_panel())
-	root.add_child(_build_footer())
 
 
 ## 构建顶部形态、协议点、资源、年份和关闭按钮区域
@@ -321,31 +320,6 @@ func _build_details_panel() -> Control:
 	box.add_child(_activate_button)
 	return panel
 
-
-## 构建底部状态图例和下一研究年份提示
-func _build_footer() -> Control:
-	var panel := PanelContainer.new()
-	panel.custom_minimum_size.y = 54
-	panel.add_theme_stylebox_override(
-		"panel",
-		MossTheme.panel_style(Color(0.016, 0.038, 0.052, 0.94), MossTheme.BORDER)
-	)
-	var row := HBoxContainer.new()
-	panel.add_child(row)
-	row.add_child(
-		_label(
-			"■ 已激活    □ 可激活    ◇ 当前选择    × 风险协议",
-			13,
-			MossTheme.TEXT_SECONDARY
-		)
-	)
-	var spacer := Control.new()
-	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_child(spacer)
-	_research_label = _label("", 13, MossTheme.ACCENT_CYAN)
-	row.add_child(_research_label)
-	return panel
-
 # ============================================================
 # 状态刷新
 # ============================================================
@@ -375,12 +349,6 @@ func _refresh_status() -> void:
 		return
 	_model_label.text = STAGE_NAMES[_technology.get_stage()]
 	_points_label.text = str(_technology.get_available_points())
-	var next_year := "研究计划已完成"
-	for year in TechnologySystem.RESEARCH_YEARS:
-		if year not in _technology.export_state()["granted_years"]:
-			next_year = "下一协议点：%d" % year
-			break
-	_research_label.text = next_year
 	for route in ROUTE_NAMES:
 		var count := 0
 		for node_data in _technology.get_all_nodes():

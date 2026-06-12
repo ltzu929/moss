@@ -14,9 +14,9 @@
 [ext_resource type="PackedScene" uid="uid://jls1m2vbj8iu" path="res://scenes/event_popup.tscn" id="9_b37nj"]
 [ext_resource type="Resource" uid="uid://csoutham001" path="res://data/sector_south_america.tres" id="9_southam"]
 [ext_resource type="PackedScene" uid="uid://bqxj2k3n4m5p" path="res://scenes/year_progress.tscn" id="12_yearprogress"]
-[ext_resource type="Script" path="res://scripts/ui/world_map_view.gd" id="14_worldmap"]
-[ext_resource type="Script" path="res://scripts/ui/region_orbital_view.gd" id="15_orbital"]
-[ext_resource type="Script" path="res://scripts/systems/technology_system.gd" id="16_technology"]
+[ext_resource type="Script" uid="uid://be3xq703bipir" path="res://scripts/ui/world_map_view.gd" id="14_worldmap"]
+[ext_resource type="Script" uid="uid://doo72uu83jjx3" path="res://scripts/ui/region_orbital_view.gd" id="15_orbital"]
+[ext_resource type="Script" uid="uid://ce33podwj0fgt" path="res://scripts/systems/technology_system.gd" id="16_technology"]
 [ext_resource type="PackedScene" path="res://scenes/technology_screen.tscn" id="17_technology_screen"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hud"]
@@ -30,14 +30,6 @@ border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
 border_color = Color(0.118, 0.204, 0.267, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yoxec"]
-bg_color = Color(0.1392164, 0.38237798, 0.39237434, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.5461479, 0.8684463, 0.8520485, 1)
 
 [node name="MainOS" type="Control" unique_id=1064400959]
 layout_mode = 3
@@ -58,7 +50,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.012, 0.027, 0.047, 1)
 
-[node name="TechnologySystem" type="Node" parent="."]
+[node name="TechnologySystem" type="Node" parent="." unique_id=1016070103]
 unique_name_in_owner = true
 script = ExtResource("16_technology")
 
@@ -244,7 +236,6 @@ custom_minimum_size = Vector2(0, 420)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-mouse_filter = 0
 script = ExtResource("14_worldmap")
 
 [node name="RightPanel" type="VBoxContainer" parent="MainLayout/ContentRow" unique_id=1407363358]
@@ -279,7 +270,7 @@ theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
 theme_override_font_sizes/font_size = 12
 text = "REGION ORBITAL VIEW"
 
-[node name="RegionOrbitalView" type="Control" parent="MainLayout/ContentRow/RightPanel/RegionOrbitalPanel/OrbitalMargin/OrbitalVBox"]
+[node name="RegionOrbitalView" type="Control" parent="MainLayout/ContentRow/RightPanel/RegionOrbitalPanel/OrbitalMargin/OrbitalVBox" unique_id=1304632157]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 190)
 layout_mode = 2
@@ -447,7 +438,7 @@ layout_mode = 1
 offset_top = -60.5
 offset_bottom = 60.5
 
-[node name="TechnologyScreen" parent="." instance=ExtResource("17_technology_screen")]
+[node name="TechnologyScreen" parent="." unique_id=149477755 instance=ExtResource("17_technology_screen")]
 
 [connection signal="pressed" from="MainLayout/TopBarContainer/TechnologyButton" to="." method="_on_technology_button_pressed"]
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
