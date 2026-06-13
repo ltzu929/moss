@@ -1,0 +1,14 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/technology_node_card.gd" id="1_card"]
+
+[node name="TechnologyNodeCard" type="Button" groups=["technology_node_cards"]]
+custom_minimum_size = Vector2(190, 92)
+layout_mode = 2
+size_flags_vertical = 3
+alignment = 0
+text = "未绑定科技节点"
+autowrap_mode = 3
+script = ExtResource("1_card")
+
+[connection signal="pressed" from="." to="." method="_on_pressed"]

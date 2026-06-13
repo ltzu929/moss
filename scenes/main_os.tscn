@@ -17,7 +17,7 @@
 [ext_resource type="Script" uid="uid://be3xq703bipir" path="res://scripts/ui/world_map_view.gd" id="14_worldmap"]
 [ext_resource type="Script" uid="uid://doo72uu83jjx3" path="res://scripts/ui/region_orbital_view.gd" id="15_orbital"]
 [ext_resource type="Script" uid="uid://ce33podwj0fgt" path="res://scripts/systems/technology_system.gd" id="16_technology"]
-[ext_resource type="PackedScene" path="res://scenes/technology_screen.tscn" id="17_technology_screen"]
+[ext_resource type="PackedScene" uid="uid://dr36tdnunng3f" path="res://scenes/technology_screen.tscn" id="17_technology_screen"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hud"]
 content_margin_left = 8.0
@@ -439,6 +439,9 @@ offset_top = -60.5
 offset_bottom = 60.5
 
 [node name="TechnologyScreen" parent="." unique_id=149477755 instance=ExtResource("17_technology_screen")]
+visible = false
+layout_mode = 0
+anchors_preset = 0
 
 [connection signal="pressed" from="MainLayout/TopBarContainer/TechnologyButton" to="." method="_on_technology_button_pressed"]
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
