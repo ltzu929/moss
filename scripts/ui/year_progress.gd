@@ -3,12 +3,12 @@
 class_name YearProgress
 extends Control
 
-const MossTheme := preload("res://scripts/ui/moss_ui_theme.gd")
-
 # ============================================================
 # 常量
 # ============================================================
 
+## MOSS 界面主题工具
+const MOSS_THEME := preload("res://scripts/ui/moss_ui_theme.gd")
 const START_YEAR: int = 2044
 const END_YEAR: int = 2075
 
@@ -52,11 +52,11 @@ func update_progress(current_year: int) -> void:
 func _setup_progress_bar_style() -> void:
 	progress_bar.add_theme_stylebox_override(
 		"background",
-		MossTheme.progress_background_style()
+		MOSS_THEME.progress_background_style()
 	)
 	progress_bar.add_theme_stylebox_override(
 		"fill",
-		MossTheme.progress_fill_style(Color(0.22, 0.48, 0.58, 1.0))
+		MOSS_THEME.progress_fill_style(Color(0.22, 0.48, 0.58, 1.0))
 	)
-	start_label.add_theme_color_override("font_color", MossTheme.TEXT_SECONDARY)
-	end_label.add_theme_color_override("font_color", MossTheme.TEXT_SECONDARY)
+	start_label.add_theme_color_override("font_color", MOSS_THEME.TEXT_SECONDARY)
+	end_label.add_theme_color_override("font_color", MOSS_THEME.TEXT_SECONDARY)

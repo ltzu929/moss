@@ -79,6 +79,8 @@ func _ready() -> void:
 	_assert_eq(system.get_active_node_ids().size(), 0, "重置后清空节点")
 	_assert_eq(system.get_stage(), TechNodeData.Stage.C550, "重置后恢复550C")
 
+	print("[MOSS-TECH-SYSTEM] 完成，失败断言：%d" % _failed)
+	await get_tree().create_timer(0.2).timeout
 	get_tree().quit(_failed)
 
 # ============================================================

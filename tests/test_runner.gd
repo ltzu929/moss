@@ -291,8 +291,12 @@ func _verify_1080p_layout_contract() -> bool:
 	_assert_true(header_height >= 56.0 and header_height <= 72.0, "顶部状态栏高度应适配1080P HUD", "ui_layout")
 	ok = (header_height >= 56.0 and header_height <= 72.0) and ok
 
-	var left_panel: PanelContainer = _main_os.get_node("MainLayout/ContentRow/LeftPanel") as PanelContainer
-	var right_panel: VBoxContainer = _main_os.get_node("MainLayout/ContentRow/RightPanel") as VBoxContainer
+	var left_panel: PanelContainer = (
+		_main_os.get_node("MainLayout/ContentRow/LeftPanel") as PanelContainer
+	)
+	var right_panel: VBoxContainer = (
+		_main_os.get_node("MainLayout/ContentRow/RightPanel") as VBoxContainer
+	)
 	_assert_eq(int(left_panel.custom_minimum_size.x), 360, "左侧区域详情宽度应为360", "ui_layout")
 	_assert_eq(int(right_panel.custom_minimum_size.x), 420, "右侧信息栏宽度应为420", "ui_layout")
 	ok = (int(left_panel.custom_minimum_size.x) == 360) and ok
@@ -302,7 +306,9 @@ func _verify_1080p_layout_contract() -> bool:
 	_assert_eq(int(sector_container.custom_minimum_size.y), 160, "底部区域卡片栏高度应为160", "ui_layout")
 	ok = (int(sector_container.custom_minimum_size.y) == 160) and ok
 
-	var command_container: HBoxContainer = _main_os.get_node("%CommandButtonContainer") as HBoxContainer
+	var command_container: HBoxContainer = (
+		_main_os.get_node("%CommandButtonContainer") as HBoxContainer
+	)
 	_assert_true(command_container.custom_minimum_size.y <= 36.0, "底部命令栏不应挤压1080P主视图", "ui_layout")
 	ok = (command_container.custom_minimum_size.y <= 36.0) and ok
 
@@ -328,7 +334,9 @@ func _verify_hud_layout_contract() -> bool:
 		_assert_true(false, "缺少右侧信息栏", "ui_layout")
 		return false
 
-	var right_panel: VBoxContainer = _main_os.get_node("MainLayout/ContentRow/RightPanel") as VBoxContainer
+	var right_panel: VBoxContainer = (
+		_main_os.get_node("MainLayout/ContentRow/RightPanel") as VBoxContainer
+	)
 	var right_panel_order: Array[String] = [
 		"RegionOrbitalPanel",
 		"GlobalOverviewPanel",
@@ -528,7 +536,12 @@ func _on_game_ended(result: String, message: String) -> void:
 # 断言系统
 # ============================================================
 
-func _assert_eq(actual: Variant, expected: Variant, description: String, group: String = "") -> void:
+func _assert_eq(
+	actual: Variant,
+	expected: Variant,
+	description: String,
+	group: String = ""
+) -> void:
 	var passed: bool = (actual == expected)
 	_assertions.append({
 		"passed": passed,

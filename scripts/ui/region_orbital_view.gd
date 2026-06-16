@@ -1,7 +1,8 @@
 class_name RegionOrbitalView
 extends Control
 
-const MossTheme := preload("res://scripts/ui/moss_ui_theme.gd")
+## MOSS 界面主题工具
+const MOSS_THEME := preload("res://scripts/ui/moss_ui_theme.gd")
 
 var _globe_root: Node3D
 var _marker: MeshInstance3D
@@ -122,9 +123,9 @@ func _build_viewport() -> void:
 	_marker.position = Vector3(0.0, 0.0, 1.04)
 	var marker_material := StandardMaterial3D.new()
 	marker_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	marker_material.albedo_color = MossTheme.ACCENT_GOLD
+	marker_material.albedo_color = MOSS_THEME.ACCENT_GOLD
 	marker_material.emission_enabled = true
-	marker_material.emission = MossTheme.ACCENT_GOLD
+	marker_material.emission = MOSS_THEME.ACCENT_GOLD
 	marker_material.emission_energy_multiplier = 2.0
 	_marker.material_override = marker_material
 	_globe_root.add_child(_marker)
@@ -154,7 +155,7 @@ func _build_viewport() -> void:
 	_focus_label.offset_right = -10.0
 	_focus_label.offset_bottom = -6.0
 	_focus_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_focus_label.add_theme_color_override("font_color", MossTheme.TEXT_SECONDARY)
+	_focus_label.add_theme_color_override("font_color", MOSS_THEME.TEXT_SECONDARY)
 	_focus_label.add_theme_font_size_override("font_size", 12)
 	add_child(_focus_label)
 

@@ -130,7 +130,10 @@ func show_end(
 	_set_label_text("%EndSubtitle", subtitle_text)
 
 	# 设置协议状态与详情
-	_set_label_text("%ProtocolBadgeLabel", "阶段 %d  控制权: %d%%" % [final_technology_stage, avg_authority])
+	_set_label_text(
+		"%ProtocolBadgeLabel",
+		"阶段 %d  控制权: %d%%" % [final_technology_stage, avg_authority]
+	)
 	_set_label_color("%ProtocolBadgeLabel", title_color)
 	_set_label_text("%MilestoneResult", milestone_text)
 	_set_label_color("%MilestoneResult", title_color)

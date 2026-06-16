@@ -3,7 +3,8 @@ extends Control
 
 signal region_selected(region_name: String)
 
-const MossTheme := preload("res://scripts/ui/moss_ui_theme.gd")
+## MOSS 界面主题工具
+const MOSS_THEME := preload("res://scripts/ui/moss_ui_theme.gd")
 
 var _regions: Dictionary = {}
 var _label_positions: Dictionary = {}
@@ -111,7 +112,7 @@ func _draw() -> void:
 		Color(0.30, 0.78, 0.82, 0.10),
 		1.0
 	)
-	draw_rect(map_rect, MossTheme.BORDER, false, 1.0)
+	draw_rect(map_rect, MOSS_THEME.BORDER, false, 1.0)
 
 
 func _draw_grid() -> void:
@@ -150,17 +151,17 @@ func _draw_region(region_name: String) -> void:
 
 	if authority < 20:
 		fill_color = Color(0.26, 0.055, 0.06, 0.68)
-		line_color = MossTheme.DANGER
+		line_color = MOSS_THEME.DANGER
 	elif authority < 40:
 		fill_color = Color(0.09, 0.14, 0.18, 0.76)
 
 	if region_name == _hovered_region:
 		fill_color = fill_color.lightened(0.10)
-		line_color = MossTheme.ACCENT_CYAN
+		line_color = MOSS_THEME.ACCENT_CYAN
 
 	if region_name == _selected_region:
 		fill_color = Color(0.24, 0.20, 0.10, 0.64)
-		line_color = MossTheme.ACCENT_GOLD
+		line_color = MOSS_THEME.ACCENT_GOLD
 
 	draw_colored_polygon(polygon, fill_color)
 	draw_polyline(polygon, line_color, 1.5, true)
@@ -180,7 +181,7 @@ func _draw_region(region_name: String) -> void:
 		HORIZONTAL_ALIGNMENT_LEFT,
 		-1.0,
 		14,
-		MossTheme.TEXT_PRIMARY
+		MOSS_THEME.TEXT_PRIMARY
 	)
 
 

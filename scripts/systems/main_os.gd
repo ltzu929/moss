@@ -3,23 +3,29 @@
 extends Control
 
 # ============================================================
-# 导出变量（可在编辑器中配置）
+# 信号定义
+# ============================================================
+
+## 游戏结束信号
+## 参数: result - 结局类型 ("failed"/"coexistence"/"managed"/"human_autonomy")
+## 参数: message - 结局描述文本
+signal game_ended(result: String, message: String)
+
+# ============================================================
+# 导出变量
 # ============================================================
 
 ## 所有事件资源的列表
 ## 从 res://data/events/ 目录自动加载，无需手动配置
 @export var all_events: Array[GameEvent]
 
+# ============================================================
+# 常量
+# ============================================================
 
-## 当前显示的结局界面实例
-var end_screen_instance: Control = null
-
-## 打字机动画队列
-var _typewriter_queue: Array[Dictionary] = []
-var _typewriter_active: bool = false
-
-## 游戏初始常量
-const MossTheme := preload("res://scripts/ui/moss_ui_theme.gd")
+## MOSS 界面主题工具
+const MOSS_THEME := preload("res://scripts/ui/moss_ui_theme.gd")
+## 游戏初始值
 const INITIAL_YEAR: int = 2044
 const INITIAL_CPU: int = 30
 const INITIAL_ENERGY: int = 100
@@ -27,7 +33,7 @@ const INITIAL_MAX_CPU: int = 100
 const INITIAL_CPU_RECOVERY_RATE: int = 10
 const END_YEAR: int = 2075
 
-## 稳定指令ID
+## 稳定指令 ID
 const COMMAND_ALLOCATE: String = "allocate"
 const COMMAND_TAKEOVER: String = "takeover"
 const COMMAND_ENERGY_CONVERT: String = "energy_convert"
@@ -38,6 +44,13 @@ const ACTION_LOG_LIMIT: int = 24
 # ============================================================
 # 游戏状态变量
 # ============================================================
+
+## 当前显示的结局界面实例
+var end_screen_instance: Control = null
+
+## 打字机动画队列
+var _typewriter_queue: Array[Dictionary] = []
+var _typewriter_active: bool = false
 
 ## 当前年份 (2044-2075)
 ## 每年递增，到达2075先触发终局事件，再结算结局
@@ -93,15 +106,6 @@ var triggered_events: Array[String] = []
 
 ## 重大事件期间的临时地球聚焦区域
 var _event_focus_region: String = ""
-
-# ============================================================
-# 信号定义
-# ============================================================
-
-## 游戏结束信号
-## 参数: result - 结局类型 ("failed"/"coexistence"/"managed"/"human_autonomy")
-## 参数: message - 结局描述文本
-signal game_ended(result: String, message: String)
 
 # ============================================================
 # 生命周期函数
@@ -803,31 +807,31 @@ func setup_main_ui_theme() -> void:
 	for path in ["%RegionOrderBar", "%RegionHopeBar", "%RegionAuthorityBar"]:
 		if has_node(path):
 			bars.append(get_node(path) as ProgressBar)
-	bar_colors = [MossTheme.ORDER, MossTheme.HOPE, MossTheme.AUTHORITY]
+	bar_colors = [MOSS_THEME.ORDER, MOSS_THEME.HOPE, MOSS_THEME.AUTHORITY]
 
 	for i in range(mini(bars.size(), bar_colors.size())):
 		var bar := bars[i]
 		bar.custom_minimum_size.y = 16.0
 		bar.add_theme_stylebox_override(
 			"background",
-			MossTheme.progress_background_style()
+			MOSS_THEME.progress_background_style()
 		)
 		bar.add_theme_stylebox_override(
 			"fill",
-			MossTheme.progress_fill_style(bar_colors[i])
+			MOSS_THEME.progress_fill_style(bar_colors[i])
 		)
-		bar.add_theme_color_override("font_color", MossTheme.TEXT_PRIMARY)
+		bar.add_theme_color_override("font_color", MOSS_THEME.TEXT_PRIMARY)
 		bar.add_theme_font_size_override("font_size", 12)
 
 	if has_node("%ComputationalLabel"):
 		%ComputationalLabel.add_theme_color_override(
 			"font_color",
-			MossTheme.TEXT_PRIMARY
+			MOSS_THEME.TEXT_PRIMARY
 		)
 	if has_node("%EnergyLabel"):
-		%EnergyLabel.add_theme_color_override("font_color", MossTheme.ACCENT_GOLD)
+		%EnergyLabel.add_theme_color_override("font_color", MOSS_THEME.ACCENT_GOLD)
 	if has_node("%MossLabel"):
-		%MossLabel.add_theme_color_override("font_color", MossTheme.DANGER)
+		%MossLabel.add_theme_color_override("font_color", MOSS_THEME.DANGER)
 		%MossLabel.add_theme_font_size_override("font_size", 16)
 
 	if has_node("%TechnologyButton"):
@@ -835,27 +839,27 @@ func setup_main_ui_theme() -> void:
 		technology_button.custom_minimum_size = Vector2(120.0, 40.0)
 		technology_button.add_theme_color_override(
 			"font_color",
-			MossTheme.TEXT_PRIMARY
+			MOSS_THEME.TEXT_PRIMARY
 		)
 		technology_button.add_theme_stylebox_override(
 			"normal",
-			MossTheme.button_style(
+			MOSS_THEME.button_style(
 				Color(0.023, 0.050, 0.065, 0.94),
-				MossTheme.BORDER
+				MOSS_THEME.BORDER
 			)
 		)
 		technology_button.add_theme_stylebox_override(
 			"hover",
-			MossTheme.button_style(
+			MOSS_THEME.button_style(
 				Color(0.043, 0.095, 0.112, 0.98),
-				MossTheme.ACCENT_CYAN
+				MOSS_THEME.ACCENT_CYAN
 			)
 		)
 		technology_button.add_theme_stylebox_override(
 			"pressed",
-			MossTheme.button_style(
+			MOSS_THEME.button_style(
 				Color(0.016, 0.038, 0.050, 1.0),
-				MossTheme.ACCENT_CYAN
+				MOSS_THEME.ACCENT_CYAN
 			)
 		)
 
@@ -993,7 +997,10 @@ func update_global_overview_ui() -> void:
 	var avg_authority := floori(float(total_authority) / float(count))
 	var stability := floori(float(avg_order + avg_hope + avg_authority) / 3.0)
 
-	_set_text_if_exists("%GlobalPopulationLabel", "全球人口: " + format_population_for_ui(total_population))
+	_set_text_if_exists(
+		"%GlobalPopulationLabel",
+		"全球人口: " + format_population_for_ui(total_population)
+	)
 	_set_text_if_exists("%GlobalAuthorityLabel", "平均控制权: %d%%" % avg_authority)
 	_set_text_if_exists("%GlobalStabilityLabel", "系统稳定性: %d%%" % stability)
 	_set_text_if_exists("%GlobalThreatLabel", "威胁等级: " + _get_global_threat_text(avg_authority))
@@ -1491,7 +1498,10 @@ func update_command_buttons() -> void:
 			# 更新按钮的状态变量
 			button.current_cpu = current_cpu
 			button.current_energy = current_energy
-			button.has_selected_sector = (selected_sector != null) or not command_requires_selected_sector(button.command_data)
+			button.has_selected_sector = (
+				selected_sector != null
+				or not command_requires_selected_sector(button.command_data)
+			)
 			button.update_state()
 
 # ============================================================

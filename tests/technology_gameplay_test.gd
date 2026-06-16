@@ -85,7 +85,9 @@ func _ready() -> void:
 	mitigated = _main_os.get_technology_adjusted_event_delta(-20, "hope")
 	_assert_eq(mitigated, -15, "应急训练应将负面秩序希望影响减轻25%")
 
-	var first_sector = _main_os.get_node("%SectorInfoContainer").get_child(0)
+	var first_sector: SectorInfo = (
+		_main_os.get_node("%SectorInfoContainer").get_child(0) as SectorInfo
+	)
 	first_sector.data_card.order = 30
 	first_sector.data_card.hope = 30
 	_main_os._apply_human_autonomy_recovery()

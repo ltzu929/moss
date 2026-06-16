@@ -1,7 +1,12 @@
 class_name SectorInfo
 extends Panel
 
-const MossTheme := preload("res://scripts/ui/moss_ui_theme.gd")
+# ============================================================
+# 信号定义
+# ============================================================
+
+## 板块被点击时发出，用于选中状态
+signal sector_clicked(sector: SectorInfo)
 
 # ============================================================
 # 导出变量
@@ -11,15 +16,11 @@ const MossTheme := preload("res://scripts/ui/moss_ui_theme.gd")
 @export var data_card: SectorData
 
 # ============================================================
-# 信号定义
-# ============================================================
-
-## 板块被点击时发出，用于选中状态
-signal sector_clicked(sector: SectorInfo)
-
-# ============================================================
 # 常量定义
 # ============================================================
+
+## MOSS 界面主题工具
+const MOSS_THEME := preload("res://scripts/ui/moss_ui_theme.gd")
 
 ## 选中时使用低饱和金色，避免高亮面积过大
 const SELECTED_BORDER_COLOR: Color = Color("#bda66a")
@@ -101,22 +102,26 @@ func _create_styles() -> void:
 
 ## 统一卡片文字与三项状态条的低饱和终端样式
 func _setup_text_and_bars() -> void:
-	title_label.add_theme_color_override("font_color", MossTheme.TEXT_PRIMARY)
+	title_label.add_theme_color_override("font_color", MOSS_THEME.TEXT_PRIMARY)
 	title_label.add_theme_font_size_override("font_size", 15)
 
 	var bars: Array[ProgressBar] = [order_bar, hope_bar, authority_bar]
-	var colors: Array[Color] = [MossTheme.ORDER, MossTheme.HOPE, MossTheme.AUTHORITY]
+	var colors: Array[Color] = [
+		MOSS_THEME.ORDER,
+		MOSS_THEME.HOPE,
+		MOSS_THEME.AUTHORITY,
+	]
 	for i in range(bars.size()):
 		var bar := bars[i]
 		bar.add_theme_stylebox_override(
 			"background",
-			MossTheme.progress_background_style()
+			MOSS_THEME.progress_background_style()
 		)
 		bar.add_theme_stylebox_override(
 			"fill",
-			MossTheme.progress_fill_style(colors[i])
+			MOSS_THEME.progress_fill_style(colors[i])
 		)
-		bar.add_theme_color_override("font_color", MossTheme.TEXT_PRIMARY)
+		bar.add_theme_color_override("font_color", MOSS_THEME.TEXT_PRIMARY)
 		bar.add_theme_font_size_override("font_size", 12)
 
 # ============================================================

@@ -1,8 +1,16 @@
 extends PanelContainer
 
+# ============================================================
+# 信号定义
+# ============================================================
+
 signal option_selected(index: int)
 
-const MossTheme := preload("res://scripts/ui/moss_ui_theme.gd")
+# ============================================================
+# 常量
+# ============================================================
+
+const MOSS_THEME := preload("res://scripts/ui/moss_ui_theme.gd")
 const FALLBACK_EVENT_IMAGE: Texture2D = preload(
 	"res://assets/ui/event_fallback_flood.png"
 )
@@ -87,37 +95,37 @@ func add_custom_button(
 	button.focus_mode = Control.FOCUS_NONE
 	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	button.add_theme_font_size_override("font_size", 18)
-	button.add_theme_color_override("font_color", MossTheme.TEXT_PRIMARY)
+	button.add_theme_color_override("font_color", MOSS_THEME.TEXT_PRIMARY)
 	button.add_theme_color_override("font_hover_color", Color("#d7e5ec"))
-	button.add_theme_color_override("font_pressed_color", MossTheme.ACCENT_CYAN)
+	button.add_theme_color_override("font_pressed_color", MOSS_THEME.ACCENT_CYAN)
 	button.add_theme_color_override("font_disabled_color", Color(0.31, 0.37, 0.41, 1.0))
 	button.add_theme_stylebox_override(
 		"normal",
-		MossTheme.button_style(
+		MOSS_THEME.button_style(
 			Color(0.025, 0.060, 0.078, 0.92),
-			MossTheme.BORDER_BRIGHT,
+			MOSS_THEME.BORDER_BRIGHT,
 			2
 		)
 	)
 	button.add_theme_stylebox_override(
 		"hover",
-		MossTheme.button_style(
+		MOSS_THEME.button_style(
 			Color(0.045, 0.105, 0.128, 0.98),
-			MossTheme.ACCENT_CYAN,
+			MOSS_THEME.ACCENT_CYAN,
 			3
 		)
 	)
 	button.add_theme_stylebox_override(
 		"pressed",
-		MossTheme.button_style(
+		MOSS_THEME.button_style(
 			Color(0.018, 0.045, 0.060, 1.0),
-			MossTheme.ACCENT_CYAN,
+			MOSS_THEME.ACCENT_CYAN,
 			3
 		)
 	)
 	button.add_theme_stylebox_override(
 		"disabled",
-		MossTheme.button_style(
+		MOSS_THEME.button_style(
 			Color(0.025, 0.035, 0.043, 0.82),
 			Color(0.14, 0.18, 0.20, 1.0),
 			2

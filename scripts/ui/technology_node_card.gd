@@ -12,11 +12,21 @@ extends Button
 signal node_selected(node_id: String)
 
 # ============================================================
+# 导出变量
+# ============================================================
+
+## 当前卡片在静态科技场景中绑定的节点资源
+@export var node_data: TechNodeData:
+	set(value):
+		node_data = value
+		_refresh_text()
+
+# ============================================================
 # 常量
 # ============================================================
 
 ## MOSS 界面主题工具
-const MossTheme := preload("res://scripts/ui/moss_ui_theme.gd")
+const MOSS_THEME := preload("res://scripts/ui/moss_ui_theme.gd")
 
 ## 系统形态阶段显示名称
 const STAGE_NAMES: Dictionary = {
@@ -32,16 +42,6 @@ const STATE_NAMES: Dictionary = {
 	"prerequisite_locked": "前置未满足",
 	"stage_locked": "阶段未解锁",
 }
-
-# ============================================================
-# 导出变量
-# ============================================================
-
-## 当前卡片在静态科技场景中绑定的节点资源
-@export var node_data: TechNodeData:
-	set(value):
-		node_data = value
-		_refresh_text()
 
 # ============================================================
 # 状态变量
@@ -102,28 +102,31 @@ func _refresh_text() -> void:
 
 ## 根据节点状态和选中状态更新卡片样式
 func _apply_style() -> void:
-	var border := MossTheme.BORDER
+	var border := MOSS_THEME.BORDER
 	var background := Color(0.018, 0.045, 0.060, 0.96)
-	var font_color := MossTheme.TEXT_SECONDARY
+	var font_color := MOSS_THEME.TEXT_SECONDARY
 	if _state == "active":
-		border = MossTheme.ACCENT_CYAN
-		font_color = MossTheme.TEXT_PRIMARY
+		border = MOSS_THEME.ACCENT_CYAN
+		font_color = MOSS_THEME.TEXT_PRIMARY
 	elif _state == "available":
-		border = MossTheme.BORDER_BRIGHT
-		font_color = MossTheme.TEXT_PRIMARY
+		border = MOSS_THEME.BORDER_BRIGHT
+		font_color = MOSS_THEME.TEXT_PRIMARY
 	if _selected:
-		border = MossTheme.ACCENT_GOLD
+		border = MOSS_THEME.ACCENT_GOLD
 	add_theme_color_override("font_color", font_color)
 	add_theme_font_size_override("font_size", 15)
 	add_theme_stylebox_override(
 		"normal",
-		MossTheme.button_style(background, border, 2 if _selected else 1)
+		MOSS_THEME.button_style(background, border, 2 if _selected else 1)
 	)
 	add_theme_stylebox_override(
 		"hover",
-		MossTheme.button_style(MossTheme.PANEL_BACKGROUND_HOVER, MossTheme.ACCENT_GOLD)
+		MOSS_THEME.button_style(
+			MOSS_THEME.PANEL_BACKGROUND_HOVER,
+			MOSS_THEME.ACCENT_GOLD
+		)
 	)
 	add_theme_stylebox_override(
 		"pressed",
-		MossTheme.button_style(background, MossTheme.ACCENT_GOLD, 2)
+		MOSS_THEME.button_style(background, MOSS_THEME.ACCENT_GOLD, 2)
 	)
