@@ -5,10 +5,27 @@ signal region_selected(region_name: String)
 
 ## MOSS 界面主题工具
 const MOSS_THEME := preload("res://scripts/ui/moss_ui_theme.gd")
+const WORLD_OUTLINE_PATH := "res://assets/ui/world-map/world_outline_gray.png"
+const REGION_ORDER := ["北美", "南美", "非洲", "亚洲", "大洋洲"]
+const MASK_ALPHA_THRESHOLD := 0.35
+const REGION_TEXTURE_PATHS := {
+	"北美": "res://assets/ui/world-map/mask_north_america.png",
+	"南美": "res://assets/ui/world-map/mask_south_america.png",
+	"非洲": "res://assets/ui/world-map/mask_africa.png",
+	"亚洲": "res://assets/ui/world-map/mask_asia.png",
+	"大洋洲": "res://assets/ui/world-map/mask_oceania.png",
+}
 
-var _regions: Dictionary = {}
-var _label_positions: Dictionary = {}
-var _connections: Array[Array] = []
+var _label_positions: Dictionary = {
+	"北美": Vector2(0.75, 0.23),
+	"南美": Vector2(0.90, 0.59),
+	"非洲": Vector2(0.15, 0.47),
+	"亚洲": Vector2(0.39, 0.31),
+	"大洋洲": Vector2(0.46, 0.67),
+}
+var _world_outline_texture: Texture2D
+var _region_textures: Dictionary = {}
+var _mask_images: Dictionary = {}
 var _region_states: Dictionary = {}
 var _selected_region: String = ""
 var _hovered_region: String = ""
@@ -18,7 +35,8 @@ var _scan_progress: float = 0.0
 func _ready() -> void:
 	unique_name_in_owner = true
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	_build_map_geometry()
+	_load_map_textures()
+	_cache_mask_images()
 	set_process(true)
 	queue_redraw()
 
@@ -34,76 +52,80 @@ func set_region_states(states: Dictionary) -> void:
 
 
 func set_selected_region(region_name: String) -> void:
-	_selected_region = region_name
+	_selected_region = _map_region_name(region_name)
 	queue_redraw()
 
 
 func get_region_names() -> Array[String]:
 	var result: Array[String] = []
-	for region_name in _regions.keys():
-		result.append(str(region_name))
+	for region_name in REGION_ORDER:
+		result.append(region_name)
 	return result
 
 
-func _build_map_geometry() -> void:
-	_regions = {
-		"北美": PackedVector2Array([
-			Vector2(0.07, 0.24), Vector2(0.13, 0.12), Vector2(0.27, 0.14),
-			Vector2(0.33, 0.25), Vector2(0.27, 0.39), Vector2(0.14, 0.36),
-		]),
-		"南美": PackedVector2Array([
-			Vector2(0.27, 0.43), Vector2(0.35, 0.47), Vector2(0.38, 0.61),
-			Vector2(0.33, 0.84), Vector2(0.26, 0.68), Vector2(0.24, 0.52),
-		]),
-		"联合政府": PackedVector2Array([
-			Vector2(0.43, 0.20), Vector2(0.55, 0.18), Vector2(0.59, 0.29),
-			Vector2(0.53, 0.37), Vector2(0.45, 0.32),
-		]),
-		"非洲": PackedVector2Array([
-			Vector2(0.45, 0.39), Vector2(0.57, 0.38), Vector2(0.61, 0.52),
-			Vector2(0.55, 0.73), Vector2(0.47, 0.63), Vector2(0.42, 0.49),
-		]),
-		"俄罗斯": PackedVector2Array([
-			Vector2(0.54, 0.12), Vector2(0.76, 0.11), Vector2(0.83, 0.20),
-			Vector2(0.76, 0.31), Vector2(0.59, 0.29),
-		]),
-		"亚洲": PackedVector2Array([
-			Vector2(0.60, 0.32), Vector2(0.79, 0.30), Vector2(0.88, 0.43),
-			Vector2(0.82, 0.59), Vector2(0.69, 0.58), Vector2(0.58, 0.46),
-		]),
-		"大洋洲": PackedVector2Array([
-			Vector2(0.78, 0.63), Vector2(0.90, 0.62), Vector2(0.94, 0.74),
-			Vector2(0.86, 0.82), Vector2(0.77, 0.75),
-		]),
-	}
-	_label_positions = {
-		"北美": Vector2(0.18, 0.25),
-		"南美": Vector2(0.31, 0.60),
-		"联合政府": Vector2(0.50, 0.26),
-		"非洲": Vector2(0.51, 0.51),
-		"俄罗斯": Vector2(0.68, 0.20),
-		"亚洲": Vector2(0.73, 0.43),
-		"大洋洲": Vector2(0.85, 0.70),
-	}
-	_connections = [
-		["北美", "联合政府"],
-		["北美", "南美"],
-		["联合政府", "非洲"],
-		["联合政府", "俄罗斯"],
-		["俄罗斯", "亚洲"],
-		["非洲", "亚洲"],
-		["亚洲", "大洋洲"],
-	]
+func _load_map_textures() -> void:
+	_world_outline_texture = load(WORLD_OUTLINE_PATH) as Texture2D
+	if _world_outline_texture == null:
+		push_warning("世界地图底图缺失：%s" % WORLD_OUTLINE_PATH)
+
+	_region_textures.clear()
+	for region_name in REGION_ORDER:
+		var texture_path := str(REGION_TEXTURE_PATHS.get(region_name, ""))
+		var texture := load(texture_path) as Texture2D
+		if texture == null:
+			push_warning("世界地图遮罩缺失：%s" % region_name)
+			continue
+		_region_textures[region_name] = texture
+
+
+func _cache_mask_images() -> void:
+	_mask_images.clear()
+	for region_name in REGION_ORDER:
+		var texture: Texture2D = _region_textures.get(region_name)
+		if texture == null:
+			continue
+
+		var image: Image = texture.get_image()
+		if image == null or image.is_empty():
+			push_warning("世界地图遮罩无法读取：%s" % region_name)
+			continue
+
+		_mask_images[region_name] = image
+
+
+func _get_map_rect() -> Rect2:
+	if _world_outline_texture == null:
+		return Rect2(Vector2.ZERO, size)
+
+	var source_size: Vector2 = _world_outline_texture.get_size()
+	if source_size.x <= 0.0 or source_size.y <= 0.0 or size.x <= 0.0 or size.y <= 0.0:
+		return Rect2(Vector2.ZERO, size)
+
+	var map_scale: float = min(size.x / source_size.x, size.y / source_size.y)
+	var draw_size: Vector2 = source_size * map_scale
+	var draw_position: Vector2 = (size - draw_size) * 0.5
+	return Rect2(draw_position, draw_size)
 
 
 func _draw() -> void:
-	var map_rect := Rect2(Vector2.ZERO, size)
-	draw_rect(map_rect, Color(0.008, 0.022, 0.035, 1.0), true)
-	_draw_grid()
-	_draw_connections()
+	var control_rect := Rect2(Vector2.ZERO, size)
+	var map_rect := _get_map_rect()
 
-	for region_name in _regions.keys():
-		_draw_region(str(region_name))
+	draw_rect(control_rect, Color(0.008, 0.022, 0.035, 1.0), true)
+	_draw_grid()
+	if _world_outline_texture != null:
+		draw_texture_rect(
+			_world_outline_texture,
+			map_rect,
+			false,
+			Color(1.0, 1.0, 1.0, 0.78)
+		)
+
+	for region_name in REGION_ORDER:
+		_draw_region(region_name, map_rect)
+
+	for region_name in REGION_ORDER:
+		_draw_region_label(region_name, map_rect)
 
 	var scan_y := size.y * _scan_progress
 	draw_line(
@@ -112,7 +134,7 @@ func _draw() -> void:
 		Color(0.30, 0.78, 0.82, 0.10),
 		1.0
 	)
-	draw_rect(map_rect, MOSS_THEME.BORDER, false, 1.0)
+	draw_rect(control_rect, MOSS_THEME.BORDER, false, 1.0)
 
 
 func _draw_grid() -> void:
@@ -129,47 +151,22 @@ func _draw_grid() -> void:
 		y += grid_size
 
 
-func _draw_connections() -> void:
-	for connection in _connections:
-		var from_position := _normalized_to_local(_label_positions[connection[0]])
-		var to_position := _normalized_to_local(_label_positions[connection[1]])
-		draw_dashed_line(
-			from_position,
-			to_position,
-			Color(0.25, 0.65, 0.72, 0.34),
-			1.0,
-			8.0
-		)
+func _draw_region(region_name: String, map_rect: Rect2) -> void:
+	var texture: Texture2D = _region_textures.get(region_name)
+	if texture == null:
+		return
+
+	draw_texture_rect(texture, map_rect, false, _region_fill_color(region_name))
 
 
-func _draw_region(region_name: String) -> void:
-	var polygon := _local_polygon(_regions[region_name])
+func _draw_region_label(region_name: String, map_rect: Rect2) -> void:
 	var state: Dictionary = _region_states.get(region_name, {})
 	var authority := int(state.get("authority", 50))
-	var fill_color := Color(0.08, 0.18, 0.24, 0.70)
-	var line_color := Color(0.28, 0.48, 0.59, 0.88)
+	var label_position := _normalized_to_map(_label_positions[region_name], map_rect)
+	var marker_color := _region_marker_color(region_name)
 
-	if authority < 20:
-		fill_color = Color(0.26, 0.055, 0.06, 0.68)
-		line_color = MOSS_THEME.DANGER
-	elif authority < 40:
-		fill_color = Color(0.09, 0.14, 0.18, 0.76)
-
-	if region_name == _hovered_region:
-		fill_color = fill_color.lightened(0.10)
-		line_color = MOSS_THEME.ACCENT_CYAN
-
-	if region_name == _selected_region:
-		fill_color = Color(0.24, 0.20, 0.10, 0.64)
-		line_color = MOSS_THEME.ACCENT_GOLD
-
-	draw_colored_polygon(polygon, fill_color)
-	draw_polyline(polygon, line_color, 1.5, true)
-	draw_line(polygon[polygon.size() - 1], polygon[0], line_color, 1.5, true)
-
-	var label_position := _normalized_to_local(_label_positions[region_name])
-	draw_circle(label_position, 4.0, line_color)
-	draw_circle(label_position, 9.0, Color(line_color, 0.16), false, 1.0)
+	draw_circle(label_position, 4.0, marker_color)
+	draw_circle(label_position, 9.0, Color(marker_color, 0.16), false, 1.0)
 
 	var label_text := region_name
 	if not state.is_empty():
@@ -183,6 +180,39 @@ func _draw_region(region_name: String) -> void:
 		14,
 		MOSS_THEME.TEXT_PRIMARY
 	)
+
+
+func _region_fill_color(region_name: String) -> Color:
+	var state: Dictionary = _region_states.get(region_name, {})
+	var authority := int(state.get("authority", 50))
+	var fill_color := Color(0.075, 0.17, 0.22, 0.66)
+
+	if authority < 20:
+		fill_color = Color(0.25, 0.045, 0.055, 0.70)
+	elif authority < 40:
+		fill_color = Color(0.08, 0.12, 0.16, 0.72)
+
+	if region_name == _hovered_region:
+		fill_color = fill_color.lightened(0.12)
+		fill_color = fill_color.lerp(Color(0.12, 0.46, 0.50, fill_color.a), 0.28)
+
+	if region_name == _selected_region:
+		fill_color = Color(0.28, 0.235, 0.115, 0.72)
+
+	return fill_color
+
+
+func _region_marker_color(region_name: String) -> Color:
+	if region_name == _selected_region:
+		return MOSS_THEME.ACCENT_GOLD
+	if region_name == _hovered_region:
+		return MOSS_THEME.ACCENT_CYAN
+
+	var state: Dictionary = _region_states.get(region_name, {})
+	var authority := int(state.get("authority", 50))
+	if authority < 20:
+		return MOSS_THEME.DANGER
+	return Color(0.28, 0.48, 0.59, 0.88)
 
 
 func _gui_input(event: InputEvent) -> void:
@@ -199,25 +229,46 @@ func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 			var region_name := _region_at_position(event.position)
-			if region_name != "":
-				region_selected.emit(region_name)
-				accept_event()
+			region_selected.emit(region_name)
+			accept_event()
 
 
 func _region_at_position(local_position: Vector2) -> String:
-	for region_name in _regions.keys():
-		var polygon := _local_polygon(_regions[region_name])
-		if Geometry2D.is_point_in_polygon(local_position, polygon):
-			return str(region_name)
+	var map_rect := _get_map_rect()
+	if not map_rect.has_point(local_position):
+		return ""
+
+	var uv := Vector2(
+		(local_position.x - map_rect.position.x) / map_rect.size.x,
+		(local_position.y - map_rect.position.y) / map_rect.size.y
+	)
+
+	for region_name in REGION_ORDER:
+		var image: Image = _mask_images.get(region_name)
+		if image == null or image.is_empty():
+			continue
+
+		var pixel_x := clampi(
+			int(floor(uv.x * image.get_width())),
+			0,
+			image.get_width() - 1
+		)
+		var pixel_y := clampi(
+			int(floor(uv.y * image.get_height())),
+			0,
+			image.get_height() - 1
+		)
+		if image.get_pixel(pixel_x, pixel_y).a > MASK_ALPHA_THRESHOLD:
+			return region_name
+
 	return ""
 
 
-func _local_polygon(normalized_polygon: PackedVector2Array) -> PackedVector2Array:
-	var polygon := PackedVector2Array()
-	for point in normalized_polygon:
-		polygon.append(_normalized_to_local(point))
-	return polygon
+func _normalized_to_map(point: Vector2, map_rect: Rect2) -> Vector2:
+	return map_rect.position + Vector2(point.x * map_rect.size.x, point.y * map_rect.size.y)
 
 
-func _normalized_to_local(point: Vector2) -> Vector2:
-	return Vector2(point.x * size.x, point.y * size.y)
+func _map_region_name(region_name: String) -> String:
+	if region_name == "俄罗斯":
+		return "亚洲"
+	return region_name

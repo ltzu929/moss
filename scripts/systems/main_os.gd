@@ -524,6 +524,10 @@ func setup_strategic_views() -> void:
 
 ## 中央地图点击区域时复用现有板块选中逻辑
 func _on_world_map_region_selected(region_name: String) -> void:
+	if region_name == "":
+		deselect_sector()
+		return
+
 	var sector := _find_sector_by_region(region_name)
 	if sector != null:
 		select_sector(sector)
