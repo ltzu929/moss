@@ -22,7 +22,9 @@
 3. 游戏配置优先使用 `.tres` 资源，避免把可配置内容硬编码到脚本。
 4. 场景结构优先通过 Godot 编辑器或 Godot MCP 调整；谨慎编辑 `.tscn`，修改后必须验证场景可加载。
 5. 注释、调试信息、UI 文本、事件数据和项目文档使用中文；代码标识符使用英文。
-6. 修改 GDScript 前查阅 `docs/dev/代码规范.md`；修改主循环、信号或数据类前查阅 `docs/dev/技术架构.md`。
+6. 修改 GDScript 前查阅 `docs/dev/代码规范.md`；修改节点职责、场景通信或
+   Resource 生命周期前查阅 `docs/dev/Godot开发约定.md`；修改主循环、信号或
+   数据类前查阅 `docs/dev/技术架构.md`。
 7. 声称完成前，按 `docs/dev/测试指南.md` 执行与改动范围对应的验证。
 8. 不把候选事件链、标签名称、科技树结构或架构拆分写成既定结论。
 
@@ -38,6 +40,7 @@
 | 当前数值与平衡原则 | `docs/design/数值设计.md` |
 | 目录结构和文件职责 | `docs/dev/项目结构.md` |
 | 主循环、接口和数据类 | `docs/dev/技术架构.md` |
+| Godot 节点职责、场景通信和 Resource 生命周期 | `docs/dev/Godot开发约定.md` |
 | 自动化测试 | `docs/dev/测试指南.md` |
 | Godot、MCP 和 LSP 环境 | `docs/dev/开发环境.md` |
 | GDScript 代码规范 | `docs/dev/代码规范.md` |

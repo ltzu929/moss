@@ -155,8 +155,8 @@ func _assert_blank_map_click_deselects_main_scene() -> void:
 		"主场景测试前应先选中一个区域"
 	)
 
-	var world_map := main_os.get_node("%WorldMapView") as Control
-	world_map.emit_signal("region_selected", "")
+	var world_map := main_os.get_node("%WorldMapView") as WorldMapView
+	world_map.region_selected.emit("")
 	await get_tree().process_frame
 	_assert_eq(
 		(main_os.get_node("%RegionNameLabel") as Label).text,

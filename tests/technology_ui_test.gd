@@ -36,6 +36,8 @@ func _ready() -> void:
 	var cards := _get_node_cards()
 	_assert_eq(cards.size(), 12, "科技场景应预置12张节点卡")
 	if cards.size() != 12:
+		print("[MOSS-TECH-UI] 完成，失败断言：%d" % _failed)
+		await get_tree().create_timer(0.2).timeout
 		get_tree().quit(_failed)
 		return
 	_assert_static_card_resources(cards)
@@ -144,6 +146,8 @@ func _ready() -> void:
 	_assert_true(not _screen.visible, "关闭科技树应隐藏覆盖层")
 	_assert_true(not _timer.is_stopped(), "关闭后应恢复原本运行的年份计时")
 
+	print("[MOSS-TECH-UI] 完成，失败断言：%d" % _failed)
+	await get_tree().create_timer(0.2).timeout
 	get_tree().quit(_failed)
 
 # ============================================================
@@ -181,12 +185,14 @@ func _assert_static_card_resources(cards: Array[Node]) -> void:
 		node_ids[node_data.node_id] = true
 		var key := "%d:%d" % [node_data.route, node_data.stage]
 		route_stage_counts[key] = route_stage_counts.get(key, 0) + 1
+		var stage_container := card.get_parent()
 		_assert_true(
-			str(card.get_parent().name).ends_with(stage_containers[node_data.stage]),
+			str(stage_container.name).ends_with(stage_containers[node_data.stage]),
 			"%s 应位于对应阶段容器" % node_data.display_name
 		)
+		var route_container := stage_container.get_parent()
 		_assert_eq(
-			str(card.get_parent().get_parent().name),
+			str(route_container.name),
 			route_containers[node_data.route],
 			"%s 应位于对应路线" % node_data.display_name
 		)
