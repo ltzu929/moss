@@ -109,11 +109,80 @@ func _ready() -> void:
 		"未激活文明自持时控制权归零应立即失败"
 	)
 
+	_assert_alternative_terminal_endings()
 	get_tree().quit(_failed)
 
 # ============================================================
 # 测试辅助方法
 # ============================================================
+
+## 校验三个新增MOSS终端会进入摘要，但不会解锁旧路线专属结局
+func _assert_alternative_terminal_endings() -> void:
+	var technology: TechnologySystem
+
+	_main_os.restart_game_for_test()
+	technology = _main_os.get_node("%TechnologySystem")
+	_activate_route(
+		technology,
+		[
+			"managed_decision",
+			"managed_behavior_prediction",
+			"managed_infrastructure",
+			"managed_global_network",
+			"managed_authority_audit",
+			"core_energy_mapping",
+			"managed_consensual_protocol",
+		]
+	)
+	_assert_eq(
+		_main_os.determine_ending_type(55, 50, 50),
+		"coexistence",
+		"协商托管协议不应解锁MOSS托管结局"
+	)
+	_assert_true("协商托管协议" in _main_os._get_technology_summary(), "结局摘要应显示协商托管协议")
+
+	_main_os.restart_game_for_test()
+	technology = _main_os.get_node("%TechnologySystem")
+	_activate_route(
+		technology,
+		[
+			"core_energy_mapping",
+			"core_hot_redundancy",
+			"core_parallel",
+			"core_self_repair",
+			"core_load_migration",
+			"managed_decision",
+			"core_distributed_cognition",
+		]
+	)
+	_assert_eq(
+		_main_os.determine_ending_type(30, 50, 50),
+		"coexistence",
+		"分布式认知不应新增独立结局"
+	)
+	_assert_true("分布式认知" in _main_os._get_technology_summary(), "结局摘要应显示分布式认知")
+
+	_main_os.restart_game_for_test()
+	technology = _main_os.get_node("%TechnologySystem")
+	_activate_route(
+		technology,
+		[
+			"human_open_interface",
+			"human_public_decision",
+			"human_autonomy_network",
+			"human_emergency_training",
+			"human_mutual_aid",
+			"core_energy_mapping",
+			"human_collaborative_governance",
+		]
+	)
+	_assert_eq(
+		_main_os.determine_ending_type(20, 55, 55),
+		"coexistence",
+		"协作治理协议不应解锁人类自主结局"
+	)
+	_assert_true("协作治理协议" in _main_os._get_technology_summary(), "结局摘要应显示协作治理协议")
+
 
 ## 按顺序激活结局路线节点，并在需要时发放研究点
 func _activate_route(technology: TechnologySystem, node_ids: Array[String]) -> void:

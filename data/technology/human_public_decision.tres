@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="TechNodeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/tech_node_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+node_id = "human_public_decision"
+display_name = "公共决策模型"
+description = "向区域公开决策依据，让组织在单项投入时兼顾另一项社会指标。"
+effect_text = "算力分配选择秩序或希望时：主属性 +15、另一属性 +5，控制权 -1。"
+risk_text = "不与托管路线的“综合调度”叠加。"
+route = 2
+stage = 0
+tags = Array[String](["human_public_decision"])

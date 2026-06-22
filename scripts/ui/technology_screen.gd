@@ -1,71 +1,56 @@
-## 科技控制台界面
-## 绑定静态场景中的三路线科技矩阵、节点详情和不可逆激活交互
+@tool
 class_name TechnologyScreen
-extends PanelContainer
+extends Control
 
-# ============================================================
-# 信号定义
-# ============================================================
-
-## 科技控制台关闭后发出
 signal screen_closed()
 
-# ============================================================
-# 常量
-# ============================================================
+const TECHNOLOGY_NODE_CARD_SCRIPT := preload("res://scripts/ui/technology_node_card.gd")
+const MAX_WINDOW_SIZE := Vector2(1680.0, 900.0)
+const MIN_WINDOW_SIZE := Vector2(960.0, 560.0)
+const VIEWPORT_MARGIN := 32.0
 
-## 科技节点卡片脚本
-const TECHNOLOGY_NODE_CARD_SCRIPT := preload(
-	"res://scripts/ui/technology_node_card.gd"
-)
-
-## 科技路线显示名称
 const ROUTE_NAMES: Dictionary = {
 	TechNodeData.Route.MANAGED: "托管网络",
 	TechNodeData.Route.CORE: "核心演化",
 	TechNodeData.Route.HUMAN: "人类赋能",
 }
-## 科技路线用途说明
 const ROUTE_DESCRIPTIONS: Dictionary = {
-	TechNodeData.Route.MANAGED: "让文明基础设施逐步依赖 MOSS 的统一调度。",
-	TechNodeData.Route.CORE: "提升 MOSS 的算力、恢复与执行效率。",
-	TechNodeData.Route.HUMAN: "让人类组织获得独立维持文明的能力。",
+	TechNodeData.Route.MANAGED: "基础设施托管、权限链与文明级协调",
+	TechNodeData.Route.CORE: "算力、恢复效率与 MOSS 核心形态",
+	TechNodeData.Route.HUMAN: "区域自治、组织韧性与协作治理",
 }
-## 系统形态阶段显示名称
 const STAGE_NAMES: Dictionary = {
 	TechNodeData.Stage.C550: "550C",
 	TechNodeData.Stage.W550: "550W",
 	TechNodeData.Stage.MOSS: "MOSS",
 }
-## 节点状态显示名称
 const STATE_NAMES: Dictionary = {
 	"active": "已激活",
 	"available": "可激活",
 	"points_locked": "协议点不足",
 	"prerequisite_locked": "前置未满足",
 	"stage_locked": "阶段未解锁",
+	"exclusive_locked": "终端互斥",
 }
 
-# ============================================================
-# 状态变量
-# ============================================================
+@export var editor_preview_route: TechNodeData.Route = TechNodeData.Route.MANAGED:
+	set(value):
+		editor_preview_route = value
+		if Engine.is_editor_hint() and is_inside_tree():
+			_switch_route(value, false)
 
-## 当前绑定的科技系统
 var _technology: TechnologySystem
-## 打开界面时暂停和关闭界面时恢复的年份计时器
 var _timer: Timer
-## 打开界面前计时器是否已经停止
 var _timer_was_stopped: bool = true
-## 当前选中的节点 ID
 var _selected_node_id: String = ""
-## 已进入二次确认状态的节点 ID
 var _confirming_node_id: String = ""
-## 节点 ID 到静态卡片的索引
 var _node_cards: Dictionary = {}
-## 路线枚举到静态路线按钮的索引
 var _route_buttons: Dictionary = {}
+var _route_pages: Dictionary = {}
+var _current_route: TechNodeData.Route = TechNodeData.Route.MANAGED
+var _layout_viewport: Viewport
 
-## 顶部状态和右侧详情区域的静态控件引用
+@onready var _window_panel: PanelContainer = %WindowPanel
 @onready var _model_label: Label = %ModelLabel
 @onready var _points_label: Label = %PointsLabel
 @onready var _resource_label: Label = %ResourceLabel
@@ -78,22 +63,30 @@ var _route_buttons: Dictionary = {}
 @onready var _detail_requirements: Label = %DetailRequirements
 @onready var _activate_button: Button = %ActivateButton
 
-# ============================================================
-# 生命周期函数
-# ============================================================
 
-## 索引静态场景节点并隐藏科技控制台
 func _ready() -> void:
-	hide()
 	set_process_unhandled_input(true)
 	_index_scene_nodes()
+	_layout_viewport = get_viewport()
+	if not _layout_viewport.size_changed.is_connected(_update_window_size):
+		_layout_viewport.size_changed.connect(_update_window_size)
+	_update_window_size()
+	_reset_details()
+	if Engine.is_editor_hint():
+		_current_route = editor_preview_route
+		_switch_route(_current_route, false)
+		_refresh_route_tabs()
+	else:
+		hide()
+		_switch_route(_current_route, false)
 
-# ============================================================
-# 公共方法
-# ============================================================
 
-## 打开科技控制台并暂停年份计时
-## 同步当前资源、控制权、年份和科技节点状态
+func _exit_tree() -> void:
+	if is_instance_valid(_layout_viewport) and _layout_viewport.size_changed.is_connected(_update_window_size):
+		_layout_viewport.size_changed.disconnect(_update_window_size)
+	_layout_viewport = null
+
+
 func open_screen(
 	technology: TechnologySystem,
 	cpu: int,
@@ -106,48 +99,57 @@ func open_screen(
 	_timer = timer
 	_timer_was_stopped = timer.is_stopped()
 	timer.stop()
-	_resource_label.text = "算力 %d  /  能源 %d  /  平均控制权 %d%%" % [
-		cpu,
-		energy,
-		authority,
-	]
+	_resource_label.text = "算力 %d  /  能源 %d  /  平均控制权 %d%%" % [cpu, energy, authority]
 	_year_label.text = "系统时间  %d" % year
 	_connect_system_signals()
-	_reset_route_filter()
+	_update_window_size()
+	_switch_route(_current_route, false)
 	_refresh_status()
 	show()
 	move_to_front()
 
 
-## 关闭科技控制台，并按打开前状态恢复年份计时
 func close_screen() -> void:
 	hide()
-	_selected_node_id = ""
-	_confirming_node_id = ""
+	_clear_selection()
 	if _timer != null and not _timer_was_stopped:
 		_timer.start()
 	screen_closed.emit()
 
-# ============================================================
-# 输入回调
-# ============================================================
 
-## 响应取消输入并关闭当前可见的科技控制台
+func _calculate_window_size(viewport_size: Vector2) -> Vector2:
+	var available := Vector2(
+		maxf(320.0, viewport_size.x - VIEWPORT_MARGIN * 2.0),
+		maxf(320.0, viewport_size.y - VIEWPORT_MARGIN * 2.0)
+	)
+	return Vector2(
+		minf(MAX_WINDOW_SIZE.x, maxf(MIN_WINDOW_SIZE.x, available.x)),
+		minf(MAX_WINDOW_SIZE.y, maxf(MIN_WINDOW_SIZE.y, available.y))
+	)
+
+
+func _update_window_size() -> void:
+	if not is_instance_valid(_layout_viewport) or not is_instance_valid(_window_panel):
+		return
+	_window_panel.custom_minimum_size = _calculate_window_size(_layout_viewport.get_visible_rect().size)
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if visible and event.is_action_pressed("ui_cancel"):
 		close_screen()
 		get_viewport().set_input_as_handled()
 
-# ============================================================
-# 场景索引
-# ============================================================
 
-## 索引场景中预置的路线按钮和12张科技节点卡
 func _index_scene_nodes() -> void:
 	_route_buttons = {
 		TechNodeData.Route.MANAGED: %ManagedRouteButton,
 		TechNodeData.Route.CORE: %CoreRouteButton,
 		TechNodeData.Route.HUMAN: %HumanRouteButton,
+	}
+	_route_pages = {
+		TechNodeData.Route.MANAGED: %ManagedRoutePage,
+		TechNodeData.Route.CORE: %CoreRoutePage,
+		TechNodeData.Route.HUMAN: %HumanRoutePage,
 	}
 	_node_cards.clear()
 	for child in find_children("*", "Button", true, false):
@@ -161,58 +163,68 @@ func _index_scene_nodes() -> void:
 			push_error("科技节点卡片 ID 重复: " + node_data.node_id)
 			continue
 		_node_cards[node_data.node_id] = child
-	if _node_cards.size() != 12:
-		push_error("科技场景必须预置12张唯一节点卡，当前为%d张" % _node_cards.size())
+		if not child.node_selected.is_connected(_on_node_selected):
+			child.node_selected.connect(_on_node_selected)
+	if _node_cards.size() != 21:
+		push_error("科技场景必须预置21张唯一节点卡，当前为%d张" % _node_cards.size())
 
-# ============================================================
-# 状态刷新
-# ============================================================
 
-## 刷新形态、协议点和各路线激活数量
 func _refresh_status() -> void:
 	if _technology == null:
+		_refresh_route_tabs()
 		return
 	_model_label.text = STAGE_NAMES[_technology.get_stage()]
 	_points_label.text = str(_technology.get_available_points())
-	for route in ROUTE_NAMES:
-		var count := 0
-		for node_data in _technology.get_all_nodes():
-			if node_data.route == route and _technology.is_active(node_data.node_id):
-				count += 1
-		_route_buttons[route].text = "%s\n%s\n%d / 4" % [
-			ROUTE_NAMES[route],
-			ROUTE_DESCRIPTIONS[route],
-			count,
-		]
+	_refresh_route_tabs()
 	_refresh_nodes()
 	_refresh_details()
 
 
-## 刷新所有静态节点卡的文本、状态样式和选中状态
+func _refresh_route_tabs() -> void:
+	for route in ROUTE_NAMES:
+		var count := 0
+		if _technology != null:
+			for node_data in _technology.get_all_nodes():
+				if node_data.route == route and _technology.is_active(node_data.node_id):
+					count += 1
+		var button: Button = _route_buttons[route]
+		button.text = "%s  %d / 7\n%s" % [ROUTE_NAMES[route], count, ROUTE_DESCRIPTIONS[route]]
+		button.button_pressed = route == _current_route
+
+
 func _refresh_nodes() -> void:
 	if _technology == null:
 		return
 	for node_id in _node_cards:
 		var card: Node = _node_cards[node_id]
-		card.call(
-			"refresh_state",
-			_technology.get_activation_state(node_id),
-			node_id == _selected_node_id
-		)
+		card.call("refresh_state", _technology.get_activation_state(node_id), node_id == _selected_node_id)
+	for page in _route_pages.values():
+		var graph := (page as Node).get_node_or_null("RouteGraph") as Control
+		if graph != null:
+			graph.queue_redraw()
 
 
-## 刷新当前选中节点的说明、前置条件和激活按钮状态
+func _reset_details() -> void:
+	if not is_instance_valid(_detail_name):
+		return
+	_detail_route.text = "请选择科技节点"
+	_detail_name.text = "未选择"
+	_detail_description.text = ""
+	_detail_effect.text = ""
+	_detail_risk.text = ""
+	_detail_risk.visible = false
+	_detail_requirements.text = ""
+	_activate_button.text = "选择节点以查看协议"
+	_activate_button.disabled = true
+
+
 func _refresh_details() -> void:
 	if _technology == null or _selected_node_id == "":
-		_activate_button.text = "选择节点以查看协议"
-		_activate_button.disabled = true
+		_reset_details()
 		return
 	var node_data := _technology.get_node_data(_selected_node_id)
 	var state := _technology.get_activation_state(_selected_node_id)
-	_detail_route.text = "%s  /  %s" % [
-		ROUTE_NAMES[node_data.route],
-		STAGE_NAMES[node_data.stage],
-	]
+	_detail_route.text = "%s  /  %s" % [ROUTE_NAMES[node_data.route], STAGE_NAMES[node_data.stage]]
 	_detail_name.text = node_data.display_name
 	_detail_description.text = node_data.description
 	_detail_effect.text = node_data.effect_text
@@ -227,6 +239,10 @@ func _refresh_details() -> void:
 			var prerequisite := _technology.get_node_data(prerequisite_id)
 			var marker := "✓" if _technology.is_active(prerequisite_id) else "□"
 			requirements.append("%s %s" % [marker, prerequisite.display_name])
+	var conflict_id := _technology.get_exclusive_conflict(_selected_node_id)
+	if conflict_id != "":
+		var conflict := _technology.get_node_data(conflict_id)
+		requirements.append("互斥：%s 已激活" % conflict.display_name)
 	requirements.append("阶段：%s" % STAGE_NAMES[node_data.stage])
 	requirements.append("消耗：1 协议点")
 	_detail_requirements.text = "\n".join(requirements)
@@ -236,20 +252,29 @@ func _refresh_details() -> void:
 		_activate_button.disabled = true
 	elif state == "available":
 		_activate_button.disabled = false
-		_activate_button.text = (
-			"确认不可逆激活"
-			if _confirming_node_id == _selected_node_id
-			else "激活协议"
-		)
+		_activate_button.text = "确认不可逆激活" if _confirming_node_id == _selected_node_id else "激活协议"
 	else:
 		_activate_button.text = STATE_NAMES.get(state, "不可激活")
 		_activate_button.disabled = true
 
-# ============================================================
-# 交互回调
-# ============================================================
 
-## 选中科技节点，并清除其他节点的二次确认状态
+func _clear_selection() -> void:
+	_selected_node_id = ""
+	_confirming_node_id = ""
+	_reset_details()
+	if _technology != null:
+		_refresh_nodes()
+
+
+func _switch_route(route: TechNodeData.Route, clear_selection: bool = true) -> void:
+	_current_route = route
+	for page_route in _route_pages:
+		(_route_pages[page_route] as Control).visible = page_route == route
+	if clear_selection:
+		_clear_selection()
+	_refresh_route_tabs()
+
+
 func _on_node_selected(node_id: String) -> void:
 	_selected_node_id = node_id
 	_confirming_node_id = ""
@@ -257,10 +282,8 @@ func _on_node_selected(node_id: String) -> void:
 	_refresh_details()
 
 
-## 处理节点的两步不可逆激活
-## 第一次点击进入确认状态，第二次点击才提交到科技系统
 func _on_activate_pressed() -> void:
-	if _selected_node_id == "":
+	if _selected_node_id == "" or _technology == null:
 		return
 	if _confirming_node_id != _selected_node_id:
 		_confirming_node_id = _selected_node_id
@@ -271,40 +294,18 @@ func _on_activate_pressed() -> void:
 		_refresh_status()
 
 
-## 高亮指定路线，并降低其他路线节点的显示强度
-func _on_route_selected(route: TechNodeData.Route) -> void:
-	for node_id in _node_cards:
-		var card := _node_cards[node_id] as Control
-		var node_data: TechNodeData = card.get("node_data")
-		card.modulate = (
-			Color.WHITE
-			if node_data.route == route
-			else Color(0.48, 0.56, 0.60, 1.0)
-		)
-
-
-## 恢复全部路线节点亮度，保持每次打开科技控制台时的初始显示
-func _reset_route_filter() -> void:
-	for card in _node_cards.values():
-		(card as Control).modulate = Color.WHITE
-
-
-## 选择托管网络路线
 func _on_managed_route_pressed() -> void:
-	_on_route_selected(TechNodeData.Route.MANAGED)
+	_switch_route(TechNodeData.Route.MANAGED)
 
 
-## 选择核心演化路线
 func _on_core_route_pressed() -> void:
-	_on_route_selected(TechNodeData.Route.CORE)
+	_switch_route(TechNodeData.Route.CORE)
 
 
-## 选择人类赋能路线
 func _on_human_route_pressed() -> void:
-	_on_route_selected(TechNodeData.Route.HUMAN)
+	_switch_route(TechNodeData.Route.HUMAN)
 
 
-## 连接科技系统状态信号，避免重复连接
 func _connect_system_signals() -> void:
 	if not _technology.points_changed.is_connected(_on_system_changed):
 		_technology.points_changed.connect(_on_system_changed)
@@ -314,11 +315,9 @@ func _connect_system_signals() -> void:
 		_technology.stage_changed.connect(_on_system_changed)
 
 
-## 协议点或系统形态变化后刷新界面状态
 func _on_system_changed(_value: int) -> void:
 	_refresh_status()
 
 
-## 节点激活后刷新界面状态
 func _on_node_activated(_node_id: String) -> void:
 	_refresh_status()

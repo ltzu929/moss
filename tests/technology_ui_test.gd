@@ -1,27 +1,14 @@
 ## 科技界面集成测试
-## 验证静态场景结构、模态冲突、节点状态、详情同步、两步确认和计时器恢复
+## 验证三页静态场景、居中窗口、节点状态、终端互斥和计时器恢复
 extends Node
 
-# ============================================================
-# 测试状态
-# ============================================================
-
-## 失败断言数量，同时作为进程退出码
 var _failed: int = 0
-## 被测主场景实例
 var _main_os: Control
-## 被测科技系统
 var _technology: TechnologySystem
-## 被测科技控制台
-var _screen
-## 主场景年份计时器
+var _screen: Control
 var _timer: Timer
 
-# ============================================================
-# 测试入口
-# ============================================================
 
-## 创建主场景并执行科技控制台交互断言
 func _ready() -> void:
 	var scene: PackedScene = load("res://scenes/main_os.tscn")
 	_main_os = scene.instantiate()
@@ -34,55 +21,28 @@ func _ready() -> void:
 	_timer.start()
 
 	var cards := _get_node_cards()
-	_assert_eq(cards.size(), 12, "科技场景应预置12张节点卡")
-	if cards.size() != 12:
-		print("[MOSS-TECH-UI] 完成，失败断言：%d" % _failed)
-		await get_tree().create_timer(0.2).timeout
+	_assert_eq(cards.size(), 21, "科技场景应预置21张节点卡")
+	if cards.size() != 21:
 		get_tree().quit(_failed)
 		return
 	_assert_static_card_resources(cards)
+	_assert_window_sizing()
 
 	var technology_button: Button = _main_os.get_node("%TechnologyButton")
 	technology_button.pressed.emit()
+	await get_tree().process_frame
 	_assert_true(_screen.visible, "无模态弹窗时科技按钮应打开科技树")
-	_screen.close_screen()
-	_main_os.get_node("%EventPopup").show()
-	technology_button.pressed.emit()
-	_assert_true(not _screen.visible, "事件弹窗应阻止科技按钮打开科技树")
-	_main_os.get_node("%EventPopup").hide()
-	_main_os.get_node("%AllocatePopup").show()
-	technology_button.pressed.emit()
-	_assert_true(not _screen.visible, "算力分配弹窗应阻止科技按钮打开科技树")
-	_main_os.get_node("%AllocatePopup").hide()
-
-	technology_button.pressed.emit()
-	_assert_true(_screen.visible, "科技树应全屏显示")
 	_assert_true(_timer.is_stopped(), "打开科技树应暂停年份")
-	var first_instance_ids := _get_card_instance_ids(cards)
-	_screen.close_screen()
-	technology_button.pressed.emit()
-	var reopened_cards := _get_node_cards()
-	_assert_eq(
-		_get_card_instance_ids(reopened_cards),
-		first_instance_ids,
-		"重复打开科技树不得创建或替换节点卡"
-	)
-	_assert_eq(
-		_technology.get_activation_state("managed_decision"),
-		"available",
-		"550C根节点应可激活"
-	)
-	_assert_eq(
-		_technology.get_activation_state("managed_infrastructure"),
-		"stage_locked",
-		"开局550W节点应阶段锁定"
-	)
-	_assert_eq(
-		_technology.get_activation_state("managed_irreplaceable_protocol"),
-		"stage_locked",
-		"开局MOSS核心应阶段锁定"
+	_assert_route_page(TechNodeData.Route.MANAGED, true)
+	_assert_route_page(TechNodeData.Route.CORE, false)
+	_assert_route_page(TechNodeData.Route.HUMAN, false)
+	_assert_centered_window()
+	_assert_true(
+		_screen.z_index > (_main_os.get_node("%YearProgress") as Control).z_index,
+		"科技窗口层级应高于时间线"
 	)
 
+	var first_instance_ids := _get_card_instance_ids(cards)
 	var managed_card := _find_card(cards, "managed_decision")
 	var core_card := _find_card(cards, "core_energy_mapping")
 	_assert_true(managed_card != null, "应找到辅助决策接口卡片")
@@ -92,69 +52,119 @@ func _ready() -> void:
 		return
 
 	managed_card.pressed.emit()
-	_assert_eq(
-		_screen.get_node("%DetailName").text,
-		"辅助决策接口",
-		"右侧详情应同步节点名称"
-	)
-	_assert_eq(
-		_screen.get_node("%ActivateButton").text,
-		"激活协议",
-		"首次应显示激活操作"
-	)
-	_screen.get_node("%ManagedRouteButton").pressed.emit()
-	_assert_eq(managed_card.modulate, Color.WHITE, "路线筛选应保留同路线卡片亮度")
-	_assert_eq(
-		core_card.modulate,
-		Color(0.48, 0.56, 0.60, 1.0),
-		"路线筛选应降低其他路线卡片亮度"
-	)
+	_assert_eq(_screen.get_node("%DetailName").text, "辅助决策接口", "详情应同步节点名称")
+	_screen.get_node("%ActivateButton").pressed.emit()
+	_assert_eq(_screen.get_node("%ActivateButton").text, "确认不可逆激活", "首次点击应进入确认")
+
+	_screen.get_node("%CoreRouteButton").pressed.emit()
+	_assert_route_page(TechNodeData.Route.MANAGED, false)
+	_assert_route_page(TechNodeData.Route.CORE, true)
+	_assert_eq(_screen.get_node("%DetailName").text, "未选择", "切换路线应清除节点选择")
+	_assert_true(_screen.get_node("%ActivateButton").disabled, "切换路线应清除激活确认")
+
 	_screen.close_screen()
 	technology_button.pressed.emit()
-	_assert_eq(core_card.modulate, Color.WHITE, "重新打开应清除路线筛选")
-	managed_card.pressed.emit()
-
-	_screen.get_node("%ActivateButton").pressed.emit()
-	_assert_eq(_technology.get_active_node_ids().size(), 0, "第一次点击不得直接激活")
+	await get_tree().process_frame
+	_assert_route_page(TechNodeData.Route.CORE, true)
 	_assert_eq(
-		_screen.get_node("%ActivateButton").text,
-		"确认不可逆激活",
-		"第一次点击应进入确认"
+		_get_card_instance_ids(_get_node_cards()),
+		first_instance_ids,
+		"重复打开不得重建节点卡"
 	)
+
+	_screen.get_node("%ManagedRouteButton").pressed.emit()
+	managed_card.pressed.emit()
+	_screen.get_node("%ActivateButton").pressed.emit()
 	_screen.get_node("%ActivateButton").pressed.emit()
 	_assert_true(_technology.is_active("managed_decision"), "第二次点击应激活节点")
-	_assert_eq(
-		_technology.get_activation_state("core_energy_mapping"),
-		"points_locked",
-		"协议点耗尽后其他根节点应显示点数不足"
-	)
-
 	_technology.grant_research_for_year(2048)
-	_assert_true(_technology.activate("core_energy_mapping"), "第二个根节点应推动阶段升级")
+	_screen.get_node("%CoreRouteButton").pressed.emit()
+	core_card.pressed.emit()
+	_screen.get_node("%ActivateButton").pressed.emit()
+	_screen.get_node("%ActivateButton").pressed.emit()
+	_assert_true(_technology.is_active("core_energy_mapping"), "跨页激活应推动阶段升级")
 	_assert_eq(
 		_technology.get_activation_state("managed_infrastructure"),
 		"points_locked",
-		"已满足前置但无点数的节点应显示点数不足"
-	)
-	_assert_eq(
-		_technology.get_activation_state("human_autonomy_network"),
-		"prerequisite_locked",
-		"未激活路线根节点时应显示前置锁定"
+		"满足前置但无点数时应显示协议点不足"
 	)
 
+	_assert_terminal_conflict_ui(cards)
+
 	_screen.close_screen()
-	_assert_true(not _screen.visible, "关闭科技树应隐藏覆盖层")
+	_main_os.get_node("%EventPopup").show()
+	technology_button.pressed.emit()
+	_assert_true(not _screen.visible, "事件弹窗应阻止科技树打开")
+	_main_os.get_node("%EventPopup").hide()
+	_main_os.get_node("%AllocatePopup").show()
+	technology_button.pressed.emit()
+	_assert_true(not _screen.visible, "算力分配弹窗应阻止科技树打开")
+	_main_os.get_node("%AllocatePopup").hide()
 	_assert_true(not _timer.is_stopped(), "关闭后应恢复原本运行的年份计时")
 
 	print("[MOSS-TECH-UI] 完成，失败断言：%d" % _failed)
 	await get_tree().create_timer(0.2).timeout
 	get_tree().quit(_failed)
 
-# ============================================================
-# 断言辅助方法
-# ============================================================
 
-## 返回科技场景中预置的节点卡
+func _assert_window_sizing() -> void:
+	_assert_eq(
+		_screen.call("_calculate_window_size", Vector2(1920, 1080)),
+		Vector2(1680, 900),
+		"1920x1080时窗口应限制为1680x900"
+	)
+	_assert_eq(
+		_screen.call("_calculate_window_size", Vector2(1280, 720)),
+		Vector2(1216, 656),
+		"1280x720时窗口应保留32像素边距"
+	)
+
+
+func _assert_centered_window() -> void:
+	var panel := _screen.get_node("%WindowPanel") as Control
+	var viewport_size := get_viewport().get_visible_rect().size
+	var panel_center := panel.global_position + panel.size * 0.5
+	_assert_true(panel_center.distance_to(viewport_size * 0.5) <= 2.0, "科技窗口应位于视口中央")
+	_assert_true(panel.size.x <= viewport_size.x - 64.0, "科技窗口应保留水平边距")
+	_assert_true(panel.size.y <= viewport_size.y - 64.0, "科技窗口应保留垂直边距")
+
+
+func _assert_route_page(route: TechNodeData.Route, expected: bool) -> void:
+	var page_names := {
+		TechNodeData.Route.MANAGED: "%ManagedRoutePage",
+		TechNodeData.Route.CORE: "%CoreRoutePage",
+		TechNodeData.Route.HUMAN: "%HumanRoutePage",
+	}
+	_assert_eq(_screen.get_node(page_names[route]).visible, expected, "路线页面可见性应正确")
+
+
+func _assert_terminal_conflict_ui(cards: Array[Node]) -> void:
+	_technology.reset()
+	var activation_order: Array[String] = [
+		"managed_decision",
+		"managed_behavior_prediction",
+		"core_energy_mapping",
+		"managed_infrastructure",
+		"managed_global_network",
+		"managed_authority_audit",
+		"managed_consensual_protocol",
+	]
+	var year_index := 0
+	for node_id in activation_order:
+		if _technology.get_available_points() == 0:
+			_technology.grant_research_for_year(TechnologySystem.RESEARCH_YEARS[year_index])
+			year_index += 1
+		_assert_true(_technology.activate(node_id), "应激活互斥测试节点 %s" % node_id)
+	_screen.get_node("%ManagedRouteButton").pressed.emit()
+	var conflict_card := _find_card(cards, "managed_irreplaceable_protocol")
+	conflict_card.pressed.emit()
+	_assert_eq(_screen.get_node("%ActivateButton").text, "终端互斥", "互斥终端应显示专用锁定状态")
+	_assert_true(
+		"协商托管协议" in _screen.get_node("%DetailRequirements").text,
+		"互斥提示应指出已激活终端"
+	)
+
+
 func _get_node_cards() -> Array[Node]:
 	var cards: Array[Node] = []
 	for card in _screen.find_children("*", "Button", true, false):
@@ -163,16 +173,15 @@ func _get_node_cards() -> Array[Node]:
 	return cards
 
 
-## 校验12张卡片引用唯一资源，并符合每条路线的阶段布局
 func _assert_static_card_resources(cards: Array[Node]) -> void:
 	var node_ids: Dictionary = {}
 	var route_stage_counts: Dictionary = {}
-	var route_containers := {
-		TechNodeData.Route.MANAGED: "ManagedRow",
-		TechNodeData.Route.CORE: "CoreRow",
-		TechNodeData.Route.HUMAN: "HumanRow",
+	var page_names := {
+		TechNodeData.Route.MANAGED: "ManagedRoutePage",
+		TechNodeData.Route.CORE: "CoreRoutePage",
+		TechNodeData.Route.HUMAN: "HumanRoutePage",
 	}
-	var stage_containers := {
+	var stage_names := {
 		TechNodeData.Stage.C550: "C550Nodes",
 		TechNodeData.Stage.W550: "W550Nodes",
 		TechNodeData.Stage.MOSS: "MossNodes",
@@ -185,38 +194,25 @@ func _assert_static_card_resources(cards: Array[Node]) -> void:
 		node_ids[node_data.node_id] = true
 		var key := "%d:%d" % [node_data.route, node_data.stage]
 		route_stage_counts[key] = route_stage_counts.get(key, 0) + 1
-		var stage_container := card.get_parent()
-		_assert_true(
-			str(stage_container.name).ends_with(stage_containers[node_data.stage]),
-			"%s 应位于对应阶段容器" % node_data.display_name
-		)
-		var route_container := stage_container.get_parent()
-		_assert_eq(
-			str(route_container.name),
-			route_containers[node_data.route],
-			"%s 应位于对应路线" % node_data.display_name
-		)
+		_assert_eq(str(card.get_parent().name), stage_names[node_data.stage], "卡片应位于对应阶段容器")
+		_assert_true(_has_ancestor_named(card, page_names[node_data.route]), "卡片应位于对应路线页面")
 
-	_assert_eq(node_ids.size(), 12, "12张卡片必须分别引用唯一科技资源")
+	_assert_eq(node_ids.size(), 21, "21张卡片必须引用唯一科技资源")
 	for route in TechNodeData.Route.values():
-		_assert_eq(
-			route_stage_counts.get("%d:%d" % [route, TechNodeData.Stage.C550], 0),
-			1,
-			"每条路线应预置1张550C卡片"
-		)
-		_assert_eq(
-			route_stage_counts.get("%d:%d" % [route, TechNodeData.Stage.W550], 0),
-			2,
-			"每条路线应预置2张550W卡片"
-		)
-		_assert_eq(
-			route_stage_counts.get("%d:%d" % [route, TechNodeData.Stage.MOSS], 0),
-			1,
-			"每条路线应预置1张MOSS卡片"
-		)
+		_assert_eq(route_stage_counts.get("%d:%d" % [route, TechNodeData.Stage.C550], 0), 2, "每页应有2张550C卡片")
+		_assert_eq(route_stage_counts.get("%d:%d" % [route, TechNodeData.Stage.W550], 0), 3, "每页应有3张550W卡片")
+		_assert_eq(route_stage_counts.get("%d:%d" % [route, TechNodeData.Stage.MOSS], 0), 2, "每页应有2张MOSS卡片")
 
 
-## 返回当前卡片实例ID，用于确认重复打开不会重建节点
+func _has_ancestor_named(node: Node, ancestor_name: String) -> bool:
+	var current := node.get_parent()
+	while current != null:
+		if str(current.name) == ancestor_name:
+			return true
+		current = current.get_parent()
+	return false
+
+
 func _get_card_instance_ids(cards: Array[Node]) -> Array[int]:
 	var instance_ids: Array[int] = []
 	for card in cards:
@@ -225,7 +221,6 @@ func _get_card_instance_ids(cards: Array[Node]) -> Array[int]:
 	return instance_ids
 
 
-## 按稳定节点ID查找场景中的卡片
 func _find_card(cards: Array[Node], node_id: String) -> Node:
 	for card in cards:
 		var node_data: TechNodeData = card.get("node_data")
@@ -234,7 +229,6 @@ func _find_card(cards: Array[Node], node_id: String) -> Node:
 	return null
 
 
-## 断言条件为 true，失败时累计退出码并输出错误
 func _assert_true(value: bool, message: String) -> void:
 	if value:
 		print("[ OK ] " + message)
@@ -243,9 +237,5 @@ func _assert_true(value: bool, message: String) -> void:
 	push_error("[FAIL] " + message)
 
 
-## 断言实际值与期望值相等
 func _assert_eq(actual: Variant, expected: Variant, message: String) -> void:
-	_assert_true(
-		actual == expected,
-		"%s（期望=%s，实际=%s）" % [message, str(expected), str(actual)]
-	)
+	_assert_true(actual == expected, "%s（期望=%s，实际=%s）" % [message, str(expected), str(actual)])

@@ -1,3 +1,4 @@
+@tool
 class_name WorldMapView
 extends Control
 
@@ -15,14 +16,42 @@ const REGION_TEXTURE_PATHS := {
 	"亚洲": "res://assets/ui/world-map/mask_asia.png",
 	"大洋洲": "res://assets/ui/world-map/mask_oceania.png",
 }
-
-var _label_positions: Dictionary = {
-	"北美": Vector2(0.75, 0.23),
-	"南美": Vector2(0.90, 0.59),
-	"非洲": Vector2(0.15, 0.47),
-	"亚洲": Vector2(0.39, 0.31),
-	"大洋洲": Vector2(0.46, 0.67),
+const EDITOR_PREVIEW_SECTOR_PATHS := {
+	"北美": "res://data/sector_na.tres",
+	"南美": "res://data/sector_south_america.tres",
+	"非洲": "res://data/sector_africa.tres",
+	"亚洲": "res://data/sector_asia.tres",
+	"大洋洲": "res://data/sector_oceania.tres",
 }
+
+@export_group("编辑器标签位置")
+@export var north_america_label_position := Vector2(0.75, 0.23):
+	set(value):
+		north_america_label_position = value
+		if is_inside_tree():
+			_sync_label_positions()
+@export var south_america_label_position := Vector2(0.90, 0.59):
+	set(value):
+		south_america_label_position = value
+		if is_inside_tree():
+			_sync_label_positions()
+@export var africa_label_position := Vector2(0.15, 0.47):
+	set(value):
+		africa_label_position = value
+		if is_inside_tree():
+			_sync_label_positions()
+@export var asia_label_position := Vector2(0.39, 0.31):
+	set(value):
+		asia_label_position = value
+		if is_inside_tree():
+			_sync_label_positions()
+@export var oceania_label_position := Vector2(0.46, 0.67):
+	set(value):
+		oceania_label_position = value
+		if is_inside_tree():
+			_sync_label_positions()
+
+var _label_positions: Dictionary = {}
 var _world_outline_texture: Texture2D
 var _region_textures: Dictionary = {}
 var _mask_images: Dictionary = {}
@@ -35,14 +64,47 @@ var _scan_progress: float = 0.0
 func _ready() -> void:
 	unique_name_in_owner = true
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	_sync_label_positions()
 	_load_map_textures()
 	_cache_mask_images()
-	set_process(true)
+	if Engine.is_editor_hint():
+		_load_editor_preview_states()
+		_scan_progress = 0.5
+		set_process(false)
+	else:
+		set_process(true)
 	queue_redraw()
 
 
 func _process(delta: float) -> void:
 	_scan_progress = fmod(_scan_progress + delta * 0.075, 1.0)
+	queue_redraw()
+
+
+func _sync_label_positions() -> void:
+	_label_positions = {
+		"北美": north_america_label_position,
+		"南美": south_america_label_position,
+		"非洲": africa_label_position,
+		"亚洲": asia_label_position,
+		"大洋洲": oceania_label_position,
+	}
+	queue_redraw()
+
+
+func _load_editor_preview_states() -> void:
+	var preview_states: Dictionary = {}
+	for region_name in EDITOR_PREVIEW_SECTOR_PATHS:
+		var sector := load(EDITOR_PREVIEW_SECTOR_PATHS[region_name]) as SectorData
+		if sector == null:
+			continue
+		preview_states[region_name] = {
+			"order": sector.order,
+			"hope": sector.hope,
+			"authority": sector.authority,
+			"population": sector.population,
+		}
+	_region_states = preview_states
 	queue_redraw()
 
 

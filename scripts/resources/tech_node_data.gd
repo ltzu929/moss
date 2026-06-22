@@ -44,6 +44,8 @@ enum Stage {
 @export var stage: Stage = Stage.C550
 ## 激活当前节点前必须激活的节点 ID
 @export var prerequisite_ids: Array[String] = []
+## 非空时表示同组节点只能激活一个，用于路线终端互斥
+@export var exclusive_group: String = ""
 ## 节点向运行时系统提供的能力标签
 @export var tags: Array[String] = []
 ## 激活节点消耗的协议点

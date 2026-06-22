@@ -31,6 +31,7 @@ const INITIAL_CPU: int = 30
 const INITIAL_ENERGY: int = 100
 const INITIAL_MAX_CPU: int = 100
 const INITIAL_CPU_RECOVERY_RATE: int = 10
+const INITIAL_ENERGY_RECOVERY_RATE: int = 10
 const END_YEAR: int = 2075
 
 ## 稳定指令 ID
@@ -79,7 +80,10 @@ var technology_stage_level: int = 1
 var max_cpu: int = 100
 
 ## 算力恢复速率（初始10，可通过科技提升）
-var cpu_recovery_rate: int = 10
+var cpu_recovery_rate: int = INITIAL_CPU_RECOVERY_RATE
+
+## 能源恢复速率（初始10，可被核心路线科技修正）
+var energy_recovery_rate: int = INITIAL_ENERGY_RECOVERY_RATE
 
 ## 冷却缩减值（初始0，可通过科技增加）
 var cooldown_reduction: int = 0
@@ -305,24 +309,32 @@ func get_technology_adjusted_event_delta(delta: int, stat: String) -> int:
 
 ## 从当前激活节点重新计算资源上限、恢复率、冷却和科技指令
 func refresh_technology_effects() -> void:
-	max_cpu = (
-		INITIAL_MAX_CPU + 50
-		if %TechnologySystem.has_tag("max_cpu_bonus")
-		else INITIAL_MAX_CPU
-	)
-	cpu_recovery_rate = (
-		INITIAL_CPU_RECOVERY_RATE + 5
-		if %TechnologySystem.has_tag("cpu_recovery_bonus")
-		else INITIAL_CPU_RECOVERY_RATE
-	)
+	max_cpu = INITIAL_MAX_CPU
+	if %TechnologySystem.has_tag("max_cpu_bonus"):
+		max_cpu += 50
+	if %TechnologySystem.has_tag("core_distributed_cognition"):
+		max_cpu += 50
+
+	cpu_recovery_rate = INITIAL_CPU_RECOVERY_RATE
+	if %TechnologySystem.has_tag("cpu_recovery_bonus"):
+		cpu_recovery_rate += 5
+	if %TechnologySystem.has_tag("core_distributed_cognition"):
+		cpu_recovery_rate += 10
+
+	energy_recovery_rate = INITIAL_ENERGY_RECOVERY_RATE
+	if %TechnologySystem.has_tag("energy_recovery_bonus"):
+		energy_recovery_rate += 5
+	if %TechnologySystem.has_tag("core_distributed_cognition"):
+		energy_recovery_rate -= 5
+
 	cooldown_reduction = (
 		1 if %TechnologySystem.has_tag("core_recursive") else 0
 	)
 	current_cpu = mini(current_cpu, max_cpu)
 	technology_stage_level = int(%TechnologySystem.get_stage()) + 1
 
-	_reset_base_command_values()
 	_sync_technology_commands()
+	_reset_base_command_values()
 	setup_command_buttons()
 	update_command_buttons()
 	update_global_resource_ui()
@@ -335,6 +347,7 @@ func _reset_base_command_values() -> void:
 		allocate.cpu_cost = 20
 		allocate.order_delta = 15
 		allocate.hope_delta = 15
+		allocate.authority_delta = 0
 		allocate.set_meta("combined_enabled", can_allocate_combined())
 
 	var takeover := _get_command_by_id(COMMAND_TAKEOVER)
@@ -343,11 +356,57 @@ func _reset_base_command_values() -> void:
 		takeover.energy_cost = 20
 		takeover.authority_delta = 10
 		takeover.hope_delta = 0
+		takeover.cooldown_years = 5
 		if %TechnologySystem.has_tag("managed_infrastructure"):
 			takeover.cpu_cost = 25
 			takeover.energy_cost = 15
 			takeover.authority_delta = 15
 			takeover.hope_delta = -5
+		if %TechnologySystem.has_tag("managed_takeover_cooldown"):
+			takeover.cooldown_years = 4
+		if %TechnologySystem.has_tag("managed_command_energy_discount"):
+			takeover.energy_cost = maxi(0, takeover.energy_cost - 5)
+		if %TechnologySystem.has_tag("managed_consensual_core"):
+			takeover.authority_delta = 12
+			takeover.hope_delta = 0
+
+	var energy_convert := _get_command_by_id(COMMAND_ENERGY_CONVERT)
+	if energy_convert != null:
+		energy_convert.energy_cost = 20
+		energy_convert.cooldown_years = 2
+		if %TechnologySystem.has_tag("energy_convert_efficiency"):
+			energy_convert.energy_cost = 15
+			energy_convert.cooldown_years = 1
+
+	var global_takeover := _get_command_by_id(COMMAND_GLOBAL_TAKEOVER)
+	if global_takeover != null:
+		global_takeover.cpu_cost = 30
+		global_takeover.energy_cost = 10
+		global_takeover.cooldown_years = 5
+		if %TechnologySystem.has_tag("managed_command_energy_discount"):
+			global_takeover.energy_cost = 5
+
+	var technology_aid := _get_command_by_id(COMMAND_TECHNOLOGY_AID)
+	if technology_aid != null:
+		technology_aid.cpu_cost = 20
+		technology_aid.energy_cost = 10
+		technology_aid.order_delta = 10
+		technology_aid.hope_delta = 10
+		technology_aid.authority_delta = -3
+		technology_aid.cooldown_years = 4
+		if %TechnologySystem.has_tag("human_mutual_aid"):
+			technology_aid.cpu_cost = 15
+			technology_aid.energy_cost = 5
+			technology_aid.order_delta = 12
+			technology_aid.hope_delta = 12
+			technology_aid.authority_delta = -4
+		if %TechnologySystem.has_tag("human_collaborative_core"):
+			technology_aid.cpu_cost = 10
+			technology_aid.energy_cost = 5
+			technology_aid.order_delta = 15
+			technology_aid.hope_delta = 15
+			technology_aid.authority_delta = -5
+			technology_aid.cooldown_years = 2
 
 
 ## 同步由科技标签控制的运行时指令
@@ -699,7 +758,7 @@ func _on_timer_timeout() -> void:
 
 	# === 第二步：时间推进 ===
 	current_year += 1
-	current_energy += 10
+	current_energy += energy_recovery_rate
 	current_cpu += cpu_recovery_rate
 	current_cpu = mini(current_cpu, max_cpu)
 	update_cooldowns()
@@ -1248,12 +1307,11 @@ func _get_technology_summary() -> String:
 			route_counts[node_data.route] += 1
 
 	var cores: Array[String] = []
-	if %TechnologySystem.has_tag("managed_core"):
-		cores.append("不可替代协议")
-	if %TechnologySystem.has_tag("core_recursive"):
-		cores.append("递归优化")
-	if %TechnologySystem.has_tag("human_core"):
-		cores.append("文明自持")
+	for node_id in %TechnologySystem.get_active_node_ids():
+		var node_data: TechNodeData = %TechnologySystem.get_node_data(node_id)
+		if node_data != null and node_data.stage == TechNodeData.Stage.MOSS:
+			cores.append(node_data.display_name)
+	cores.sort()
 	var core_text := "无核心协议" if cores.is_empty() else " / ".join(cores)
 	return "托管 %d  核心 %d  人类 %d\n核心：%s" % [
 		route_counts[TechNodeData.Route.MANAGED],
@@ -1363,13 +1421,24 @@ func apply_command_effect(cmd: CommandData, effect_type: String = "") -> void:
 
 	# 应用效果
 	if cmd.is_allocate_type:
-		# 算力分配根据选择决定效果
+		# 公共决策只强化单项分配，不与综合调度叠加。
+		var has_public_decision: bool = %TechnologySystem.has_tag("human_public_decision")
 		if effect_type == "order":
 			selected_sector.data_card.order += cmd.order_delta
 			append_signed_change(lines, "秩序", cmd.order_delta)
+			if has_public_decision:
+				selected_sector.data_card.hope += 5
+				selected_sector.data_card.authority -= 1
+				append_signed_change(lines, "希望", 5)
+				append_signed_change(lines, "控制权", -1)
 		elif effect_type == "hope":
 			selected_sector.data_card.hope += cmd.hope_delta
 			append_signed_change(lines, "希望", cmd.hope_delta)
+			if has_public_decision:
+				selected_sector.data_card.order += 5
+				selected_sector.data_card.authority -= 1
+				append_signed_change(lines, "秩序", 5)
+				append_signed_change(lines, "控制权", -1)
 		elif effect_type == "combined" and can_allocate_combined():
 			selected_sector.data_card.order += 10
 			selected_sector.data_card.hope += 10
@@ -1437,16 +1506,22 @@ func apply_special_command_effect(cmd: CommandData) -> void:
 		COMMAND_GLOBAL_TAKEOVER:
 			var sectors := %SectorInfoContainer.get_children()
 			var affected_count := 0
-			var authority_gain := (
-				8 if %TechnologySystem.has_tag("managed_core") else 5
-			)
+			var authority_gain := 5
+			var order_gain := 0
+			var hope_change := 0
+			if %TechnologySystem.has_tag("managed_consensual_core"):
+				authority_gain = 6
+				order_gain = 3
+			elif %TechnologySystem.has_tag("managed_core"):
+				authority_gain = 8
+				order_gain = 5
+				hope_change = -5
 			for sector in sectors:
 				if sector.get("data_card") == null:
 					continue
 				sector.data_card.authority += authority_gain
-				if %TechnologySystem.has_tag("managed_core"):
-					sector.data_card.order += 5
-					sector.data_card.hope -= 5
+				sector.data_card.order += order_gain
+				sector.data_card.hope += hope_change
 				sector.data_card.clamp_values()
 				sector.update_display()
 				affected_count += 1
@@ -1455,8 +1530,10 @@ func apply_special_command_effect(cmd: CommandData) -> void:
 				"影响板块：全区域（%d）" % affected_count,
 				"每个区域 控制权 +%d" % authority_gain,
 			]
-			if %TechnologySystem.has_tag("managed_core"):
-				takeover_lines.append("每个区域 秩序 +5 / 希望 -5")
+			if order_gain != 0 or hope_change != 0:
+				takeover_lines.append(
+					"每个区域 秩序 %+d / 希望 %+d" % [order_gain, hope_change]
+				)
 			log_command_result(cmd, takeover_lines)
 
 # ============================================================

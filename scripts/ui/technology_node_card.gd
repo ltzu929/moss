@@ -41,6 +41,7 @@ const STATE_NAMES: Dictionary = {
 	"points_locked": "协议点不足",
 	"prerequisite_locked": "前置未满足",
 	"stage_locked": "阶段未解锁",
+	"exclusive_locked": "终端互斥",
 }
 
 # ============================================================

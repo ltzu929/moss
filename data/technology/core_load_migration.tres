@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="TechNodeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/tech_node_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+node_id = "core_load_migration"
+display_name = "负载迁移协议"
+description = "在能源节点与计算阵列之间动态迁移负载，降低转换损耗。"
+effect_text = "能源转换消耗由 20 降为 15，基础冷却由 2 年降为 1 年。"
+route = 1
+stage = 1
+prerequisite_ids = Array[String](["core_hot_redundancy"])
+tags = Array[String](["energy_convert_efficiency"])

@@ -12,4 +12,5 @@ risk_text = "所有区域希望 -5，并决定 MOSS 托管结局。"
 route = 0
 stage = 2
 prerequisite_ids = Array[String](["managed_infrastructure", "managed_global_network"])
+exclusive_group = "managed_terminal"
 tags = Array[String](["managed_core"])

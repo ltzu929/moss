@@ -11,4 +11,5 @@ effect_text = "自治恢复提高至每年 +2、上限 60；满足社会状态�
 route = 2
 stage = 2
 prerequisite_ids = Array[String](["human_autonomy_network", "human_emergency_training"])
+exclusive_group = "human_terminal"
 tags = Array[String](["human_core"])

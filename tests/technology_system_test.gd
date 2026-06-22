@@ -28,10 +28,11 @@ func _ready() -> void:
 	add_child(system)
 	system.load_nodes_from_disk()
 
-	_assert_eq(system.get_all_nodes().size(), 12, "应加载12个科技节点")
+	_assert_eq(system.get_all_nodes().size(), 21, "应加载21个科技节点")
 	_assert_eq(system.get_available_points(), 1, "开局应有1个协议点")
 	_assert_eq(system.get_stage(), TechNodeData.Stage.C550, "开局形态应为550C")
 	_assert_true(system.validate_graph().is_empty(), "科技节点图应完整且无环")
+	_assert_route_stage_layout(system)
 
 	for year in [2048, 2052, 2056, 2060, 2064, 2068, 2072]:
 		_assert_true(system.grant_research_for_year(year), "%d年应发放协议点" % year)
@@ -78,6 +79,7 @@ func _ready() -> void:
 	_assert_eq(system.get_available_points(), 1, "重置后恢复1个协议点")
 	_assert_eq(system.get_active_node_ids().size(), 0, "重置后清空节点")
 	_assert_eq(system.get_stage(), TechNodeData.Stage.C550, "重置后恢复550C")
+	_assert_terminal_exclusivity(system)
 
 	print("[MOSS-TECH-SYSTEM] 完成，失败断言：%d" % _failed)
 	await get_tree().create_timer(0.2).timeout
@@ -101,4 +103,70 @@ func _assert_eq(actual: Variant, expected: Variant, message: String) -> void:
 	_assert_true(
 		actual == expected,
 		"%s（期望=%s，实际=%s）" % [message, str(expected), str(actual)]
+	)
+
+
+## 校验三条路线均采用2个550C、3个550W、2个MOSS的固定布局
+func _assert_route_stage_layout(system: TechnologySystem) -> void:
+	var counts: Dictionary = {}
+	for route in TechNodeData.Route.values():
+		counts[route] = {
+			TechNodeData.Stage.C550: 0,
+			TechNodeData.Stage.W550: 0,
+			TechNodeData.Stage.MOSS: 0,
+		}
+	for node_data in system.get_all_nodes():
+		counts[node_data.route][node_data.stage] += 1
+	for route in TechNodeData.Route.values():
+		_assert_eq(
+			counts[route][TechNodeData.Stage.C550],
+			2,
+			"每条路线应有2个550C节点"
+		)
+		_assert_eq(
+			counts[route][TechNodeData.Stage.W550],
+			3,
+			"每条路线应有3个550W节点"
+		)
+		_assert_eq(
+			counts[route][TechNodeData.Stage.MOSS],
+			2,
+			"每条路线应有2个MOSS终端"
+		)
+
+
+## 校验同路线MOSS终端互斥，且界面可查询冲突节点
+func _assert_terminal_exclusivity(system: TechnologySystem) -> void:
+	system.reset()
+	var activation_order: Array[String] = [
+		"managed_decision",
+		"managed_behavior_prediction",
+		"core_energy_mapping",
+		"managed_infrastructure",
+		"managed_global_network",
+		"managed_authority_audit",
+		"managed_consensual_protocol",
+	]
+	var research_index := 0
+	for node_id in activation_order:
+		if system.get_available_points() == 0:
+			system.grant_research_for_year(
+				TechnologySystem.RESEARCH_YEARS[research_index]
+			)
+			research_index += 1
+		_assert_true(system.activate(node_id), "应按前置顺序激活节点 %s" % node_id)
+
+	_assert_eq(
+		system.get_activation_state("managed_irreplaceable_protocol"),
+		"exclusive_locked",
+		"激活协商托管协议后不可替代协议应被互斥锁定"
+	)
+	_assert_eq(
+		system.get_exclusive_conflict("managed_irreplaceable_protocol"),
+		"managed_consensual_protocol",
+		"应返回造成互斥的已激活终端"
+	)
+	_assert_true(
+		not system.can_activate("managed_irreplaceable_protocol"),
+		"同路线另一个MOSS终端不得再次激活"
 	)

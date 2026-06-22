@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="TechNodeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/tech_node_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+node_id = "human_mutual_aid"
+display_name = "区域互助网络"
+description = "建立跨区域技术协作和物资互助网络，提高援助效率。"
+effect_text = "技术援助改为消耗 15 算力与 5 能源，秩序 +12、希望 +12、控制权 -4。"
+route = 2
+stage = 1
+prerequisite_ids = Array[String](["human_public_decision"])
+tags = Array[String](["human_mutual_aid"])

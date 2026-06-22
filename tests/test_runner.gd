@@ -635,8 +635,8 @@ func _assert_technology_progress() -> void:
 	var technology: TechnologySystem = _main_os.get_node("%TechnologySystem")
 	_assert_eq(
 		technology.get_all_nodes().size(),
-		12,
-		"应加载12个科技节点",
+		21,
+		"应加载21个科技节点",
 		"technology"
 	)
 	_assert_eq(

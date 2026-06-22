@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="TechNodeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/tech_node_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+node_id = "human_collaborative_governance"
+display_name = "协作治理协议"
+description = "由 MOSS 与区域组织共同维护技术标准和公共决策流程。"
+effect_text = "技术援助改为消耗 10 算力与 5 能源，冷却 2 年，秩序 +15、希望 +15、控制权 -5。"
+risk_text = "不提供控制权归零存续能力，也不满足人类自治结局条件。"
+route = 2
+stage = 2
+prerequisite_ids = Array[String](["human_autonomy_network", "human_mutual_aid"])
+exclusive_group = "human_terminal"
+tags = Array[String](["human_collaborative_core"])

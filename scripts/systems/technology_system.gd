@@ -121,10 +121,28 @@ func has_tag(tag: String) -> bool:
 	return false
 
 
-## 判断节点是否满足存在性、点数、阶段和前置条件
+## 返回与指定节点发生互斥的已激活节点；没有冲突时返回空字符串
+func get_exclusive_conflict(node_id: String) -> String:
+	var node_data := get_node_data(node_id)
+	if node_data == null or node_data.exclusive_group == "":
+		return ""
+	for active_node_id in _active_node_ids:
+		var active_node := get_node_data(active_node_id)
+		if (
+			active_node != null
+			and active_node.exclusive_group == node_data.exclusive_group
+			and active_node.node_id != node_id
+		):
+			return active_node.node_id
+	return ""
+
+
+## 判断节点是否满足存在性、点数、阶段、前置和互斥条件
 func can_activate(node_id: String) -> bool:
 	var node_data := get_node_data(node_id)
 	if node_data == null or is_active(node_id):
+		return false
+	if get_exclusive_conflict(node_id) != "":
 		return false
 	if _available_points < node_data.point_cost:
 		return false
@@ -145,6 +163,8 @@ func get_activation_state(node_id: String) -> String:
 		return "missing"
 	if is_active(node_id):
 		return "active"
+	if get_exclusive_conflict(node_id) != "":
+		return "exclusive_locked"
 	if node_data.stage > _stage:
 		return "stage_locked"
 	for prerequisite_id in node_data.prerequisite_ids:
@@ -211,8 +231,8 @@ func export_state() -> Dictionary:
 ## 返回所有发现的错误；空数组表示图结构有效
 func validate_graph() -> Array[String]:
 	var errors: Array[String] = []
-	if _nodes_by_id.size() != 12:
-		errors.append("科技节点数量必须为12")
+	if _nodes_by_id.size() != 21:
+		errors.append("科技节点数量必须为21")
 
 	var route_stage_counts: Dictionary = {}
 	for node_data in get_all_nodes():
@@ -238,11 +258,33 @@ func validate_graph() -> Array[String]:
 	for route in TechNodeData.Route.values():
 		var counts: Dictionary = route_stage_counts.get(str(route), {})
 		if (
-			counts.get(TechNodeData.Stage.C550, 0) != 1
-			or counts.get(TechNodeData.Stage.W550, 0) != 2
-			or counts.get(TechNodeData.Stage.MOSS, 0) != 1
+			counts.get(TechNodeData.Stage.C550, 0) != 2
+			or counts.get(TechNodeData.Stage.W550, 0) != 3
+			or counts.get(TechNodeData.Stage.MOSS, 0) != 2
 		):
-			errors.append("路线 %d 必须包含1个550C、2个550W和1个MOSS节点" % route)
+			errors.append("路线 %d 必须包含2个550C、3个550W和2个MOSS节点" % route)
+
+	var exclusive_groups: Dictionary = {}
+	for node_data in get_all_nodes():
+		if node_data.stage == TechNodeData.Stage.MOSS and node_data.exclusive_group == "":
+			errors.append("MOSS终端必须设置互斥组: %s" % node_data.node_id)
+		if node_data.exclusive_group == "":
+			continue
+		if node_data.stage != TechNodeData.Stage.MOSS:
+			errors.append("只有MOSS终端可以设置互斥组: %s" % node_data.node_id)
+		if node_data.exclusive_group not in exclusive_groups:
+			exclusive_groups[node_data.exclusive_group] = []
+		exclusive_groups[node_data.exclusive_group].append(node_data)
+
+	if exclusive_groups.size() != 3:
+		errors.append("科技图必须包含3个路线终端互斥组")
+	for group_name in exclusive_groups:
+		var group_nodes: Array = exclusive_groups[group_name]
+		if group_nodes.size() != 2:
+			errors.append("互斥组 %s 必须包含2个MOSS终端" % group_name)
+		continue
+		if group_nodes[0].route != group_nodes[1].route:
+			errors.append("互斥组 %s 的终端必须属于同一路线" % group_name)
 
 	# 使用深度优先搜索的访问中集合检测前置关系中的环。
 	var visiting: Dictionary = {}

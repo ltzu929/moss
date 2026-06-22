@@ -35,6 +35,7 @@ func _ready() -> void:
 	_assert_region_names()
 	_assert_clear_asset_names()
 	_assert_masks_loaded()
+	_assert_editor_preview_contract(world_map_script)
 	_assert_mask_hit_testing()
 	await _assert_resized_map_hit_testing()
 	_assert_selection_signal()
@@ -66,6 +67,23 @@ func _assert_masks_loaded() -> void:
 	for region_name in TEST_REGIONS:
 		var image: Image = mask_images.get(region_name)
 		_assert_true(image != null and not image.is_empty(), "%s 遮罩应加载为 Image" % region_name)
+
+
+func _assert_editor_preview_contract(world_map_script: GDScript) -> void:
+	_assert_true(world_map_script.is_tool(), "WorldMapView 应为 @tool 脚本以便编辑器直接绘制")
+	for property_name in [
+		"north_america_label_position",
+		"south_america_label_position",
+		"africa_label_position",
+		"asia_label_position",
+		"oceania_label_position",
+	]:
+		_assert_true(_world_map.get(property_name) is Vector2, "%s 应作为可调标签坐标导出" % property_name)
+	_assert_true(_world_map.has_method("_load_editor_preview_states"), "应提供编辑器预览区域数据加载方法")
+	if _world_map.has_method("_load_editor_preview_states"):
+		_world_map.call("_load_editor_preview_states")
+		var states: Dictionary = _world_map.get("_region_states")
+		_assert_eq(states.size(), TEST_REGIONS.size(), "编辑器预览应加载五个区域状态")
 
 
 func _assert_mask_hit_testing() -> void:
