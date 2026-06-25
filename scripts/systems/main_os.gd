@@ -526,14 +526,13 @@ func _apply_human_autonomy_recovery() -> void:
 	for sector in %SectorInfoContainer.get_children():
 		if sector.get("data_card") == null:
 			continue
-		sector.data_card.order = mini(
-			recovery_cap,
-			sector.data_card.order + recovery
-		)
-		sector.data_card.hope = mini(
-			recovery_cap,
-			sector.data_card.hope + recovery
-		)
+		
+		if sector.data_card.order < recovery_cap:
+			sector.data_card.order = mini(sector.data_card.order + recovery, recovery_cap)
+		
+		if sector.data_card.hope < recovery_cap:
+			sector.data_card.hope = mini(sector.data_card.hope + recovery, recovery_cap)
+			
 		sector.update_display()
 
 

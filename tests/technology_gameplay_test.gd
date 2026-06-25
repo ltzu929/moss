@@ -88,11 +88,11 @@ func _ready() -> void:
 	var first_sector: SectorInfo = (
 		_main_os.get_node("%SectorInfoContainer").get_child(0) as SectorInfo
 	)
-	first_sector.data_card.order = 30
-	first_sector.data_card.hope = 30
+	first_sector.data_card.order = 80
+	first_sector.data_card.hope = 75
 	_main_os._apply_human_autonomy_recovery()
-	_assert_eq(first_sector.data_card.order, 32, "文明自持应使低秩序年度恢复2")
-	_assert_eq(first_sector.data_card.hope, 32, "文明自持应使低希望年度恢复2")
+	_assert_eq(first_sector.data_card.order, 80, "恢复不应降低高于上限的秩序")
+	_assert_eq(first_sector.data_card.hope, 75, "恢复不应降低高于上限的希望")
 
 	_main_os.restart_game_for_test()
 	_main_os.get_node("Timer").stop()
