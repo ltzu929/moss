@@ -35,7 +35,7 @@ enum Stage {
 ## 节点激活后产生的正向效果
 @export_multiline var effect_text: String = "节点效果"
 ## 节点激活后需要提示的代价或风险
-@export_multiline var risk_text: String = "节点代价"
+@export_multiline var risk_text: String = " "
 
 @export_group("结构")
 ## 节点所属路线

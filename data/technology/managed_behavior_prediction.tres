@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="TechNodeData" format=3]
+[gd_resource type="Resource" script_class="TechNodeData" format=3 uid="uid://dtist6gxrywgv"]
 
-[ext_resource type="Script" path="res://scripts/resources/tech_node_data.gd" id="1"]
+[ext_resource type="Script" uid="uid://cif42nwhtrcfy" path="res://scripts/resources/tech_node_data.gd" id="1"]
 
 [resource]
 script = ExtResource("1")
@@ -8,6 +8,4 @@ node_id = "managed_behavior_prediction"
 display_name = "行为预测模型"
 description = "利用区域行为数据预测抵触与协作窗口，提前安排接管资源。"
 effect_text = "系统接管基础冷却由 5 年降为 4 年。"
-route = 0
-stage = 0
 tags = Array[String](["managed_takeover_cooldown"])

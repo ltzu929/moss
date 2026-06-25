@@ -6,7 +6,7 @@
 script = ExtResource("1")
 node_id = "core_parallel"
 display_name = "并行核心"
-description = "扩展并行计算核心和任务队列。"
+description = "扩展并行计算核心和任务队列，以此提高算力。"
 effect_text = "算力上限 +50。"
 route = 1
 stage = 1

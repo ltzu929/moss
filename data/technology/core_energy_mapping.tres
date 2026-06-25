@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("1")
 node_id = "core_energy_mapping"
-display_name = "能量映射"
-description = "建立能源与计算资源之间的动态映射。"
+display_name = "超负荷运算"
+description = "在短时间内通过消耗能源来提高算力"
 effect_text = "解锁“能源转换”指令：20 能源转换为 10 算力。"
 route = 1
 tags = Array[String](["unlock_energy_convert"])

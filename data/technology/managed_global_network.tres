@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="TechNodeData" format=3]
+[gd_resource type="Resource" script_class="TechNodeData" format=3 uid="uid://re63sk0khyom"]
 
-[ext_resource type="Script" path="res://scripts/resources/tech_node_data.gd" id="1"]
+[ext_resource type="Script" uid="uid://cif42nwhtrcfy" path="res://scripts/resources/tech_node_data.gd" id="1"]
 
 [resource]
 script = ExtResource("1")
@@ -8,7 +8,6 @@ node_id = "managed_global_network"
 display_name = "全域协调网络"
 description = "把分散区域接入统一控制与协调网络。"
 effect_text = "解锁“全局接管”指令：所有区域控制权 +5。"
-route = 0
 stage = 1
 prerequisite_ids = Array[String](["managed_decision"])
 tags = Array[String](["unlock_global_takeover"])

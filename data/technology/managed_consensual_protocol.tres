@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="TechNodeData" format=3]
+[gd_resource type="Resource" script_class="TechNodeData" format=3 uid="uid://dm3tntx47ixo4"]
 
-[ext_resource type="Script" path="res://scripts/resources/tech_node_data.gd" id="1"]
+[ext_resource type="Script" uid="uid://cif42nwhtrcfy" path="res://scripts/resources/tech_node_data.gd" id="1"]
 
 [resource]
 script = ExtResource("1")
@@ -9,7 +9,6 @@ display_name = "协商托管协议"
 description = "以公开协商和有限授权替代不可逆的强制接管。"
 effect_text = "系统接管控制权 +12 且不降低希望；全局接管使所有区域秩序 +3、控制权 +6 且不降低希望。"
 risk_text = "控制收益弱于不可替代协议，且不满足 MOSS 托管结局条件。"
-route = 0
 stage = 2
 prerequisite_ids = Array[String](["managed_global_network", "managed_authority_audit"])
 exclusive_group = "managed_terminal"

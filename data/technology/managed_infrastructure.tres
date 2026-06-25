@@ -1,15 +1,14 @@
-[gd_resource type="Resource" script_class="TechNodeData" format=3]
+[gd_resource type="Resource" script_class="TechNodeData" format=3 uid="uid://c051vs4e1fave"]
 
-[ext_resource type="Script" path="res://scripts/resources/tech_node_data.gd" id="1"]
+[ext_resource type="Script" uid="uid://cif42nwhtrcfy" path="res://scripts/resources/tech_node_data.gd" id="1"]
 
 [resource]
 script = ExtResource("1")
 node_id = "managed_infrastructure"
 display_name = "基础设施托管"
-description = "将关键基础设施的运行权限交给 MOSS。"
+description = "MOSS 获取关键基础设施的运行权限 。"
 effect_text = "系统接管消耗降为 25 算力、15 能源，控制权收益提高至 +15。"
 risk_text = "目标区域希望 -5。"
-route = 0
 stage = 1
 prerequisite_ids = Array[String](["managed_decision"])
 tags = Array[String](["managed_infrastructure"])

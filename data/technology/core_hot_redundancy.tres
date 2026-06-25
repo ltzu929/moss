@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="TechNodeData" format=3]
+[gd_resource type="Resource" script_class="TechNodeData" format=3 uid="uid://crd0l3s4yr3yl"]
 
-[ext_resource type="Script" path="res://scripts/resources/tech_node_data.gd" id="1"]
+[ext_resource type="Script" uid="uid://cif42nwhtrcfy" path="res://scripts/resources/tech_node_data.gd" id="1"]
 
 [resource]
 script = ExtResource("1")
@@ -9,5 +9,4 @@ display_name = "热冗余阵列"
 description = "建立持续在线的能源与计算冗余阵列，减少年度运行损耗。"
 effect_text = "每年能源恢复 +5。"
 route = 1
-stage = 0
 tags = Array[String](["energy_recovery_bonus"])
