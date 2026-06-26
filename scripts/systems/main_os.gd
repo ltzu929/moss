@@ -25,6 +25,8 @@ signal game_ended(result: String, message: String)
 
 ## MOSS 界面主题工具
 const MOSS_THEME := preload("res://scripts/ui/moss_ui_theme.gd")
+## 指令领域服务脚本
+const COMMAND_SYSTEM_SCRIPT := preload("res://scripts/systems/command_system.gd")
 ## 游戏初始值
 const INITIAL_YEAR: int = 2044
 const INITIAL_CPU: int = 30
@@ -34,12 +36,12 @@ const INITIAL_CPU_RECOVERY_RATE: int = 10
 const INITIAL_ENERGY_RECOVERY_RATE: int = 10
 const END_YEAR: int = 2075
 
-## 稳定指令 ID
-const COMMAND_ALLOCATE: String = "allocate"
-const COMMAND_TAKEOVER: String = "takeover"
-const COMMAND_ENERGY_CONVERT: String = "energy_convert"
-const COMMAND_GLOBAL_TAKEOVER: String = "global_takeover"
-const COMMAND_TECHNOLOGY_AID: String = "technology_aid"
+## 稳定指令 ID，实际所有权在 CommandSystem
+const COMMAND_ALLOCATE: String = COMMAND_SYSTEM_SCRIPT.COMMAND_ALLOCATE
+const COMMAND_TAKEOVER: String = COMMAND_SYSTEM_SCRIPT.COMMAND_TAKEOVER
+const COMMAND_ENERGY_CONVERT: String = COMMAND_SYSTEM_SCRIPT.COMMAND_ENERGY_CONVERT
+const COMMAND_GLOBAL_TAKEOVER: String = COMMAND_SYSTEM_SCRIPT.COMMAND_GLOBAL_TAKEOVER
+const COMMAND_TECHNOLOGY_AID: String = COMMAND_SYSTEM_SCRIPT.COMMAND_TECHNOLOGY_AID
 const ACTION_LOG_LIMIT: int = 24
 
 # ============================================================
@@ -104,6 +106,9 @@ var available_commands: Array[CommandData] = []
 ## 板块初始状态快照（用于重新开始）
 var initial_sector_states: Dictionary = {}
 var action_log: Array[Dictionary] = []
+
+## 指令领域服务，不直接访问场景树或 UI
+var _command_system: CommandSystem = COMMAND_SYSTEM_SCRIPT.new()
 
 ## 已触发的事件ID列表（防止重复触发）
 var triggered_events: Array[String] = []
@@ -284,15 +289,12 @@ func load_commands_from_disk() -> void:
 ## 判断稳定指令 ID 是否已经存在于可用指令列表
 ## 返回 true 表示指令已加载或已由科技节点解锁
 func has_command_id(command_id: String) -> bool:
-	for cmd in available_commands:
-		if cmd.command_id == command_id:
-			return true
-	return false
+	return _command_system.has_command_id(available_commands, command_id)
 
 
 ## 判断算力分配是否已开放综合调度选项
 func can_allocate_combined() -> bool:
-	return %TechnologySystem.has_tag("managed_decision")
+	return _command_system.can_allocate_combined(%TechnologySystem)
 
 
 ## 返回事件数值经过科技减损后的结果
@@ -333,158 +335,25 @@ func refresh_technology_effects() -> void:
 	current_cpu = mini(current_cpu, max_cpu)
 	technology_stage_level = int(%TechnologySystem.get_stage()) + 1
 
-	_sync_technology_commands()
-	_reset_base_command_values()
+	_command_system.refresh_command_configuration(
+		available_commands,
+		command_cooldowns,
+		%TechnologySystem
+	)
 	setup_command_buttons()
 	update_command_buttons()
 	update_global_resource_ui()
 
 
-## 将基础指令恢复为默认数值，再应用科技标签提供的覆盖效果
-func _reset_base_command_values() -> void:
-	var allocate := _get_command_by_id(COMMAND_ALLOCATE)
-	if allocate != null:
-		allocate.cpu_cost = 20
-		allocate.order_delta = 15
-		allocate.hope_delta = 15
-		allocate.authority_delta = 0
-		allocate.set_meta("combined_enabled", can_allocate_combined())
-
-	var takeover := _get_command_by_id(COMMAND_TAKEOVER)
-	if takeover != null:
-		takeover.cpu_cost = 30
-		takeover.energy_cost = 20
-		takeover.authority_delta = 10
-		takeover.hope_delta = 0
-		takeover.cooldown_years = 5
-		if %TechnologySystem.has_tag("managed_infrastructure"):
-			takeover.cpu_cost = 25
-			takeover.energy_cost = 15
-			takeover.authority_delta = 15
-			takeover.hope_delta = -5
-		if %TechnologySystem.has_tag("managed_takeover_cooldown"):
-			takeover.cooldown_years = 4
-		if %TechnologySystem.has_tag("managed_command_energy_discount"):
-			takeover.energy_cost = maxi(0, takeover.energy_cost - 5)
-		if %TechnologySystem.has_tag("managed_consensual_core"):
-			takeover.authority_delta = 12
-			takeover.hope_delta = 0
-
-	var energy_convert := _get_command_by_id(COMMAND_ENERGY_CONVERT)
-	if energy_convert != null:
-		energy_convert.energy_cost = 20
-		energy_convert.cooldown_years = 2
-		if %TechnologySystem.has_tag("energy_convert_efficiency"):
-			energy_convert.energy_cost = 15
-			energy_convert.cooldown_years = 1
-
-	var global_takeover := _get_command_by_id(COMMAND_GLOBAL_TAKEOVER)
-	if global_takeover != null:
-		global_takeover.cpu_cost = 30
-		global_takeover.energy_cost = 10
-		global_takeover.cooldown_years = 5
-		if %TechnologySystem.has_tag("managed_command_energy_discount"):
-			global_takeover.energy_cost = 5
-
-	var technology_aid := _get_command_by_id(COMMAND_TECHNOLOGY_AID)
-	if technology_aid != null:
-		technology_aid.cpu_cost = 20
-		technology_aid.energy_cost = 10
-		technology_aid.order_delta = 10
-		technology_aid.hope_delta = 10
-		technology_aid.authority_delta = -3
-		technology_aid.cooldown_years = 4
-		if %TechnologySystem.has_tag("human_mutual_aid"):
-			technology_aid.cpu_cost = 15
-			technology_aid.energy_cost = 5
-			technology_aid.order_delta = 12
-			technology_aid.hope_delta = 12
-			technology_aid.authority_delta = -4
-		if %TechnologySystem.has_tag("human_collaborative_core"):
-			technology_aid.cpu_cost = 10
-			technology_aid.energy_cost = 5
-			technology_aid.order_delta = 15
-			technology_aid.hope_delta = 15
-			technology_aid.authority_delta = -5
-			technology_aid.cooldown_years = 2
-
-
-## 同步由科技标签控制的运行时指令
-func _sync_technology_commands() -> void:
-	_sync_command_unlock(
-		COMMAND_ENERGY_CONVERT,
-		%TechnologySystem.has_tag("unlock_energy_convert")
-	)
-	_sync_command_unlock(
-		COMMAND_GLOBAL_TAKEOVER,
-		%TechnologySystem.has_tag("unlock_global_takeover")
-	)
-	_sync_command_unlock(
-		COMMAND_TECHNOLOGY_AID,
-		%TechnologySystem.has_tag("unlock_technology_aid")
-	)
-
-
-## 按科技解锁状态添加或移除指定运行时指令
-## should_exist 为 true 时创建缺失指令，为 false 时移除已有指令
-func _sync_command_unlock(command_id: String, should_exist: bool) -> void:
-	if should_exist and not has_command_id(command_id):
-		var cmd := _create_technology_command(command_id)
-		if cmd != null:
-			available_commands.append(cmd)
-			command_cooldowns[command_id] = 0
-	elif not should_exist and has_command_id(command_id):
-		for index in range(available_commands.size() - 1, -1, -1):
-			if available_commands[index].command_id == command_id:
-				available_commands.remove_at(index)
-				command_cooldowns.erase(command_id)
-
-
-## 根据稳定指令 ID 创建科技解锁的运行时指令数据
-## 未识别 ID 时返回 null
-func _create_technology_command(command_id: String) -> CommandData:
-	var cmd := CommandData.new()
-	cmd.command_id = command_id
-	match command_id:
-		COMMAND_ENERGY_CONVERT:
-			cmd.command_name = "能源转换"
-			cmd.description = "消耗20能源，将其转换为算力"
-			cmd.energy_cost = 20
-			cmd.cooldown_years = 2
-		COMMAND_GLOBAL_TAKEOVER:
-			cmd.command_name = "全局接管"
-			cmd.description = "对全部区域执行统一接管"
-			cmd.cpu_cost = 30
-			cmd.energy_cost = 10
-			cmd.cooldown_years = 5
-		COMMAND_TECHNOLOGY_AID:
-			cmd.command_name = "技术援助"
-			cmd.description = "向区域开放技术，提高自治能力并降低MOSS控制"
-			cmd.cpu_cost = 20
-			cmd.energy_cost = 10
-			cmd.order_delta = 10
-			cmd.hope_delta = 10
-			cmd.authority_delta = -3
-			cmd.cooldown_years = 4
-		_:
-			return null
-	return cmd
-
 
 ## 根据稳定指令 ID 查找可用指令；不存在时返回 null
 func _get_command_by_id(command_id: String) -> CommandData:
-	for cmd in available_commands:
-		if cmd.command_id == command_id:
-			return cmd
-	return null
+	return _command_system.get_command_by_id(available_commands, command_id)
 
 
 ## 判断指令执行前是否必须选中目标板块
 func command_requires_selected_sector(cmd: CommandData) -> bool:
-	return cmd.command_id not in [
-		COMMAND_ENERGY_CONVERT,
-		COMMAND_GLOBAL_TAKEOVER,
-	]
+	return _command_system.command_requires_selected_sector(cmd)
 
 
 ## 更新科技按钮显示的可用协议点和提示文本
@@ -643,50 +512,31 @@ func _on_sector_clicked(sector: SectorInfo) -> void:
 ## 每年更新冷却状态
 ## 减少所有指令的冷却计数（最小为0）
 func update_cooldowns() -> void:
-	for cmd_name in command_cooldowns.keys():
-		if command_cooldowns[cmd_name] > 0:
-			command_cooldowns[cmd_name] -= 1
+	_command_system.update_cooldowns(command_cooldowns)
 
 ## 检查指令是否可用（冷却、资源、选中状态）
 ## 参数: cmd - 指令数据
 ## 返回: true表示可执行
 func is_command_available(cmd: CommandData) -> bool:
-	# 检查选中状态
-	if command_requires_selected_sector(cmd) and selected_sector == null:
-		return false
-
-	# 检查冷却
-	if command_cooldowns.get(cmd.command_id, 0) > 0:
-		return false
-
-	# 检查算力
-	if current_cpu < cmd.cpu_cost:
-		return false
-
-	# 检查能源
-	if current_energy < cmd.energy_cost:
-		return false
-
-	return true
+	return _command_system.is_command_available(
+		cmd,
+		current_cpu,
+		current_energy,
+		selected_sector != null,
+		command_cooldowns
+	)
 
 ## 获取指令不可用的原因（用于tooltip）
 ## 参数: cmd - 指令数据
 ## 返回: 不可用原因字符串，可用时返回空字符串
 func get_command_unavailable_reason(cmd: CommandData) -> String:
-	if command_requires_selected_sector(cmd) and selected_sector == null:
-		return "请先选择板块"
-
-	var cooldown: int = command_cooldowns.get(cmd.command_id, 0)
-	if cooldown > 0:
-		return "冷却中（剩余%d年）" % cooldown
-
-	if current_cpu < cmd.cpu_cost:
-		return "算力不足（需要%d）" % cmd.cpu_cost
-
-	if current_energy < cmd.energy_cost:
-		return "能源不足（需要%d）" % cmd.energy_cost
-
-	return ""
+	return _command_system.get_command_unavailable_reason(
+		cmd,
+		current_cpu,
+		current_energy,
+		selected_sector != null,
+		command_cooldowns
+	)
 
 # ============================================================
 # 时间推进系统
@@ -1393,20 +1243,20 @@ func restart_game_for_test() -> void:
 ## 参数: cmd - 指令数据
 ## 返回: true表示执行成功
 func execute_command(cmd: CommandData) -> bool:
-	if not is_command_available(cmd):
+	var result := _command_system.execute_command(
+		cmd,
+		current_cpu,
+		current_energy,
+		selected_sector != null,
+		cooldown_reduction,
+		command_cooldowns
+	)
+	if not result["success"]:
 		return false
 
-	# 消耗资源
-	current_cpu -= cmd.cpu_cost
-	current_energy -= cmd.energy_cost
-
-	# 启动冷却
-	var adjusted_cooldown := maxi(0, cmd.cooldown_years - cooldown_reduction)
-	command_cooldowns[cmd.command_id] = adjusted_cooldown
-
-	# 刷新资源UI
+	current_cpu = result["new_cpu"]
+	current_energy = result["new_energy"]
 	update_global_resource_ui()
-
 	return true
 
 ## 应用指令效果到选中板块
@@ -1416,48 +1266,18 @@ func apply_command_effect(cmd: CommandData, effect_type: String = "") -> void:
 	if selected_sector == null:
 		return
 
+	var effect_lines := _command_system.apply_targeted_command(
+		cmd,
+		selected_sector.data_card,
+		effect_type,
+		%TechnologySystem.has_tag("human_public_decision"),
+		can_allocate_combined()
+	)
+	if effect_lines.is_empty():
+		return
+
 	var lines: Array[String] = ["影响板块：%s" % selected_sector.data_card.region_name]
-
-	# 应用效果
-	if cmd.is_allocate_type:
-		# 公共决策只强化单项分配，不与综合调度叠加。
-		var has_public_decision: bool = %TechnologySystem.has_tag("human_public_decision")
-		if effect_type == "order":
-			selected_sector.data_card.order += cmd.order_delta
-			append_signed_change(lines, "秩序", cmd.order_delta)
-			if has_public_decision:
-				selected_sector.data_card.hope += 5
-				selected_sector.data_card.authority -= 1
-				append_signed_change(lines, "希望", 5)
-				append_signed_change(lines, "控制权", -1)
-		elif effect_type == "hope":
-			selected_sector.data_card.hope += cmd.hope_delta
-			append_signed_change(lines, "希望", cmd.hope_delta)
-			if has_public_decision:
-				selected_sector.data_card.order += 5
-				selected_sector.data_card.authority -= 1
-				append_signed_change(lines, "秩序", 5)
-				append_signed_change(lines, "控制权", -1)
-		elif effect_type == "combined" and can_allocate_combined():
-			selected_sector.data_card.order += 10
-			selected_sector.data_card.hope += 10
-			selected_sector.data_card.authority += 2
-			append_signed_change(lines, "秩序", 10)
-			append_signed_change(lines, "希望", 10)
-			append_signed_change(lines, "控制权", 2)
-	else:
-		# 其他指令直接应用所有效果
-		selected_sector.data_card.order += cmd.order_delta
-		selected_sector.data_card.hope += cmd.hope_delta
-		selected_sector.data_card.authority += cmd.authority_delta
-		append_signed_change(lines, "秩序", cmd.order_delta)
-		append_signed_change(lines, "希望", cmd.hope_delta)
-		append_signed_change(lines, "控制权", cmd.authority_delta)
-
-	# 限制数值范围
-	selected_sector.data_card.clamp_values()
-
-	# 刷新板块显示
+	lines.append_array(effect_lines)
 	selected_sector.update_display()
 	update_global_resource_ui()
 	log_command_result(cmd, lines)
@@ -1495,45 +1315,31 @@ func _on_command_button_pressed(cmd: CommandData) -> void:
 func apply_special_command_effect(cmd: CommandData) -> void:
 	match cmd.command_id:
 		COMMAND_ENERGY_CONVERT:
-			var gain := 15 if %TechnologySystem.has_tag("core_recursive") else 10
-			current_cpu += gain
-			current_cpu = mini(current_cpu, max_cpu)
+			var result := _command_system.apply_energy_convert(
+				current_cpu,
+				max_cpu,
+				%TechnologySystem
+			)
+			current_cpu = result["new_cpu"]
 			update_global_resource_ui()
-			var energy_lines: Array[String] = []
-			append_signed_change(energy_lines, "算力", gain)
-			log_command_result(cmd, energy_lines)
+			log_command_result(cmd, result["lines"])
 		COMMAND_GLOBAL_TAKEOVER:
-			var sectors := %SectorInfoContainer.get_children()
-			var affected_count := 0
-			var authority_gain := 5
-			var order_gain := 0
-			var hope_change := 0
-			if %TechnologySystem.has_tag("managed_consensual_core"):
-				authority_gain = 6
-				order_gain = 3
-			elif %TechnologySystem.has_tag("managed_core"):
-				authority_gain = 8
-				order_gain = 5
-				hope_change = -5
-			for sector in sectors:
+			var sector_nodes := %SectorInfoContainer.get_children()
+			var sector_data_list: Array[SectorData] = []
+			for sector in sector_nodes:
 				if sector.get("data_card") == null:
 					continue
-				sector.data_card.authority += authority_gain
-				sector.data_card.order += order_gain
-				sector.data_card.hope += hope_change
-				sector.data_card.clamp_values()
-				sector.update_display()
-				affected_count += 1
+				sector_data_list.append(sector.data_card)
+
+			var result := _command_system.apply_global_takeover(
+				sector_data_list,
+				%TechnologySystem
+			)
+			for sector in sector_nodes:
+				if sector.get("data_card") != null:
+					sector.update_display()
 			update_global_resource_ui()
-			var takeover_lines: Array[String] = [
-				"影响板块：全区域（%d）" % affected_count,
-				"每个区域 控制权 +%d" % authority_gain,
-			]
-			if order_gain != 0 or hope_change != 0:
-				takeover_lines.append(
-					"每个区域 秩序 %+d / 希望 %+d" % [order_gain, hope_change]
-				)
-			log_command_result(cmd, takeover_lines)
+			log_command_result(cmd, result["lines"])
 
 # ============================================================
 # 指令按钮管理
@@ -1558,7 +1364,6 @@ func setup_command_buttons() -> void:
 
 		# 配置按钮
 		button.setup(cmd)
-		button.cooldowns_ref = command_cooldowns
 
 		# 连接点击信号
 		button.command_pressed.connect(_on_command_button_pressed)
@@ -1574,15 +1379,13 @@ func update_command_buttons() -> void:
 		return
 
 	for button in button_container.get_children():
-		if button.get("update_state") != null:
-			# 更新按钮的状态变量
-			button.current_cpu = current_cpu
-			button.current_energy = current_energy
-			button.has_selected_sector = (
-				selected_sector != null
-				or not command_requires_selected_sector(button.command_data)
+		if button is CommandButton:
+			var reason := get_command_unavailable_reason(button.command_data)
+			button.set_availability(
+				reason.is_empty(),
+				reason,
+				_command_system.get_command_cost_text(button.command_data)
 			)
-			button.update_state()
 
 # ============================================================
 # 日志UI系统

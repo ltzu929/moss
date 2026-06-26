@@ -24,18 +24,6 @@ const MOSS_THEME := preload("res://scripts/ui/moss_ui_theme.gd")
 ## 关联的指令数据
 var command_data: CommandData = null
 
-## 引用main_os的冷却字典（由main_os设置）
-var cooldowns_ref: Dictionary = {}
-
-## 当前算力值（由main_os设置）
-var current_cpu: int = 0
-
-## 当前能源值（由main_os设置）
-var current_energy: int = 0
-
-## 是否有选中板块（由main_os设置）
-var has_selected_sector: bool = false
-
 # ============================================================
 # 生命周期函数
 # ============================================================
@@ -44,48 +32,23 @@ func _ready() -> void:
 	_apply_terminal_style()
 	if command_data != null:
 		text = command_data.command_name
-		update_state()
 
 # ============================================================
 # 状态更新
 # ============================================================
 
-## 更新按钮可用状态和tooltip
-func update_state() -> void:
+## 按外部指令系统计算结果更新按钮可用状态和提示
+func set_availability(is_available: bool, reason: String, cost_text: String) -> void:
 	if command_data == null:
 		return
 
-	# 检查选中状态
-	if not has_selected_sector:
+	if not is_available:
 		disabled = true
-		tooltip_text = "请先选择板块"
+		tooltip_text = reason
 		return
 
-	# 检查冷却
-	var cooldown: int = cooldowns_ref.get(command_data.command_id, 0)
-	if cooldown > 0:
-		disabled = true
-		tooltip_text = "冷却中（剩余%d年）" % cooldown
-		return
-
-	# 检查算力
-	if current_cpu < command_data.cpu_cost:
-		disabled = true
-		tooltip_text = "算力不足（需要%d）" % command_data.cpu_cost
-		return
-
-	# 检查能源
-	if current_energy < command_data.energy_cost:
-		disabled = true
-		tooltip_text = "能源不足（需要%d）" % command_data.energy_cost
-		return
-
-	# 可用状态
 	disabled = false
-	if command_data.energy_cost > 0:
-		tooltip_text = "消耗: %d算力 %d能源" % [command_data.cpu_cost, command_data.energy_cost]
-	else:
-		tooltip_text = "消耗: %d算力" % command_data.cpu_cost
+	tooltip_text = cost_text
 
 # ============================================================
 # 点击响应
