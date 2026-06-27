@@ -10,8 +10,8 @@ extends Control
 ## 测试用Timer间隔（秒）- 加速游戏时间
 const TEST_TIMER_INTERVAL: float = 0.05
 
-## 测试超时帧数（约60秒@60fps）
-const MAX_TEST_FRAMES: int = 3600
+## 测试超时时长（毫秒）
+const MAX_TEST_DURATION_MSEC: int = 60000
 
 # ============================================================
 # 测试状态
@@ -51,8 +51,8 @@ var _event_log: Dictionary = {}
 ## 自动选择的事件选项索引
 var _auto_choice: int = 0
 
-## 帧计数器
-var _frame_count: int = 0
+## 测试启动时间戳
+var _test_started_msec: int = 0
 
 ## 是否已完成断言
 var _assertions_done: bool = false
@@ -66,6 +66,7 @@ var _alloc_popup_responding: bool = false
 # ============================================================
 
 func _ready() -> void:
+	_test_started_msec = Time.get_ticks_msec()
 	_log("=== MOSS模拟器 自动化播放测试启动 ===")
 	_log("")
 
@@ -112,11 +113,12 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
-	_frame_count += 1
-
 	# 超时保护
-	if _frame_count > MAX_TEST_FRAMES and not _game_ended:
-		_log("[ERROR] 测试超时！游戏未在 %d 帧内结束" % MAX_TEST_FRAMES)
+	if (
+		Time.get_ticks_msec() - _test_started_msec > MAX_TEST_DURATION_MSEC
+		and not _game_ended
+	):
+		_log("[ERROR] 测试超时！游戏未在 60 秒内结束")
 		_game_ended = true
 		_run_all_assertions()
 		_finish_test()
