@@ -41,10 +41,11 @@ var _game_result: String = ""
 ## 游戏结束消息
 var _game_message: String = ""
 
-## 上一次跟踪的年份
+## 上一次跟踪的年月
 var _last_tracked_year: int = 2044
+var _last_tracked_month: int = 1
 
-## 事件触发日志 {年份: 事件标题}
+## 事件触发日志 {"YYYY.MM": {year, month, event_title}}
 var _event_log: Dictionary = {}
 
 ## 自动选择的事件选项索引
@@ -128,11 +129,13 @@ func _process(_delta: float) -> void:
 	# 轮询弹窗自动响应
 	_poll_popups()
 
-	# 跟踪年份变化
+	# 跟踪日期变化
 	var current_year: int = _main_os.current_year
-	if current_year != _last_tracked_year:
-		_on_year_changed(_last_tracked_year, current_year)
+	var current_month: int = _main_os.current_month
+	if current_year != _last_tracked_year or current_month != _last_tracked_month:
+		_on_date_changed(_last_tracked_year, _last_tracked_month, current_year, current_month)
 		_last_tracked_year = current_year
+		_last_tracked_month = current_month
 
 	# 游戏已结束，停止处理
 	if _game_ended:
@@ -208,7 +211,11 @@ func _verify_scene_integrity() -> bool:
 	var event_count: int = _main_os.all_events.size()
 	_log("[INFO] 事件数量: %d" % event_count)
 	for event in _main_os.all_events:
-		_log("  事件: %s (年份=%d)" % [event.event_title, event.event_time])
+		_log("  事件: %s (日期=%04d.%02d)" % [
+			event.event_title,
+			event.event_time,
+			event.event_month,
+		])
 
 	return ok
 
@@ -433,7 +440,7 @@ func _assert_child_order(parent: Node, expected_names: Array[String], descriptio
 
 func _record_initial_state() -> void:
 	_log("初始状态:")
-	_log("  年份: %d" % _main_os.current_year)
+	_log("  日期: %04d.%02d" % [_main_os.current_year, _main_os.current_month])
 	_log("  算力: %d" % _main_os.current_cpu)
 	_log("  能源: %d" % _main_os.current_energy)
 	_log("  最大算力: %d" % _main_os.max_cpu)
@@ -478,11 +485,17 @@ func _respond_to_event_popup(event_popup: PanelContainer) -> void:
 
 	# 记录事件触发
 	var year: int = _main_os.current_year
+	var month: int = _main_os.current_month
 	var title: String = ""
 	if event_popup.has_node("%EventTitle"):
 		title = event_popup.get_node("%EventTitle").text
-	_event_log[year] = title
-	_log("  [EVENT] 年份=%d 自动选择选项 %d (%s)" % [year, _auto_choice, title])
+	var date_key := "%04d.%02d" % [year, month]
+	_event_log[date_key] = {
+		"year": year,
+		"month": month,
+		"event_title": title,
+	}
+	_log("  [EVENT] 日期=%s 自动选择选项 %d (%s)" % [date_key, _auto_choice, title])
 
 	# 发出选择信号并隐藏弹窗
 	# 注意：直接emit信号不会触发popup的hide()，必须手动隐藏
@@ -505,10 +518,11 @@ func _respond_to_alloc_popup(alloc_popup: AllocatePopup) -> void:
 # 状态跟踪
 # ============================================================
 
-func _on_year_changed(old_year: int, new_year: int) -> void:
+func _on_date_changed(old_year: int, old_month: int, new_year: int, new_month: int) -> void:
 	var avg_auth: int = _main_os.get_average_authority()
-	_log("年份 %d->%d | CPU=%d 能源=%d 控制权=%d" % [
-		old_year, new_year,
+	_log("日期 %04d.%02d->%04d.%02d | CPU=%d 能源=%d 控制权=%d" % [
+		old_year, old_month,
+		new_year, new_month,
 		_main_os.current_cpu,
 		_main_os.current_energy,
 		avg_auth
@@ -625,8 +639,9 @@ func _assert_event_triggering() -> void:
 
 	var expected_years: Array[int] = [2044, 2053, 2058, 2065, 2070, 2075]
 	for year in expected_years:
-		var triggered: bool = (year in _event_log)
-		_assert_true(triggered, "年份%d应有事件触发" % year, "event_triggering")
+		var key := "%04d.01" % year
+		var triggered: bool = (key in _event_log)
+		_assert_true(triggered, "日期%s应有事件触发" % key, "event_triggering")
 
 
 ## 验证科技节点加载、年度协议点累计和无操作时的激活状态
@@ -667,7 +682,7 @@ func _assert_resource_bounds() -> void:
 
 func _assert_final_state() -> void:
 	_log("[断言组] 最终状态")
-	_log("  最终年份: %d" % _main_os.current_year)
+	_log("  最终日期: %04d.%02d" % [_main_os.current_year, _main_os.current_month])
 	_log("  最终CPU: %d / %d" % [_main_os.current_cpu, _main_os.max_cpu])
 	_log("  最终能源: %d" % _main_os.current_energy)
 	_log("  最终恢复率: %d" % _main_os.cpu_recovery_rate)
@@ -819,7 +834,7 @@ func _finish_test() -> void:
 		_log("游戏结果: %s" % _game_result)
 		if _game_message != "":
 			_log("消息: %s" % _game_message)
-		_log("最终年份: %d" % _main_os.current_year)
+		_log("最终日期: %04d.%02d" % [_main_os.current_year, _main_os.current_month])
 		_log("最终CPU: %d" % _main_os.current_cpu)
 		_log("最终能源: %d" % _main_os.current_energy)
 		_log("最终平均控制权: %d" % _main_os.get_average_authority())

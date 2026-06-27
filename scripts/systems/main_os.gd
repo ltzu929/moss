@@ -29,6 +29,7 @@ const MOSS_THEME := preload("res://scripts/ui/moss_ui_theme.gd")
 const COMMAND_SYSTEM_SCRIPT := preload("res://scripts/systems/command_system.gd")
 ## 游戏初始值
 const INITIAL_YEAR: int = 2044
+const INITIAL_MONTH: int = 1
 const INITIAL_CPU: int = 30
 const INITIAL_ENERGY: int = 100
 const INITIAL_MAX_CPU: int = 100
@@ -56,15 +57,16 @@ var _typewriter_queue: Array[Dictionary] = []
 var _typewriter_active: bool = false
 
 ## 当前年份 (2044-2075)
-## 每年递增，到达2075先触发终局事件，再结算结局
 var current_year: int = 2044
+## 当前月份 (1-12)
+var current_month: int = 1
 
 ## 当前算力 (MOSS的核心资源)
-## 用于执行指令，初始30，每年恢复10
+## 用于执行指令，初始30，每年1月恢复10
 var current_cpu: int = 30
 
 ## 当前能源 (全局资源)
-## 每年自动恢复10点，事件选项可能消耗
+## 每年1月自动恢复10点，事件选项可能消耗
 var current_energy: int = 100
 
 ## 游戏是否已结束
@@ -97,7 +99,7 @@ var cooldown_reduction: int = 0
 ## 当前选中的板块
 var selected_sector: SectorInfo = null
 
-## 各指令冷却剩余年数 {"算力分配": 0, "系统接管": 2}
+## 各指令冷却剩余月数 {"算力分配": 0, "系统接管": 24}
 var command_cooldowns: Dictionary = {}
 
 ## 可用指令列表（从磁盘加载）
@@ -155,6 +157,7 @@ func get_action_log() -> Array[Dictionary]:
 func record_action(kind: String, title: String, message: String) -> void:
 	var entry := {
 		"year": current_year,
+		"month": current_month,
 		"kind": kind,
 		"title": title,
 		"message": message
@@ -180,7 +183,7 @@ func log_command_result(cmd: CommandData, lines: Array[String]) -> void:
 
 	var cooldown: int = command_cooldowns.get(cmd.command_id, 0)
 	if cooldown > 0:
-		lines.append("冷却 %d 年" % cooldown)
+		lines.append("冷却 %s" % _command_system.format_cooldown_months(cooldown))
 
 	record_action("command", cmd.command_name, "\n".join(lines))
 
@@ -414,6 +417,7 @@ func _on_technology_button_pressed() -> void:
 			current_energy,
 			get_average_authority(),
 			current_year,
+			current_month,
 			$Timer
 		)
 
@@ -509,7 +513,7 @@ func _on_sector_clicked(sector: SectorInfo) -> void:
 # 冷却系统
 # ============================================================
 
-## 每年更新冷却状态
+## 每月更新冷却状态
 ## 减少所有指令的冷却计数（最小为0）
 func update_cooldowns() -> void:
 	_command_system.update_cooldowns(command_cooldowns)
@@ -544,10 +548,10 @@ func get_command_unavailable_reason(cmd: CommandData) -> String:
 
 ## 计时器回调函数 - 游戏核心循环
 ## 每秒触发一次（Timer节点配置），负责：
-##   1. 事件触发检查
-##   2. 时间推进
-##   3. 能源恢复
-##   4. 冷却、科技研究和 UI 更新
+##   1. 当前年月事件触发检查
+##   2. 终局日期结算
+##   3. 月份推进
+##   4. 年度恢复、科技研究、月冷却和 UI 更新
 ##   5. 胜负判定
 func _on_timer_timeout() -> void:
 	# 游戏已结束，禁止任何操作
@@ -555,11 +559,12 @@ func _on_timer_timeout() -> void:
 		return
 
 	# === 第一步：事件触发检查 ===
-	# 先检查当前年份的事件，再推进时间
+	# 先检查当前年月的事件，再推进时间
 	for event in all_events:
-		if event.event_time == current_year:
+		if event.event_time == current_year and event.event_month == current_month:
 			# 跳过已触发的事件，防止重复触发
-			if event.event_title in triggered_events:
+			var event_key := _get_event_trigger_key(event)
+			if event_key in triggered_events:
 				continue
 
 			# 事件触发时暂停时间，等待玩家决策
@@ -569,7 +574,7 @@ func _on_timer_timeout() -> void:
 			_sync_orbital_focus()
 
 			# 标记事件已触发
-			triggered_events.append(event.event_title)
+			triggered_events.append(event_key)
 
 			# 显示事件弹窗
 			%EventPopup.popup_event(event, current_energy)
@@ -600,29 +605,45 @@ func _on_timer_timeout() -> void:
 			# 玩家决策完成，恢复时间流动
 			$Timer.start()
 
-	# 终局年份需要先处理对应事件，再进入结局结算
-	if current_year >= END_YEAR:
+	# 终局日期需要先处理对应事件，再进入结局结算
+	if current_year == END_YEAR and current_month == INITIAL_MONTH:
 		check_game_end()
 		return
 
 	# === 第二步：时间推进 ===
-	current_year += 1
-	current_energy += energy_recovery_rate
-	current_cpu += cpu_recovery_rate
-	current_cpu = mini(current_cpu, max_cpu)
+	_advance_one_month()
+	if current_month == INITIAL_MONTH:
+		_apply_yearly_settlement()
 	update_cooldowns()
-	_apply_human_autonomy_recovery()
-	if %TechnologySystem.grant_research_for_year(current_year):
-		record_action("technology", "研究完成", "获得 1 点协议点")
-		update_technology_button()
 	update_global_resource_ui()
 	update_command_buttons()
 
 	# === 第三步：胜负判定 ===
-	if current_year < END_YEAR:
-		check_game_end()
-	else:
-		_check_game_failure()
+	_check_game_failure()
+
+
+## 生成事件触发去重键，允许同一年不同月份存在多个事件
+func _get_event_trigger_key(event: GameEvent) -> String:
+	return "%04d.%02d:%s" % [event.event_time, event.event_month, event.event_title]
+
+
+## 推进一个月
+func _advance_one_month() -> void:
+	current_month += 1
+	if current_month > 12:
+		current_month = 1
+		current_year += 1
+
+
+## 执行年度结算：资源恢复、自治恢复和科技点
+func _apply_yearly_settlement() -> void:
+	current_energy += energy_recovery_rate
+	current_cpu += cpu_recovery_rate
+	current_cpu = mini(current_cpu, max_cpu)
+	_apply_human_autonomy_recovery()
+	if %TechnologySystem.grant_research_for_year(current_year):
+		record_action("technology", "研究完成", "获得 1 点协议点")
+		update_technology_button()
 
 # ============================================================
 # 事件后果处理
@@ -927,7 +948,7 @@ func _get_global_threat_text(avg_authority: int) -> String:
 	return "稳定"
 
 
-## 刷新顶部全局资源显示（年份、算力、能源）
+## 刷新顶部全局资源显示（日期、算力、能源）
 func update_global_resource_ui() -> void:
 	if has_node("%ComputationalLabel"):
 		%ComputationalLabel.text = "算力: " + str(current_cpu)
@@ -943,7 +964,7 @@ func update_global_resource_ui() -> void:
 	if has_node("%YearProgress"):
 		var year_progress := get_node("%YearProgress")
 		if year_progress is YearProgress:
-			year_progress.update_progress(current_year)
+			year_progress.update_progress(current_year, current_month)
 
 	update_global_overview_ui()
 	_sync_world_map_states()
@@ -986,7 +1007,7 @@ func get_average_authority() -> int:
 ## 检查游戏是否应该结束
 ## 触发条件:
 ##   1. 平均控制权 ≤ 0 → Game Over
-##   2. 年份 ≥ END_YEAR → 结局判定
+##   2. 当前日期达到终局日期 → 结局判定
 func check_game_end() -> void:
 	var avg_authority := get_average_authority()
 
@@ -1132,6 +1153,7 @@ func show_end_screen(title: String, message: String, result: String = "failed") 
 		avg_hope,
 		avg_authority,
 		current_year,
+		current_month,
 		technology_stage_level,
 		triggered_events.size(),
 		controlled_regions,
@@ -1201,6 +1223,7 @@ func _on_restart_requested() -> void:
 
 	# 重置时间状态
 	current_year = INITIAL_YEAR
+	current_month = INITIAL_MONTH
 	current_energy = INITIAL_ENERGY
 	current_cpu = INITIAL_CPU
 	is_game_over = false
@@ -1403,11 +1426,12 @@ func _add_log_entry_to_ui(entry: Dictionary) -> void:
 
 	# 构建日志完整文本
 	var year: int = entry.get("year", 2044)
+	var month: int = entry.get("month", 1)
 	var kind: String = entry.get("kind", "")
 	var title: String = entry.get("title", "")
 	var message: String = entry.get("message", "")
 
-	var full_text := "[%d]" % year
+	var full_text := "[%04d.%02d]" % [year, month]
 	match kind:
 		"event":
 			full_text += " [EVENT]"
@@ -1501,12 +1525,18 @@ func _start_typewriter(label: Label, full_text: String) -> void:
 
 	var chars := full_text.length()
 	for i in range(chars):
+		if not is_instance_valid(label):
+			_process_typewriter_queue()
+			return
 		label.text = full_text.left(i + 1)
 
 		# 滚动到底部
 		var scroll := _get_log_scroll_container()
 		if scroll != null:
 			await get_tree().process_frame
+			if not is_instance_valid(label):
+				_process_typewriter_queue()
+				return
 			scroll.scroll_vertical = int(scroll.get_v_scroll_bar().max_value)
 
 		# 每字符延迟，换行处稍作停留

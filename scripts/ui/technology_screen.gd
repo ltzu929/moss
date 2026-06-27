@@ -93,6 +93,7 @@ func open_screen(
 	energy: int,
 	authority: int,
 	year: int,
+	month: int,
 	timer: Timer
 ) -> void:
 	_technology = technology
@@ -100,7 +101,7 @@ func open_screen(
 	_timer_was_stopped = timer.is_stopped()
 	timer.stop()
 	_resource_label.text = "算力 %d  /  能源 %d  /  平均控制权 %d%%" % [cpu, energy, authority]
-	_year_label.text = "系统时间  %d" % year
+	_year_label.text = "系统时间  %04d.%02d" % [year, month]
 	_connect_system_signals()
 	_update_window_size()
 	_switch_route(_current_route, false)

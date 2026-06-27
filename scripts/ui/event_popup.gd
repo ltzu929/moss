@@ -34,9 +34,10 @@ func _process(_delta: float) -> void:
 func popup_event(event: GameEvent, current_energy: int) -> void:
 	%EventTitle.text = event.event_title
 	%EventLevelLabel.text = event.event_level
-	%EventMetaLabel.text = "影响区域：%s  /  记录时间：%d  /  MOSS 自动归档" % [
+	%EventMetaLabel.text = "影响区域：%s  /  记录时间：%04d.%02d  /  MOSS 自动归档" % [
 		event.event_region,
 		event.event_time,
+		event.event_month,
 	]
 	%EventImage.texture = (
 		event.event_image

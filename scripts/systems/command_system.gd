@@ -198,7 +198,7 @@ func _reset_command_values(
 # 可用性与执行结算
 # ============================================================
 
-## 每年更新冷却状态，最小保持为 0
+## 每月更新冷却状态，最小保持为 0
 func update_cooldowns(cooldowns: Dictionary) -> void:
 	for command_id in cooldowns.keys():
 		if cooldowns[command_id] > 0:
@@ -235,7 +235,7 @@ func get_command_unavailable_reason(
 
 	var cooldown: int = cooldowns.get(cmd.command_id, 0)
 	if cooldown > 0:
-		return "冷却中（剩余%d年）" % cooldown
+		return "冷却中（剩余%s）" % format_cooldown_months(cooldown)
 
 	if current_cpu < cmd.cpu_cost:
 		return "算力不足（需要%d）" % cmd.cpu_cost
@@ -271,7 +271,7 @@ func execute_command(
 			"unavailable_reason": reason,
 		}
 
-	var adjusted_cooldown := maxi(0, cmd.cooldown_years - cooldown_reduction)
+	var adjusted_cooldown := maxi(0, cmd.cooldown_years - cooldown_reduction) * 12
 	cooldowns[cmd.command_id] = adjusted_cooldown
 	return {
 		"success": true,
@@ -287,6 +287,17 @@ func get_command_cost_text(cmd: CommandData) -> String:
 	if cmd.energy_cost > 0:
 		return "消耗: %d算力 %d能源" % [cmd.cpu_cost, cmd.energy_cost]
 	return "消耗: %d算力" % cmd.cpu_cost
+
+
+## 将运行态月冷却格式化为玩家可读文本
+func format_cooldown_months(cooldown_months: int) -> String:
+	var years := floori(float(cooldown_months) / 12.0)
+	var months := cooldown_months % 12
+	if years > 0 and months > 0:
+		return "%d年%d个月" % [years, months]
+	if years > 0:
+		return "%d年" % years
+	return "%d个月" % months
 
 # ============================================================
 # 指令效果

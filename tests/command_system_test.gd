@@ -55,7 +55,7 @@ func _assert_lookup_availability_and_cooldown() -> void:
 	var commands: Array[CommandData] = [allocate, takeover]
 	var cooldowns := {
 		CommandSystem.COMMAND_ALLOCATE: 0,
-		CommandSystem.COMMAND_TAKEOVER: 1,
+		CommandSystem.COMMAND_TAKEOVER: 12,
 	}
 
 	_assert_true(_system.has_command_id(commands, CommandSystem.COMMAND_ALLOCATE), "应找到算力分配")
@@ -77,12 +77,13 @@ func _assert_lookup_availability_and_cooldown() -> void:
 	_assert_eq(
 		_system.get_command_unavailable_reason(takeover, 30, 20, true, cooldowns),
 		"冷却中（剩余1年）",
-		"冷却为 1 时应返回冷却提示"
+		"冷却为 12 个月时应返回 1 年冷却提示"
 	)
 
 	_system.update_cooldowns(cooldowns)
-	_assert_eq(cooldowns[CommandSystem.COMMAND_TAKEOVER], 0, "冷却 1 年应递减为 0")
-	_assert_eq(cooldowns[CommandSystem.COMMAND_ALLOCATE], 0, "冷却 0 年应保持为 0")
+	_assert_eq(cooldowns[CommandSystem.COMMAND_TAKEOVER], 11, "冷却 12 个月应递减为 11")
+	_assert_eq(cooldowns[CommandSystem.COMMAND_ALLOCATE], 0, "冷却 0 个月应保持为 0")
+	cooldowns[CommandSystem.COMMAND_TAKEOVER] = 0
 	_assert_eq(
 		_system.get_command_unavailable_reason(takeover, 20, 20, true, cooldowns),
 		"算力不足（需要30）",
@@ -121,9 +122,27 @@ func _assert_execute_command_result_contract() -> void:
 	_assert_true(result["success"], "资源充足且有选区时执行应成功")
 	_assert_eq(result["new_cpu"], 10, "执行成功应扣除算力")
 	_assert_eq(result["new_energy"], 5, "执行成功应扣除能源")
-	_assert_eq(result["applied_cooldown"], 4, "冷却缩减应应用到最终冷却")
-	_assert_eq(cooldowns[CommandSystem.COMMAND_TAKEOVER], 4, "执行成功应写入冷却字典")
+	_assert_eq(result["applied_cooldown"], 48, "冷却缩减应先按年应用再转换为月")
+	_assert_eq(cooldowns[CommandSystem.COMMAND_TAKEOVER], 48, "执行成功应写入月冷却字典")
 	_assert_eq(result["unavailable_reason"], "", "执行成功不应返回不可用原因")
+
+	var energy_convert := _create_energy_convert_command()
+	var energy_cooldowns := {CommandSystem.COMMAND_ENERGY_CONVERT: 0}
+	var reduced_result := _system.execute_command(
+		energy_convert,
+		40,
+		25,
+		true,
+		1,
+		energy_cooldowns
+	)
+	_assert_true(reduced_result["success"], "能源转换资源充足时应执行成功")
+	_assert_eq(reduced_result["applied_cooldown"], 12, "2 年冷却减少 1 年后应写入 12 个月")
+	_assert_eq(
+		energy_cooldowns[CommandSystem.COMMAND_ENERGY_CONVERT],
+		12,
+		"冷却缩减后的月冷却应写入字典"
+	)
 
 ## 校验科技标签控制的指令解锁和参数覆盖
 func _assert_refresh_command_configuration() -> void:
