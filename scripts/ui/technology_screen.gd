@@ -131,7 +131,10 @@ func _calculate_window_size(viewport_size: Vector2) -> Vector2:
 func _update_window_size() -> void:
 	if not is_instance_valid(_layout_viewport) or not is_instance_valid(_window_panel):
 		return
-	_window_panel.custom_minimum_size = _calculate_window_size(_layout_viewport.get_visible_rect().size)
+	var _vsize := _layout_viewport.get_visible_rect().size
+	var _csize := _calculate_window_size(_vsize)
+	print("[DEBUG] viewport=%s, calc=%s, panel=%s" % [_vsize, _csize, _window_panel.size])
+	_window_panel.custom_minimum_size = _csize
 
 
 func _unhandled_input(event: InputEvent) -> void:
