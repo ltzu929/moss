@@ -65,7 +65,8 @@ func _ready() -> void:
 ##   avg_order  - 平均秩序值
 ##   avg_hope   - 平均希望值
 ##   avg_authority - 平均控制权值
-##   final_year - 结束年份
+##   final_year - 结束日期的年份部分
+##   final_month - 结束月份
 ##   final_technology_stage - 最终科技阶段（1-3）
 ##   event_count - 已触发事件数量
 ##   controlled_regions - 仍受 MOSS 控制的区域数量
@@ -79,6 +80,7 @@ func show_end(
 	avg_hope: int = 0,
 	avg_authority: int = 0,
 	final_year: int = 0,
+	final_month: int = 1,
 	final_technology_stage: int = 1,
 	event_count: int = 0,
 	controlled_regions: int = 0,
@@ -141,10 +143,10 @@ func show_end(
 
 	if final_year > 0:
 		_set_label_text("%DetailDurationValue", "游戏时段: %d - %d" % [START_YEAR, final_year])
-		_set_label_text("%DetailEndYearValue", "结束年份: %d" % final_year)
+		_set_label_text("%DetailEndYearValue", "结束时间: %04d.%02d" % [final_year, final_month])
 	else:
 		_set_label_text("%DetailDurationValue", "游戏时段: --")
-		_set_label_text("%DetailEndYearValue", "结束年份: --")
+		_set_label_text("%DetailEndYearValue", "结束时间: --")
 
 	_set_label_text(
 		"%DetailTechnologyValue",

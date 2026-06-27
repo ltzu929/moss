@@ -33,6 +33,7 @@ func _ready() -> void:
 	await get_tree().process_frame
 	_assert_true(_screen.visible, "无模态弹窗时科技按钮应打开科技树")
 	_assert_true(_timer.is_stopped(), "打开科技树应暂停年份")
+	_assert_eq(_screen.get_node("%YearLabel").text, "系统时间  2044.01", "科技界面应显示年月")
 	_assert_route_page(TechNodeData.Route.MANAGED, true)
 	_assert_route_page(TechNodeData.Route.CORE, false)
 	_assert_route_page(TechNodeData.Route.HUMAN, false)

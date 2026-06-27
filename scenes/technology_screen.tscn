@@ -1202,7 +1202,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.78, 0.84, 1)
-text = "系统时间  2044"
+text = "系统时间  2044.01"
 vertical_alignment = 1
 
 [node name="CloseButton" type="Button" parent="CenterContainer/WindowPanel/WindowMargin/MainVBox/HeaderPanel/HeaderRow" unique_id=642455265]

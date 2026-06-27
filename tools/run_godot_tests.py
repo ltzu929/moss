@@ -12,6 +12,7 @@ TEST_SCENES = [
     ("tests/project_conventions_test.tscn", "headless"),
     ("tests/technology_system_test.tscn", "headless"),
     ("tests/command_system_test.tscn", "headless"),
+    ("tests/time_system_test.tscn", "headless"),
     ("tests/technology_gameplay_test.tscn", "headless"),
     ("tests/technology_ending_test.tscn", "headless"),
     ("tests/technology_ui_test.tscn", "display"),
