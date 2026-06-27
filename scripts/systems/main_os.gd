@@ -36,6 +36,7 @@ const INITIAL_MAX_CPU: int = 100
 const INITIAL_CPU_RECOVERY_RATE: int = 10
 const INITIAL_ENERGY_RECOVERY_RATE: int = 10
 const END_YEAR: int = 2075
+const END_MONTH: int = 1
 
 ## 稳定指令 ID，实际所有权在 CommandSystem
 const COMMAND_ALLOCATE: String = COMMAND_SYSTEM_SCRIPT.COMMAND_ALLOCATE
@@ -606,7 +607,7 @@ func _on_timer_timeout() -> void:
 			$Timer.start()
 
 	# 终局日期需要先处理对应事件，再进入结局结算
-	if current_year == END_YEAR and current_month == INITIAL_MONTH:
+	if current_year == END_YEAR and current_month == END_MONTH:
 		check_game_end()
 		return
 

@@ -52,8 +52,10 @@ func _assert_non_january_event_triggers_once() -> void:
 		"触发事件键应包含年月和标题"
 	)
 
+	_main_os.current_year = 2044
+	_main_os.current_month = 2
 	await _tick_without_event_choice()
-	_assert_eq(_main_os.triggered_events.size(), 1, "二月事件不应重复触发")
+	_assert_eq(_main_os.triggered_events.size(), 1, "同日期事件不应重复触发")
 
 
 func _assert_year_boundary_settlement_before_end_event() -> void:
@@ -68,7 +70,7 @@ func _assert_year_boundary_settlement_before_end_event() -> void:
 
 	await _tick_without_event_choice()
 	_assert_eq(_main_os.current_year, 2075, "2074.12 推进后应进入 2075 年")
-	_assert_eq(_main_os.current_month, 1, "2074.12 推进后应进入 1 月")
+	_assert_eq(_main_os.current_month, _main_os.END_MONTH, "2074.12 推进后应进入终局月份")
 	_assert_eq(_main_os.current_cpu, 40, "进入 1 月时应先执行年度算力恢复")
 	_assert_eq(_main_os.current_energy, 110, "进入 1 月时应先执行年度能源恢复")
 	_assert_eq(
