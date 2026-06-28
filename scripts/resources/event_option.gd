@@ -6,3 +6,5 @@ extends Resource
 @export var hope_delta: int = 0
 @export var authority_delta: int = 0
 @export var energy_cost: int = 0
+@export var event_state_key: String = ""
+@export var event_state_value: String = ""

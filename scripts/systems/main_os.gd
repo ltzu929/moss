@@ -116,6 +116,9 @@ var _command_system: CommandSystem = COMMAND_SYSTEM_SCRIPT.new()
 ## 已触发的事件ID列表（防止重复触发）
 var triggered_events: Array[String] = []
 
+## 轻量事件状态 {"event_state.mid_01_lottery_ordering": "manual_review"}
+var event_states: Dictionary = {}
+
 ## 重大事件期间的临时地球聚焦区域
 var _event_focus_region: String = ""
 
@@ -594,6 +597,7 @@ func _on_timer_timeout() -> void:
 				event.event_title,
 				selected_opt.button_text
 			)
+			apply_event_option_state(selected_opt)
 
 			# 恢复事件发生前的玩家选区和地球聚焦
 			_event_focus_region = ""
@@ -626,6 +630,32 @@ func _on_timer_timeout() -> void:
 ## 生成事件触发去重键，允许同一年不同月份存在多个事件
 func _get_event_trigger_key(event: GameEvent) -> String:
 	return "%04d.%02d:%s" % [event.event_time, event.event_month, event.event_title]
+
+
+## 写入轻量事件状态，空键不产生效果
+func set_event_state(state_key: String, state_value: String) -> void:
+	if state_key == "":
+		return
+	event_states[state_key] = state_value
+
+
+## 查询轻量事件状态；未写入时返回默认值
+func get_event_state(state_key: String, default_value: String = "") -> String:
+	return str(event_states.get(state_key, default_value))
+
+
+## 判断事件状态是否存在，传入 expected_value 时同时校验值
+func has_event_state(state_key: String, expected_value: String = "") -> bool:
+	if not event_states.has(state_key):
+		return false
+	if expected_value == "":
+		return true
+	return get_event_state(state_key) == expected_value
+
+
+## 根据事件选项写入轻量历史状态
+func apply_event_option_state(option: EventOption) -> void:
+	set_event_state(option.event_state_key, option.event_state_value)
 
 
 ## 推进一个月
@@ -1231,6 +1261,7 @@ func _on_restart_requested() -> void:
 	action_log.clear()
 	_clear_log_ui()
 	triggered_events.clear()
+	event_states.clear()
 	deselect_sector()
 
 	# 重置科技状态
