@@ -15,5 +15,8 @@
 # OpenCode local config
 opencode.json
 
+# Local source materials that should not be committed
+docs/worldbuilding/sources/*.srt
+
 # Sisyphus local plans and state
 .sisyphus/
