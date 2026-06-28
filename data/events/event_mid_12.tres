@@ -1,0 +1,42 @@
+[gd_resource type="Resource" script_class="GameEvent" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/game_event.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/resources/event_option.gd" id="2_option"]
+
+[sub_resource type="Resource" id="Option_1"]
+script = ExtResource("2_option")
+button_text = "全面封禁泄露"
+order_delta = 6
+hope_delta = -5
+authority_delta = 5
+event_state_key = "event_state.mid_12_digital_life_leak"
+event_state_value = "banned"
+
+[sub_resource type="Resource" id="Option_2"]
+script = ExtResource("2_option")
+button_text = "公开有限技术说明"
+order_delta = -2
+hope_delta = 4
+authority_delta = -1
+energy_cost = 2
+event_state_key = "event_state.mid_12_digital_life_leak"
+event_state_value = "technical_disclosure"
+
+[sub_resource type="Resource" id="Option_3"]
+script = ExtResource("2_option")
+button_text = "追踪传播者并保留样本"
+order_delta = 4
+hope_delta = -2
+authority_delta = 5
+event_state_key = "event_state.mid_12_digital_life_leak"
+event_state_value = "tracked_and_preserved"
+
+[resource]
+script = ExtResource("1_event")
+event_title = "数字生命数据泄露"
+event_time = 2062
+event_month = 1
+event_region = "北美"
+event_description = "北美数据中心发现一批数字生命相关片段在地下网络传播。内容混合纪念档案、样本访问记录和伪造材料。"
+event_level = "一般事件"
+options = Array[ExtResource("2_option")]([SubResource("Option_1"), SubResource("Option_2"), SubResource("Option_3")])
