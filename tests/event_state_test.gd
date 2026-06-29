@@ -109,6 +109,25 @@ func _assert_civic_event_states_change_main_event_context() -> void:
 		"2053 主事件应读取 MID-06 家庭配给背景"
 	)
 
+	var real_flood_event := load("res://data/events/event_2053.tres") as GameEvent
+	_assert_true(real_flood_event != null, "应能加载真实 2053 主事件资源")
+	if real_flood_event != null:
+		var original_description: String = real_flood_event.event_description
+		var display_flood_event: GameEvent = _main_os.build_display_event(real_flood_event)
+		_assert_true(
+			display_flood_event != real_flood_event,
+			"build_display_event 应返回独立运行时副本"
+		)
+		_assert_true(
+			"历史回声" in display_flood_event.event_description,
+			"真实 2053 主事件运行时副本应包含历史回声"
+		)
+		_assert_eq(
+			real_flood_event.event_description,
+			original_description,
+			"真实 2053 主事件原始描述不应被运行时副本污染"
+		)
+
 	var jupiter_event := _create_named_event("木星引力危机", 2075, "终局方案等待授权。")
 	var jupiter_description: String = _main_os.build_event_description(jupiter_event)
 	_assert_true(
@@ -119,6 +138,25 @@ func _assert_civic_event_states_change_main_event_context() -> void:
 		"人道迁移记录" in jupiter_description,
 		"2075 终局事件应读取 MID-07 迁移优先级"
 	)
+
+	var real_jupiter_event := load("res://data/events/event_2075.tres") as GameEvent
+	_assert_true(real_jupiter_event != null, "应能加载真实 2075 主事件资源")
+	if real_jupiter_event != null:
+		var original_description: String = real_jupiter_event.event_description
+		var display_jupiter_event: GameEvent = _main_os.build_display_event(real_jupiter_event)
+		_assert_true(
+			display_jupiter_event != real_jupiter_event,
+			"build_display_event 应为 2075 返回独立运行时副本"
+		)
+		_assert_true(
+			"人道迁移记录" in display_jupiter_event.event_description,
+			"真实 2075 主事件运行时副本应读取 MID-07 迁移优先级"
+		)
+		_assert_eq(
+			real_jupiter_event.event_description,
+			original_description,
+			"真实 2075 主事件原始描述不应被运行时副本污染"
+		)
 
 
 func _create_state_event() -> GameEvent:
