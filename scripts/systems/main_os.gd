@@ -1349,7 +1349,7 @@ func build_ending_message(result: String) -> String:
 	var history_lines := _get_ending_history_lines(result)
 	if history_lines.is_empty():
 		return base_message
-	return "%s\n\n[color=#73C9D3]历史回顾[/color]\n- %s" % [
+	return "%s\n\n历史回顾\n- %s" % [
 		base_message,
 		"\n- ".join(history_lines),
 	]

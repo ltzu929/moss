@@ -214,6 +214,10 @@ func _assert_ending_message_reads_event_history() -> void:
 		"存在代表性 event_state 时结局解释应追加历史回顾段落"
 	)
 	_assert_true(
+		not "[color" in history_message and not "[/color]" in history_message,
+		"结局解释会写入普通 Label，不应包含 BBCode 颜色标签"
+	)
+	_assert_true(
 		"人道迁移记录" in history_message,
 		"结局解释应读取 2053 民生迁移事实"
 	)
