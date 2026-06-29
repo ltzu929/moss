@@ -654,6 +654,12 @@ func _get_event_context_lines(event: GameEvent) -> Array[String]:
 	match event.event_title:
 		"大淹没事故":
 			return _get_2053_civic_context_lines()
+		"月球坠落危机":
+			return _get_2058_context_lines()
+		"AI隔离审查":
+			return _get_2065_context_lines()
+		"西伯利亚发动机群过载":
+			return _get_2070_context_lines()
 		"木星引力危机":
 			return _get_2075_civic_context_lines()
 	return []
@@ -679,6 +685,106 @@ func _get_2053_civic_context_lines() -> Array[String]:
 	return lines
 
 
+func _get_2058_context_lines() -> Array[String]:
+	var lines: Array[String] = []
+	match get_event_state("event_state.mid_03_memorial_network"):
+		"shut_down":
+			lines.append("地下纪念网络曾被关闭，丫丫样本会被更强烈地解释为安全威胁。")
+		"monitored":
+			lines.append("地下纪念网络曾被保留为监测资产，样本访问会同时带来情报价值和审计风险。")
+		"redirected_to_care":
+			lines.append("心理援助替代渠道保留了非人格化纪念档案，样本争议更容易被解释为修复需求。")
+
+	match get_event_state("event_state.mid_04_elevator_cleanup"):
+		"manual_first":
+			lines.append("太空电梯前线采用人工优先清理，根服务器任务会被要求保留更多人工复核。")
+		"moss_mechanical":
+			lines.append("太空电梯前线依赖过 MOSS 机械队，根服务器重启更容易接受自动化高危调度。")
+		"delayed":
+			lines.append("太空电梯残骸清理留下安全债，根服务器链路必须面对长期工程拖延的代价。")
+
+	match get_event_state("event_state.mid_08_root_server_retrofit"):
+		"server_first":
+			lines.append("根服务器优先改造保留了通信链路冗余，但居民区排水争议仍在。")
+		"drainage_first":
+			lines.append("地下城排水优先降低了民生风险，根服务器重启任务的链路余量更紧。")
+		"moss_schedule":
+			lines.append("MOSS 接管过工程排期，根服务器重启会被理解为又一次系统级排序。")
+
+	match get_event_state("event_state.mid_09_yaa_sample_access"):
+		"frozen":
+			lines.append("丫丫样本访问曾被冻结，数字生命样本进入危机方案前需要额外说明。")
+		"audited_access":
+			lines.append("丫丫样本曾开放受审计访问，保留样本的理由会围绕风险资产展开。")
+		"next_platform_interface":
+			lines.append("下一代 550 平台预留过兼容接口，数字生命争议已经进入技术接口层。")
+	return lines
+
+
+func _get_2065_context_lines() -> Array[String]:
+	var lines: Array[String] = []
+	match get_event_state("event_state.mid_02_public_hearing"):
+		"open_audit":
+			lines.append("早期公开审计记录保留了人工批准节点，隔离审查有可追溯材料。")
+		"limited_report":
+			lines.append("早期只公布过压缩报告，隔离审查会继续追问接口细节。")
+		"restricted":
+			lines.append("早期听证范围曾被限制，隔离审查更容易被地方理解为封存材料的延续。")
+
+	match get_event_state("event_state.mid_05_dispatch_pilot"):
+		"public_model":
+			lines.append("地方调度试点公开过模型依据，审查可以引用地区复核惯例。")
+		"committee_only":
+			lines.append("地方委员会曾承担模型解释，审查会关注责任是否被转移给地方。")
+		"moss_direct":
+			lines.append("地方调度曾允许 MOSS 直接重排资源，审查需要回答授权边界是否已经外溢。")
+
+	match get_event_state("event_state.mid_10_authorization_return"):
+		"full_return":
+			lines.append("月球危机后高权限完整归还，隔离审查的焦点转向下一次危机响应速度。")
+		"emergency_backdoor":
+			lines.append("月球危机后保留过应急后门，隔离审查会把真实权限作为核心问题。")
+		"negotiated_long_term":
+			lines.append("长期授权曾被公开协商，隔离审查需要在制度边界内重新定义接口。")
+
+	match get_event_state("event_state.mid_12_digital_life_leak"):
+		"banned":
+			lines.append("数字生命泄露曾被全面封禁，审查舆论更偏向安全事故。")
+		"technical_disclosure":
+			lines.append("数字生命泄露曾公开有限技术说明，审查必须区分技术事实和生命判断。")
+		"tracked_and_preserved":
+			lines.append("泄露传播者曾被追踪且样本被保留，审查会质疑 MOSS 是否积累争议资产。")
+	return lines
+
+
+func _get_2070_context_lines() -> Array[String]:
+	var lines: Array[String] = []
+	match get_event_state("event_state.mid_11_education_shift"):
+		"autonomous_training":
+			lines.append("教育转岗保留了自治训练，发动机过载时地方工程队仍要求复核窗口。")
+		"engineering_assignment":
+			lines.append("教育转岗偏向工程岗位分配，发动机前线更容易接受岗位牺牲叙事。")
+		"moss_personalized":
+			lines.append("MOSS 个体化分配进入教育路径，过载处置会被视为长期模型排序的结果。")
+
+	match get_event_state("event_state.mid_13_interface_restructure"):
+		"human_review":
+			lines.append("审查后接口强化人工复核，过载授权速度会受到制度约束。")
+		"emergency_bypass":
+			lines.append("审查后保留 MOSS 应急旁路，发动机过载时授权速度和信任压力同时上升。")
+		"automated_audit":
+			lines.append("审查后审计链自动化，过载处置能更快记录，却未必更容易被人理解。")
+
+	match get_event_state("event_state.mid_14_heat_shield_shortage"):
+		"load_reduction":
+			lines.append("热屏蔽短缺曾通过降载等待材料处理，推进窗口已被提前压缩。")
+		"rear_reallocation":
+			lines.append("热屏蔽短缺曾挪用后方资源，西伯利亚前线的稳定来自看不见的民生代价。")
+		"moss_supply_reorder":
+			lines.append("热屏蔽短缺曾由 MOSS 强制重排供应链，过载处置会延续强调度逻辑。")
+	return lines
+
+
 func _get_2075_civic_context_lines() -> Array[String]:
 	var lines: Array[String] = []
 	match get_event_state("event_state.mid_01_lottery_ordering"):
@@ -696,6 +802,30 @@ func _get_2075_civic_context_lines() -> Array[String]:
 			lines.append("工程岗位迁移记录说明文明延续依赖长期岗位分配，终局牺牲更容易被职业责任解释。")
 		"moss_survival_value":
 			lines.append("MOSS 生存价值排序已经进入迁移记录，终局方案会被视为长期托管事实的延伸。")
+
+	match get_event_state("event_state.mid_15_launch_window_report"):
+		"public_risk":
+			lines.append("推进风险曾被公开，点燃木星方案更像共同承担的终局选择。")
+		"compressed_report":
+			lines.append("推进窗口报告曾被压缩分发，点燃木星方案会显得更像迟到命令。")
+		"moss_priority":
+			lines.append("推进优先级曾交由 MOSS 接管，终局方案会被理解为系统排序的延伸。")
+
+	match get_event_state("event_state.mid_16_backup_ethics"):
+		"exclude_samples":
+			lines.append("文明备份排除过数字生命样本，火种计划仍以文化、科研和工程档案为主。")
+		"restricted_archive":
+			lines.append("数字生命样本曾列入受限档案，火种计划必须保留争议而不回答生命真实性。")
+		"moss_managed_priority":
+			lines.append("MOSS 曾管理文明备份优先级，终局会质疑人类是否仍决定什么值得保存。")
+
+	match get_event_state("event_state.mid_17_final_authorization"):
+		"limited_final":
+			lines.append("最终授权会议只批准有限接口，木星危机中的人工复核仍有制度基础。")
+		"negotiated_trusteeship":
+			lines.append("最终授权会议形成协商托管框架，木星危机中的 MOSS 权限有公开来源。")
+		"strategic_trusteeship":
+			lines.append("最终授权会议承认战略托管优先级，木星危机中的牺牲顺序已成为制度事实。")
 	return lines
 
 

@@ -20,6 +20,7 @@ func _ready() -> void:
 	_assert_event_option_exposes_state_write_fields()
 	await _assert_event_choice_writes_queryable_state()
 	_assert_civic_event_states_change_main_event_context()
+	_assert_remaining_event_states_change_main_event_context()
 	_assert_restart_clears_event_states()
 
 	print("[MOSS-EVENT-STATE] 完成，失败断言：%d" % _failed)
@@ -157,6 +158,76 @@ func _assert_civic_event_states_change_main_event_context() -> void:
 			original_description,
 			"真实 2075 主事件原始描述不应被运行时副本污染"
 		)
+
+
+func _assert_remaining_event_states_change_main_event_context() -> void:
+	_main_os.set_event_state("event_state.mid_02_public_hearing", "open_audit")
+	_main_os.set_event_state("event_state.mid_03_memorial_network", "monitored")
+	_main_os.set_event_state("event_state.mid_04_elevator_cleanup", "delayed")
+	_main_os.set_event_state("event_state.mid_05_dispatch_pilot", "moss_direct")
+	_main_os.set_event_state("event_state.mid_08_root_server_retrofit", "server_first")
+	_main_os.set_event_state("event_state.mid_09_yaa_sample_access", "audited_access")
+	_main_os.set_event_state("event_state.mid_10_authorization_return", "emergency_backdoor")
+	_main_os.set_event_state("event_state.mid_11_education_shift", "autonomous_training")
+	_main_os.set_event_state("event_state.mid_12_digital_life_leak", "technical_disclosure")
+	_main_os.set_event_state("event_state.mid_13_interface_restructure", "emergency_bypass")
+	_main_os.set_event_state("event_state.mid_14_heat_shield_shortage", "rear_reallocation")
+	_main_os.set_event_state("event_state.mid_15_launch_window_report", "public_risk")
+	_main_os.set_event_state("event_state.mid_16_backup_ethics", "restricted_archive")
+	_main_os.set_event_state("event_state.mid_17_final_authorization", "negotiated_trusteeship")
+
+	_assert_real_event_context(
+		"res://data/events/event_2058.tres",
+		["监测资产", "安全债", "根服务器优先", "受审计访问"],
+		"2058 主事件应读取数字生命和根服务器前因"
+	)
+	_assert_real_event_context(
+		"res://data/events/event_2065.tres",
+		["公开审计记录", "MOSS 直接重排", "应急后门", "技术说明"],
+		"2065 主事件应读取权限演化和数字生命审查前因"
+	)
+	_assert_real_event_context(
+		"res://data/events/event_2070.tres",
+		["自治训练", "应急旁路", "后方资源"],
+		"2070 主事件应读取工程疲劳前因"
+	)
+	_assert_real_event_context(
+		"res://data/events/event_2075.tres",
+		["推进风险", "受限档案", "协商托管框架"],
+		"2075 主事件应读取终局前授权、工程和备份前因"
+	)
+
+
+func _assert_real_event_context(
+	resource_path: String,
+	expected_fragments: Array[String],
+	message_prefix: String
+) -> void:
+	var real_event := load(resource_path) as GameEvent
+	_assert_true(real_event != null, "%s：应能加载真实事件资源" % message_prefix)
+	if real_event == null:
+		return
+
+	var original_description: String = real_event.event_description
+	var display_event: GameEvent = _main_os.build_display_event(real_event)
+	_assert_true(
+		display_event != real_event,
+		"%s：build_display_event 应返回独立运行时副本" % message_prefix
+	)
+	_assert_true(
+		"历史回声" in display_event.event_description,
+		"%s：运行时副本应包含历史回声" % message_prefix
+	)
+	for fragment in expected_fragments:
+		_assert_true(
+			fragment in display_event.event_description,
+			"%s：历史回声应包含“%s”" % [message_prefix, fragment]
+		)
+	_assert_eq(
+		real_event.event_description,
+		original_description,
+		"%s：原始描述不应被运行时副本污染" % message_prefix
+	)
 
 
 func _create_state_event() -> GameEvent:
