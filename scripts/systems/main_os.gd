@@ -581,7 +581,7 @@ func _on_timer_timeout() -> void:
 			triggered_events.append(event_key)
 
 			# 显示事件弹窗
-			%EventPopup.popup_event(event, current_energy)
+			%EventPopup.popup_event(build_display_event(event), current_energy)
 
 			# await 挂起函数，等待玩家选择
 			var choice_index: int = await %EventPopup.option_selected
@@ -630,6 +630,73 @@ func _on_timer_timeout() -> void:
 ## 生成事件触发去重键，允许同一年不同月份存在多个事件
 func _get_event_trigger_key(event: GameEvent) -> String:
 	return "%04d.%02d:%s" % [event.event_time, event.event_month, event.event_title]
+
+
+## 构建事件弹窗使用的运行时副本，避免修改磁盘加载的 Resource 模板
+func build_display_event(event: GameEvent) -> GameEvent:
+	var display_event: GameEvent = event.duplicate(true)
+	display_event.event_description = build_event_description(event)
+	return display_event
+
+
+## 根据已写入的轻量事件状态补充主事件历史回声
+func build_event_description(event: GameEvent) -> String:
+	var context_lines := _get_event_context_lines(event)
+	if context_lines.is_empty():
+		return event.event_description
+	return "%s\n\n[color=#73C9D3]历史回声[/color]\n- %s" % [
+		event.event_description,
+		"\n- ".join(context_lines),
+	]
+
+
+func _get_event_context_lines(event: GameEvent) -> Array[String]:
+	match event.event_title:
+		"大淹没事故":
+			return _get_2053_civic_context_lines()
+		"木星引力危机":
+			return _get_2075_civic_context_lines()
+	return []
+
+
+func _get_2053_civic_context_lines() -> Array[String]:
+	var lines: Array[String] = []
+	match get_event_state("event_state.mid_01_lottery_ordering"):
+		"manual_review":
+			lines.append("2045 年开放过申诉窗口，人口撤离方案更容易被解释为延续人道复核。")
+		"moss_optimized":
+			lines.append("2045 年 MOSS 优化过抽签队列，风险排序更容易被接受，但透明度质疑同步放大。")
+		"security_lockdown":
+			lines.append("2045 年登记点曾被封锁，撤离命令会更快执行，也更容易被视为不可申诉。")
+
+	match get_event_state("event_state.mid_06_ration_priority"):
+		"family_baseline":
+			lines.append("2052 年临时安置点保留家庭最低保障，撤离排序需要回应家庭拆分风险。")
+		"engineering_priority":
+			lines.append("2052 年配给向工程岗位倾斜，撤离方案会被工程家庭和非关键岗位同时追问。")
+		"moss_risk_score":
+			lines.append("2052 年配给采用 MOSS 风险评分，撤离排序的效率和解释压力同时上升。")
+	return lines
+
+
+func _get_2075_civic_context_lines() -> Array[String]:
+	var lines: Array[String] = []
+	match get_event_state("event_state.mid_01_lottery_ordering"):
+		"manual_review":
+			lines.append("普通人仍记得早年的申诉窗口，最终方案需要证明人类声音没有被系统归档。")
+		"moss_optimized":
+			lines.append("普通人仍记得早年的模型排序，最终方案会被理解为又一次 MOSS 风险队列。")
+		"security_lockdown":
+			lines.append("普通人仍记得早年的封锁线，最终方案更容易被接受为不可申诉的紧急命令。")
+
+	match get_event_state("event_state.mid_07_migration_priority"):
+		"humanitarian":
+			lines.append("人道迁移记录保留了家庭优先的制度证据，为终局中的人类自主解释提供基础。")
+		"engineering_role":
+			lines.append("工程岗位迁移记录说明文明延续依赖长期岗位分配，终局牺牲更容易被职业责任解释。")
+		"moss_survival_value":
+			lines.append("MOSS 生存价值排序已经进入迁移记录，终局方案会被视为长期托管事实的延伸。")
+	return lines
 
 
 ## 写入轻量事件状态，空键不产生效果
