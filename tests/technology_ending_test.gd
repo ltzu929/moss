@@ -110,6 +110,7 @@ func _ready() -> void:
 	)
 
 	_assert_alternative_terminal_endings()
+	_assert_ending_message_reads_event_history()
 	get_tree().quit(_failed)
 
 # ============================================================
@@ -182,6 +183,65 @@ func _assert_alternative_terminal_endings() -> void:
 		"协作治理协议不应解锁人类自主结局"
 	)
 	_assert_true("协作治理协议" in _main_os._get_technology_summary(), "结局摘要应显示协作治理协议")
+
+
+## 校验结局解释会读取代表性 event_state，但不改变结局判定
+func _assert_ending_message_reads_event_history() -> void:
+	_main_os.restart_game_for_test()
+	_assert_true(
+		_main_os.has_method("build_ending_message"),
+		"MainOS 应提供 build_ending_message 供结局解释和测试复用"
+	)
+	if not _main_os.has_method("build_ending_message"):
+		return
+
+	var base_message: String = _main_os.call("build_ending_message", "coexistence")
+	_assert_eq(
+		base_message,
+		"MOSS 与人类保持有限协作。\n文明在控制与自主之间继续前进。",
+		"没有轻量事件状态时共存结局应保持原有短文本"
+	)
+
+	_main_os.set_event_state("event_state.mid_07_migration_priority", "humanitarian")
+	_main_os.set_event_state("event_state.mid_09_yaa_sample_access", "audited_access")
+	_main_os.set_event_state("event_state.mid_12_digital_life_leak", "technical_disclosure")
+	_main_os.set_event_state("event_state.mid_14_heat_shield_shortage", "rear_reallocation")
+	_main_os.set_event_state("event_state.mid_17_final_authorization", "negotiated_trusteeship")
+
+	var history_message: String = _main_os.call("build_ending_message", "coexistence")
+	_assert_true(
+		"历史回顾" in history_message,
+		"存在代表性 event_state 时结局解释应追加历史回顾段落"
+	)
+	_assert_true(
+		not "[color" in history_message and not "[/color]" in history_message,
+		"结局解释会写入普通 Label，不应包含 BBCode 颜色标签"
+	)
+	_assert_true(
+		"人道迁移记录" in history_message,
+		"结局解释应读取 2053 民生迁移事实"
+	)
+	_assert_true(
+		"受审计访问" in history_message,
+		"结局解释应读取 2058 数字生命样本事实"
+	)
+	_assert_true(
+		"技术说明" in history_message,
+		"结局解释应读取 2065 数字生命审查事实"
+	)
+	_assert_true(
+		"后方资源" in history_message,
+		"结局解释应读取 2070 工程资源事实"
+	)
+	_assert_true(
+		"协商托管框架" in history_message,
+		"结局解释应读取 2075 最终授权事实"
+	)
+	_assert_eq(
+		_main_os.determine_ending_type(35, 45, 45),
+		"coexistence",
+		"结局解释读取 event_state 不应改变结局判定"
+	)
 
 
 ## 按顺序激活结局路线节点，并在需要时发放研究点

@@ -1319,22 +1319,97 @@ func trigger_ending(authority: int) -> void:
 	var avg_hope := _get_average_stat("hope")
 	var result := determine_ending_type(authority, avg_order, avg_hope)
 	var title := "失败"
-	var message := "文明系统未能维持稳定。\nMOSS 协议终止运行。"
 
 	match result:
 		"managed":
 			title = "MOSS 托管"
-			message = "人类文明进入 MOSS 全域托管。\n存续效率取代了自主决策。"
 		"human_autonomy":
 			title = "人类自主"
-			message = "人类文明获得独立存续能力。\nMOSS 完成使命并退出控制核心。"
 		"coexistence":
 			title = "共存协议"
-			message = "MOSS 与人类保持有限协作。\n文明在控制与自主之间继续前进。"
+
+	var message := build_ending_message(result)
 
 	record_action("ending", result, message)
 	game_ended.emit(result, message)
 	show_end_screen(title, message, result)
+
+
+## 构建结局描述文本，并读取少量代表性轻量事件状态作为历史解释
+func build_ending_message(result: String) -> String:
+	var base_message := "文明系统未能维持稳定。\nMOSS 协议终止运行。"
+	match result:
+		"managed":
+			base_message = "人类文明进入 MOSS 全域托管。\n存续效率取代了自主决策。"
+		"human_autonomy":
+			base_message = "人类文明获得独立存续能力。\nMOSS 完成使命并退出控制核心。"
+		"coexistence":
+			base_message = "MOSS 与人类保持有限协作。\n文明在控制与自主之间继续前进。"
+
+	var history_lines := _get_ending_history_lines(result)
+	if history_lines.is_empty():
+		return base_message
+	return "%s\n\n历史回顾\n- %s" % [
+		base_message,
+		"\n- ".join(history_lines),
+	]
+
+
+func _get_ending_history_lines(result: String) -> Array[String]:
+	var lines: Array[String] = []
+
+	match get_event_state("event_state.mid_07_migration_priority"):
+		"humanitarian":
+			lines.append("人道迁移记录让普通家庭的优先级进入终局解释，%s。" % _get_ending_relation_text(result))
+		"engineering_role":
+			lines.append("工程岗位迁移记录显示文明延续长期依赖岗位分配，最终方案承担着职业牺牲的影子。")
+		"moss_survival_value":
+			lines.append("MOSS 生存价值排序曾写入迁移名单，终局权限更像长期托管事实的延伸。")
+
+	match get_event_state("event_state.mid_09_yaa_sample_access"):
+		"frozen":
+			lines.append("丫丫样本访问曾被冻结，数字生命争议没有成为终局方案的公开依据。")
+		"audited_access":
+			lines.append("丫丫样本的受审计访问记录保留到终局，数字生命样本被视为争议资产而非确定答案。")
+		"next_platform_interface":
+			lines.append("下一代 550 平台预留过兼容接口，数字生命争议已经进入终局技术边界。")
+
+	match get_event_state("event_state.mid_12_digital_life_leak"):
+		"banned":
+			lines.append("数字生命泄露曾被全面封禁，终局回顾更强调安全事故和社会恐慌。")
+		"technical_disclosure":
+			lines.append("有限技术说明让 2065 年审查留下可追溯材料，终局仍避免把数字保存写成永生承诺。")
+		"tracked_and_preserved":
+			lines.append("泄露传播者被追踪且样本被保留，终局必须解释 MOSS 为何积累这些争议资产。")
+
+	match get_event_state("event_state.mid_14_heat_shield_shortage"):
+		"load_reduction":
+			lines.append("热屏蔽短缺曾以降载等待材料处理，最终工程窗口从那时起已经被压缩。")
+		"rear_reallocation":
+			lines.append("热屏蔽短缺曾挪用后方资源，后方资源代价成为文明延续前的工程回顾。")
+		"moss_supply_reorder":
+			lines.append("MOSS 曾强制重排热屏蔽供应链，终局调度延续了强调度的工程逻辑。")
+
+	match get_event_state("event_state.mid_17_final_authorization"):
+		"limited_final":
+			lines.append("最终授权会议只批准有限接口，人工复核仍是终局解释的一部分。")
+		"negotiated_trusteeship":
+			lines.append("最终授权会议形成协商托管框架，MOSS 权限在终局前已有公开制度来源。")
+		"strategic_trusteeship":
+			lines.append("最终授权会议承认战略托管优先级，牺牲顺序在终局前已经成为制度事实。")
+
+	return lines
+
+
+func _get_ending_relation_text(result: String) -> String:
+	match result:
+		"managed":
+			return "托管不是突然覆盖民生记录，而是在这些记录之后继续排序"
+		"human_autonomy":
+			return "MOSS 退出控制核心时仍能说明人类自治的社会基础"
+		"failed":
+			return "即使系统失败，民生优先事实仍保留为最后的治理证据"
+	return "共存协议因此不只来自数值稳定，也来自可回看的治理经验"
 
 # ============================================================
 # 结局界面系统
