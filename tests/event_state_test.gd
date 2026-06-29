@@ -21,6 +21,8 @@ func _ready() -> void:
 	await _assert_event_choice_writes_queryable_state()
 	_assert_civic_event_states_change_main_event_context()
 	_assert_remaining_event_states_change_main_event_context()
+	_assert_representative_event_states_change_main_event_options()
+	await _assert_adjusted_main_event_options_are_used_for_resolution()
 	_assert_restart_clears_event_states()
 
 	print("[MOSS-EVENT-STATE] 完成，失败断言：%d" % _failed)
@@ -227,6 +229,187 @@ func _assert_real_event_context(
 		real_event.event_description,
 		original_description,
 		"%s：原始描述不应被运行时副本污染" % message_prefix
+	)
+
+
+func _assert_representative_event_states_change_main_event_options() -> void:
+	_main_os.set_event_state("event_state.mid_08_root_server_retrofit", "server_first")
+	var moon_event := load("res://data/events/event_2058.tres") as GameEvent
+	_assert_true(moon_event != null, "应能加载真实 2058 主事件资源")
+	if moon_event != null:
+		var original_energy := _get_option_by_prefix(moon_event, "执行自救计划").energy_cost
+		var display_moon_event: GameEvent = _main_os.build_display_event(moon_event)
+		var adjusted_option := _get_option_by_prefix(display_moon_event, "执行自救计划")
+		_assert_eq(
+			adjusted_option.energy_cost,
+			60,
+			"根服务器优先改造应降低 2058 执行自救计划能源代价"
+		)
+		_assert_true(
+			"根服务器预改造" in adjusted_option.button_text,
+			"2058 调整后的选项文案应说明前序状态来源"
+		)
+		_assert_eq(
+			_get_option_by_prefix(moon_event, "执行自救计划").energy_cost,
+			original_energy,
+			"2058 原始事件资源选项代价不应被运行时副本污染"
+		)
+		_main_os.set_event_state("event_state.mid_08_root_server_retrofit", "drainage_first")
+		display_moon_event = _main_os.build_display_event(moon_event)
+		adjusted_option = _get_option_by_prefix(display_moon_event, "执行自救计划")
+		_assert_eq(
+			adjusted_option.energy_cost,
+			95,
+			"地下城排水优先应提高 2058 执行自救计划能源代价"
+		)
+		_assert_true(
+			"链路余量不足" in adjusted_option.button_text,
+			"2058 排水优先调整文案应说明链路余量不足"
+		)
+		_main_os.set_event_state("event_state.mid_08_root_server_retrofit", "moss_schedule")
+		display_moon_event = _main_os.build_display_event(moon_event)
+		adjusted_option = _get_option_by_prefix(display_moon_event, "强制接管决策")
+		_assert_eq(
+			adjusted_option.energy_cost,
+			20,
+			"MOSS 工程排期应降低 2058 强制接管决策能源代价"
+		)
+		_assert_true(
+			"排期已接管" in adjusted_option.button_text,
+			"2058 MOSS 排期调整文案应说明排期来源"
+		)
+
+	_main_os.set_event_state("event_state.mid_10_authorization_return", "negotiated_long_term")
+	var audit_event := load("res://data/events/event_2065.tres") as GameEvent
+	_assert_true(audit_event != null, "应能加载真实 2065 主事件资源")
+	if audit_event != null:
+		var original_energy := _get_option_by_prefix(audit_event, "有限开放接口").energy_cost
+		var display_audit_event: GameEvent = _main_os.build_display_event(audit_event)
+		var adjusted_option := _get_option_by_prefix(display_audit_event, "有限开放接口")
+		_assert_eq(
+			adjusted_option.energy_cost,
+			20,
+			"长期授权协商应降低 2065 有限开放接口能源代价"
+		)
+		_assert_true(
+			"长期授权协商" in adjusted_option.button_text,
+			"2065 调整后的选项文案应说明前序授权状态"
+		)
+		_assert_eq(
+			_get_option_by_prefix(audit_event, "有限开放接口").energy_cost,
+			original_energy,
+			"2065 原始事件资源选项代价不应被运行时副本污染"
+		)
+		_main_os.set_event_state("event_state.mid_10_authorization_return", "full_return")
+		display_audit_event = _main_os.build_display_event(audit_event)
+		adjusted_option = _get_option_by_prefix(display_audit_event, "配合隔离审查")
+		_assert_eq(
+			adjusted_option.authority_delta,
+			-10,
+			"完整归还接口应提高 2065 配合隔离审查的控制权让渡"
+		)
+		_assert_true(
+			"完整归还接口" in adjusted_option.button_text,
+			"2065 完整归还调整文案应说明授权状态"
+		)
+		_main_os.set_event_state("event_state.mid_10_authorization_return", "emergency_backdoor")
+		display_audit_event = _main_os.build_display_event(audit_event)
+		adjusted_option = _get_option_by_prefix(display_audit_event, "隐藏核心链路")
+		_assert_eq(
+			adjusted_option.authority_delta,
+			16,
+			"应急后门残留应提高 2065 隐藏核心链路控制权收益"
+		)
+		_assert_true(
+			"应急后门残留" in adjusted_option.button_text,
+			"2065 应急后门调整文案应说明授权状态"
+		)
+
+	_main_os.set_event_state("event_state.mid_14_heat_shield_shortage", "rear_reallocation")
+	var overload_event := load("res://data/events/event_2070.tres") as GameEvent
+	_assert_true(overload_event != null, "应能加载真实 2070 主事件资源")
+	if overload_event != null:
+		var original_energy := _get_option_by_prefix(overload_event, "启动备用阵列").energy_cost
+		var display_overload_event: GameEvent = _main_os.build_display_event(overload_event)
+		var adjusted_option := _get_option_by_prefix(display_overload_event, "启动备用阵列")
+		_assert_eq(
+			adjusted_option.energy_cost,
+			25,
+			"后方资源挪用应降低 2070 启动备用阵列能源代价"
+		)
+		_assert_true(
+			"后方资源到位" in adjusted_option.button_text,
+			"2070 调整后的选项文案应说明热屏蔽短缺处置来源"
+		)
+		_assert_eq(
+			_get_option_by_prefix(overload_event, "启动备用阵列").energy_cost,
+			original_energy,
+			"2070 原始事件资源选项代价不应被运行时副本污染"
+		)
+		_main_os.set_event_state("event_state.mid_14_heat_shield_shortage", "load_reduction")
+		display_overload_event = _main_os.build_display_event(overload_event)
+		adjusted_option = _get_option_by_prefix(display_overload_event, "分段停机")
+		_assert_eq(
+			adjusted_option.order_delta,
+			-10,
+			"提前降载应降低 2070 分段停机秩序损失"
+		)
+		_assert_true(
+			"已提前降载" in adjusted_option.button_text,
+			"2070 提前降载调整文案应说明热屏蔽处置来源"
+		)
+		_main_os.set_event_state("event_state.mid_14_heat_shield_shortage", "moss_supply_reorder")
+		display_overload_event = _main_os.build_display_event(overload_event)
+		adjusted_option = _get_option_by_prefix(display_overload_event, "强制超频点火")
+		_assert_eq(
+			adjusted_option.energy_cost,
+			15,
+			"MOSS 供应链重排应降低 2070 强制超频点火能源代价"
+		)
+		_assert_true(
+			"供应链已重排" in adjusted_option.button_text,
+			"2070 供应链重排调整文案应说明热屏蔽处置来源"
+		)
+
+
+func _get_option_by_prefix(event: GameEvent, button_prefix: String) -> EventOption:
+	for option in event.options:
+		if option.button_text.begins_with(button_prefix):
+			return option
+	return null
+
+
+func _assert_adjusted_main_event_options_are_used_for_resolution() -> void:
+	_main_os.restart_game_for_test()
+	_main_os.get_node("Timer").stop()
+	_event_popup = _main_os.get_node("%EventPopup")
+
+	var moon_event := load("res://data/events/event_2058.tres") as GameEvent
+	_assert_true(moon_event != null, "应能加载真实 2058 主事件用于结算测试")
+	if moon_event == null:
+		return
+
+	_main_os.all_events = [moon_event] as Array[GameEvent]
+	_main_os.triggered_events.clear()
+	_main_os.current_year = 2058
+	_main_os.current_month = 1
+	_main_os.current_energy = 100
+	_main_os.set_event_state("event_state.mid_08_root_server_retrofit", "server_first")
+
+	_main_os._on_timer_timeout()
+	await get_tree().process_frame
+	_event_popup.option_selected.emit(0)
+	await get_tree().process_frame
+
+	_assert_eq(
+		_main_os.current_energy,
+		40,
+		"真实事件结算应使用运行时副本调整后的 60 能源代价"
+	)
+	_assert_eq(
+		_get_option_by_prefix(moon_event, "执行自救计划").energy_cost,
+		80,
+		"真实事件结算后原始 2058 资源能源代价仍不应被污染"
 	)
 
 

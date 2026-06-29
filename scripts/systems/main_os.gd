@@ -581,11 +581,12 @@ func _on_timer_timeout() -> void:
 			triggered_events.append(event_key)
 
 			# 显示事件弹窗
-			%EventPopup.popup_event(build_display_event(event), current_energy)
+			var display_event := build_display_event(event)
+			%EventPopup.popup_event(display_event, current_energy)
 
 			# await 挂起函数，等待玩家选择
 			var choice_index: int = await %EventPopup.option_selected
-			var selected_opt: EventOption = event.options[choice_index]
+			var selected_opt: EventOption = display_event.options[choice_index]
 
 			# 应用选择后果
 			apply_consequences(
@@ -636,7 +637,83 @@ func _get_event_trigger_key(event: GameEvent) -> String:
 func build_display_event(event: GameEvent) -> GameEvent:
 	var display_event: GameEvent = event.duplicate(true)
 	display_event.event_description = build_event_description(event)
+	apply_event_option_adjustments(display_event)
 	return display_event
+
+
+## 根据已写入的轻量事件状态调整主事件运行时选项代价，不写回 Resource 模板
+func apply_event_option_adjustments(event: GameEvent) -> void:
+	match event.event_title:
+		"月球坠落危机":
+			_apply_2058_option_adjustments(event)
+		"AI隔离审查":
+			_apply_2065_option_adjustments(event)
+		"西伯利亚发动机群过载":
+			_apply_2070_option_adjustments(event)
+
+
+func _apply_2058_option_adjustments(event: GameEvent) -> void:
+	match get_event_state("event_state.mid_08_root_server_retrofit"):
+		"server_first":
+			var option := _get_event_option_by_prefix(event, "执行自救计划")
+			if option != null:
+				option.energy_cost = 60
+				option.button_text = "%s（根服务器预改造）" % option.button_text
+		"drainage_first":
+			var option := _get_event_option_by_prefix(event, "执行自救计划")
+			if option != null:
+				option.energy_cost = 95
+				option.button_text = "%s（链路余量不足）" % option.button_text
+		"moss_schedule":
+			var option := _get_event_option_by_prefix(event, "强制接管决策")
+			if option != null:
+				option.energy_cost = 20
+				option.button_text = "%s（排期已接管）" % option.button_text
+
+
+func _apply_2065_option_adjustments(event: GameEvent) -> void:
+	match get_event_state("event_state.mid_10_authorization_return"):
+		"full_return":
+			var option := _get_event_option_by_prefix(event, "配合隔离审查")
+			if option != null:
+				option.authority_delta = -10
+				option.button_text = "%s（完整归还接口）" % option.button_text
+		"emergency_backdoor":
+			var option := _get_event_option_by_prefix(event, "隐藏核心链路")
+			if option != null:
+				option.authority_delta = 16
+				option.button_text = "%s（应急后门残留）" % option.button_text
+		"negotiated_long_term":
+			var option := _get_event_option_by_prefix(event, "有限开放接口")
+			if option != null:
+				option.energy_cost = 20
+				option.button_text = "%s（长期授权协商）" % option.button_text
+
+
+func _apply_2070_option_adjustments(event: GameEvent) -> void:
+	match get_event_state("event_state.mid_14_heat_shield_shortage"):
+		"load_reduction":
+			var option := _get_event_option_by_prefix(event, "分段停机")
+			if option != null:
+				option.order_delta = -10
+				option.button_text = "%s（已提前降载）" % option.button_text
+		"rear_reallocation":
+			var option := _get_event_option_by_prefix(event, "启动备用阵列")
+			if option != null:
+				option.energy_cost = 25
+				option.button_text = "%s（后方资源到位）" % option.button_text
+		"moss_supply_reorder":
+			var option := _get_event_option_by_prefix(event, "强制超频点火")
+			if option != null:
+				option.energy_cost = 15
+				option.button_text = "%s（供应链已重排）" % option.button_text
+
+
+func _get_event_option_by_prefix(event: GameEvent, button_prefix: String) -> EventOption:
+	for option in event.options:
+		if option.button_text.begins_with(button_prefix):
+			return option
+	return null
 
 
 ## 根据已写入的轻量事件状态补充主事件历史回声
