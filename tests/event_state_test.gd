@@ -19,6 +19,7 @@ func _ready() -> void:
 
 	_assert_event_option_exposes_state_write_fields()
 	await _assert_event_choice_writes_queryable_state()
+	_assert_civic_event_states_change_main_event_context()
 	_assert_restart_clears_event_states()
 
 	print("[MOSS-EVENT-STATE] 完成，失败断言：%d" % _failed)
@@ -41,7 +42,7 @@ func _assert_event_option_exposes_state_write_fields() -> void:
 
 func _assert_event_choice_writes_queryable_state() -> void:
 	var event := _create_state_event()
-	_main_os.all_events = [event]
+	_main_os.all_events = [event] as Array[GameEvent]
 	_main_os.triggered_events.clear()
 	_main_os.current_year = 2045
 	_main_os.current_month = 1
@@ -81,6 +82,45 @@ func _assert_restart_clears_event_states() -> void:
 	)
 
 
+func _assert_civic_event_states_change_main_event_context() -> void:
+	_assert_true(
+		_main_os.has_method("build_event_description"),
+		"MainOS 应提供 build_event_description 生成可读取历史状态的事件正文"
+	)
+	if not _main_os.has_method("build_event_description"):
+		return
+
+	_main_os.set_event_state("event_state.mid_01_lottery_ordering", "manual_review")
+	_main_os.set_event_state("event_state.mid_06_ration_priority", "family_baseline")
+	_main_os.set_event_state("event_state.mid_07_migration_priority", "humanitarian")
+
+	var flood_event := _create_named_event("大淹没事故", 2053, "根服务器和地下城同时承压。")
+	var flood_description: String = _main_os.build_event_description(flood_event)
+	_assert_true(
+		"历史回声" in flood_description,
+		"2053 主事件正文应追加历史回声段落"
+	)
+	_assert_true(
+		"申诉窗口" in flood_description,
+		"2053 主事件应读取 MID-01 人工复核抽签背景"
+	)
+	_assert_true(
+		"家庭最低保障" in flood_description,
+		"2053 主事件应读取 MID-06 家庭配给背景"
+	)
+
+	var jupiter_event := _create_named_event("木星引力危机", 2075, "终局方案等待授权。")
+	var jupiter_description: String = _main_os.build_event_description(jupiter_event)
+	_assert_true(
+		"普通人仍记得早年的申诉窗口" in jupiter_description,
+		"2075 终局事件应读取 MID-01 作为普通人回声"
+	)
+	_assert_true(
+		"人道迁移记录" in jupiter_description,
+		"2075 终局事件应读取 MID-07 迁移优先级"
+	)
+
+
 func _create_state_event() -> GameEvent:
 	var event := GameEvent.new()
 	event.event_title = "事件状态测试"
@@ -92,6 +132,16 @@ func _create_state_event() -> GameEvent:
 		_create_option("人工复核", "manual_review"),
 		_create_option("MOSS 排序", "moss_optimized"),
 	]
+	return event
+
+
+func _create_named_event(title: String, year: int, description: String) -> GameEvent:
+	var event := GameEvent.new()
+	event.event_title = title
+	event.event_time = year
+	event.event_month = 1
+	event.event_region = "联合政府"
+	event.event_description = description
 	return event
 
 
