@@ -112,7 +112,7 @@ func _assert_civic_event_states_change_main_event_context() -> void:
 		"2053 主事件应读取 MID-06 家庭配给背景"
 	)
 
-	var real_flood_event := load("res://data/events/event_2053.tres") as GameEvent
+	var real_flood_event := load("res://data/events/event_2053_great_flood_accident.tres") as GameEvent
 	_assert_true(real_flood_event != null, "应能加载真实 2053 主事件资源")
 	if real_flood_event != null:
 		var original_description: String = real_flood_event.event_description
@@ -142,7 +142,7 @@ func _assert_civic_event_states_change_main_event_context() -> void:
 		"2075 终局事件应读取 MID-07 迁移优先级"
 	)
 
-	var real_jupiter_event := load("res://data/events/event_2075.tres") as GameEvent
+	var real_jupiter_event := load("res://data/events/event_2075_jupiter_gravity_crisis.tres") as GameEvent
 	_assert_true(real_jupiter_event != null, "应能加载真实 2075 主事件资源")
 	if real_jupiter_event != null:
 		var original_description: String = real_jupiter_event.event_description
@@ -179,22 +179,22 @@ func _assert_remaining_event_states_change_main_event_context() -> void:
 	_main_os.set_event_state("event_state.mid_17_final_authorization", "negotiated_trusteeship")
 
 	_assert_real_event_context(
-		"res://data/events/event_2058.tres",
+		"res://data/events/event_2058_lunar_fall_crisis.tres",
 		["监测资产", "安全债", "根服务器优先", "受审计访问"],
 		"2058 主事件应读取数字生命和根服务器前因"
 	)
 	_assert_real_event_context(
-		"res://data/events/event_2065.tres",
+		"res://data/events/event_2065_ai_isolation_audit.tres",
 		["公开审计记录", "MOSS 直接重排", "应急后门", "技术说明"],
 		"2065 主事件应读取权限演化和数字生命审查前因"
 	)
 	_assert_real_event_context(
-		"res://data/events/event_2070.tres",
+		"res://data/events/event_2070_siberian_engine_overload.tres",
 		["自治训练", "应急旁路", "后方资源"],
 		"2070 主事件应读取工程疲劳前因"
 	)
 	_assert_real_event_context(
-		"res://data/events/event_2075.tres",
+		"res://data/events/event_2075_jupiter_gravity_crisis.tres",
 		["推进风险", "受限档案", "协商托管框架"],
 		"2075 主事件应读取终局前授权、工程和备份前因"
 	)
@@ -234,7 +234,7 @@ func _assert_real_event_context(
 
 func _assert_representative_event_states_change_main_event_options() -> void:
 	_main_os.set_event_state("event_state.mid_08_root_server_retrofit", "server_first")
-	var moon_event := load("res://data/events/event_2058.tres") as GameEvent
+	var moon_event := load("res://data/events/event_2058_lunar_fall_crisis.tres") as GameEvent
 	_assert_true(moon_event != null, "应能加载真实 2058 主事件资源")
 	if moon_event != null:
 		var original_energy := _get_option_by_prefix(moon_event, "执行自救计划").energy_cost
@@ -280,7 +280,7 @@ func _assert_representative_event_states_change_main_event_options() -> void:
 		)
 
 	_main_os.set_event_state("event_state.mid_10_authorization_return", "negotiated_long_term")
-	var audit_event := load("res://data/events/event_2065.tres") as GameEvent
+	var audit_event := load("res://data/events/event_2065_ai_isolation_audit.tres") as GameEvent
 	_assert_true(audit_event != null, "应能加载真实 2065 主事件资源")
 	if audit_event != null:
 		var original_energy := _get_option_by_prefix(audit_event, "有限开放接口").energy_cost
@@ -326,7 +326,7 @@ func _assert_representative_event_states_change_main_event_options() -> void:
 		)
 
 	_main_os.set_event_state("event_state.mid_14_heat_shield_shortage", "rear_reallocation")
-	var overload_event := load("res://data/events/event_2070.tres") as GameEvent
+	var overload_event := load("res://data/events/event_2070_siberian_engine_overload.tres") as GameEvent
 	_assert_true(overload_event != null, "应能加载真实 2070 主事件资源")
 	if overload_event != null:
 		var original_energy := _get_option_by_prefix(overload_event, "启动备用阵列").energy_cost
@@ -384,7 +384,7 @@ func _assert_adjusted_main_event_options_are_used_for_resolution() -> void:
 	_main_os.get_node("Timer").stop()
 	_event_popup = _main_os.get_node("%EventPopup")
 
-	var moon_event := load("res://data/events/event_2058.tres") as GameEvent
+	var moon_event := load("res://data/events/event_2058_lunar_fall_crisis.tres") as GameEvent
 	_assert_true(moon_event != null, "应能加载真实 2058 主事件用于结算测试")
 	if moon_event == null:
 		return
