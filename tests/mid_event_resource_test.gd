@@ -1,5 +1,5 @@
 ## 中型事件资源测试
-## 验证 17 个中型事件资源可加载，并写入设计包定义的 event_state 值
+## 验证 17 个中型事件资源可加载，并写入内容规范定义的 event_state 值
 extends Node
 
 const MAIN_SCENE: PackedScene = preload("res://scenes/main_os.tscn")
@@ -63,7 +63,7 @@ func _assert_mid_event_resources() -> void:
 		var expected_year: int = spec[0]
 		var expected_values: Array = spec[1]
 
-		_assert_eq(event.event_time, expected_year, "%s 年份应匹配设计包" % state_key)
+		_assert_eq(event.event_time, expected_year, "%s 年份应匹配内容规范" % state_key)
 		_assert_eq(event.event_month, 1, "%s 应在 1 月触发" % state_key)
 		_assert_true(event.event_region in VALID_REGIONS, "%s 应使用有效地区" % state_key)
 		_assert_eq(event.event_level, "一般事件", "%s 应标记为一般事件" % state_key)
@@ -75,7 +75,7 @@ func _assert_mid_event_resources() -> void:
 			actual_values.append(option.event_state_value)
 			_assert_true(option.button_text != "", "%s 的选项按钮文案不应为空" % state_key)
 
-		_assert_eq(actual_values, expected_values, "%s 的状态值应匹配设计包" % state_key)
+		_assert_eq(actual_values, expected_values, "%s 的状态值应匹配内容规范" % state_key)
 
 
 func _collect_mid_events() -> Dictionary:
