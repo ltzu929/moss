@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://ctakhimn50hdc" path="res://scripts/systems/main_os.gd" id="1_8e66l"]
 [ext_resource type="Script" uid="uid://dhndawkfhm8iq" path="res://scripts/resources/game_event.gd" id="2_0h44u"]
 [ext_resource type="PackedScene" uid="uid://xn0mj5mp0u12" path="res://scenes/sector_info.tscn" id="2_qcklt"]
-[ext_resource type="Resource" uid="uid://bgrmda00hq7ef" path="res://data/events/event_2044.tres" id="3_b37nj"]
+[ext_resource type="Resource" uid="uid://bgrmda00hq7ef" path="res://data/events/event_2044_space_elevator_crisis.tres" id="3_b37nj"]
 [ext_resource type="Resource" uid="uid://de5nghry0twj7" path="res://data/sector_asia.tres" id="3_sjuws"]
 [ext_resource type="Resource" uid="uid://c5g8pdsgsa214" path="res://data/sector_na.tres" id="4_lwoul"]
 [ext_resource type="Resource" uid="uid://dthd18iep6jve" path="res://data/sector_ueg.tres" id="5_8e66l"]
