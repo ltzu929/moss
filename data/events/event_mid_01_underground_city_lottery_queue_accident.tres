@@ -1,7 +1,9 @@
-[gd_resource type="Resource" script_class="GameEvent" format=3]
+[gd_resource type="Resource" script_class="GameEvent" format=3 uid="uid://ce6oynhpmratn"]
 
-[ext_resource type="Script" path="res://scripts/resources/game_event.gd" id="1_event"]
-[ext_resource type="Script" path="res://scripts/resources/event_option.gd" id="2_option"]
+[ext_resource type="Texture2D" uid="uid://nopkdkjjhcfkm" path="res://assets/event/地下城抽签排队事故.png" id="1_image"]
+
+[ext_resource type="Script" uid="uid://dhndawkfhm8iq" path="res://scripts/resources/game_event.gd" id="1_event"]
+[ext_resource type="Script" uid="uid://bl7wa43xriuci" path="res://scripts/resources/event_option.gd" id="2_option"]
 
 [sub_resource type="Resource" id="Option_1"]
 script = ExtResource("2_option")
@@ -35,8 +37,8 @@ event_state_value = "security_lockdown"
 script = ExtResource("1_event")
 event_title = "地下城抽签排队事故"
 event_time = 2045
-event_month = 1
 event_region = "亚洲"
 event_description = "太空电梯危机后，地下城资格抽签重新启动。登记队伍持续延长，部分家庭被系统拆分到不同候选批次。"
+event_image = ExtResource("1_image")
 event_level = "一般事件"
 options = Array[ExtResource("2_option")]([SubResource("Option_1"), SubResource("Option_2"), SubResource("Option_3")])

@@ -1,5 +1,7 @@
 [gd_resource type="Resource" script_class="GameEvent" format=3 uid="uid://bgrmda00hq7ef"]
 
+[ext_resource type="Texture2D" uid="uid://fkohcodegbmdm" path="res://assets/event/太空电梯危机.png" id="1_image"]
+
 [ext_resource type="Script" uid="uid://dhndawkfhm8iq" path="res://scripts/resources/game_event.gd" id="1_j8jfo"]
 [ext_resource type="Script" uid="uid://bl7wa43xriuci" path="res://scripts/resources/event_option.gd" id="1_qu5m7"]
 
@@ -33,8 +35,8 @@ metadata/_custom_type_script = "uid://bl7wa43xriuci"
 script = ExtResource("1_j8jfo")
 event_title = "太空电梯危机"
 event_time = 2044
-event_month = 1
 event_region = "亚洲"
 event_description = "数字生命派袭击方舟号空间站"
+event_image = ExtResource("1_image")
 options = Array[ExtResource("1_qu5m7")]([SubResource("Resource_j5aep"), SubResource("Resource_bbnqo"), SubResource("Resource_qu5m7")])
 metadata/_custom_type_script = "uid://dhndawkfhm8iq"
