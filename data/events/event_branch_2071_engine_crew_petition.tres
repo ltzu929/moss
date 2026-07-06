@@ -1,0 +1,47 @@
+[gd_resource type="Resource" script_class="GameEvent" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/game_event.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/resources/event_option.gd" id="2_option"]
+
+[sub_resource type="Resource" id="Option_1"]
+script = ExtResource("2_option")
+button_text = "保留人员复核窗口"
+order_delta = -5
+hope_delta = 7
+authority_delta = -4
+energy_cost = 5
+event_state_key = "event_state.branch_2071_engine_crew_petition"
+event_state_value = "review_window"
+
+[sub_resource type="Resource" id="Option_2"]
+script = ExtResource("2_option")
+button_text = "转入工程轮换"
+order_delta = 5
+hope_delta = 2
+authority_delta = 2
+energy_cost = 10
+event_state_key = "event_state.branch_2071_engine_crew_petition"
+event_state_value = "rotation_plan"
+
+[sub_resource type="Resource" id="Option_3"]
+script = ExtResource("2_option")
+button_text = "归档请愿材料"
+order_delta = 7
+hope_delta = -6
+authority_delta = 5
+event_state_key = "event_state.branch_2071_engine_crew_petition"
+event_state_value = "archived"
+
+[resource]
+script = ExtResource("1_event")
+event_title = "发动机前线人员请愿"
+event_time = 2071
+event_month = 8
+event_region = "俄罗斯"
+event_description = "2070 年分段停机保护人员后，发动机前线提交请愿，要求把人员撤离窗口写入后续推进调度规则。"
+event_level = "一般事件"
+required_decision_tag_key = "decision.core_2070_engine_overload_doctrine"
+required_decision_tag_value = "crew_protected"
+causal_thread = "工程疲劳链"
+branch_reason = "只有 2070 年选择分段停机保护人员时，前线请愿才有制度依据。"
+options = Array[ExtResource("2_option")]([SubResource("Option_1"), SubResource("Option_2"), SubResource("Option_3")])

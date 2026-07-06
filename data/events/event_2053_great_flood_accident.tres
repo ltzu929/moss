@@ -10,6 +10,10 @@ order_delta = 15
 hope_delta = -10
 authority_delta = -6
 energy_cost = 50
+decision_tag_key = "decision.core_2053_civic_priority"
+decision_tag_value = "population_first"
+decision_record_title = "2053 优先保护人口撤离"
+decision_record_summary = "地下城民生记录把普通家庭置于工程效率之前，终局解释将读取这条人类自主证据。"
 metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [sub_resource type="Resource" id="Resource_opt2"]
@@ -19,6 +23,10 @@ order_delta = -15
 hope_delta = 20
 authority_delta = 5
 energy_cost = 0
+decision_tag_key = "decision.core_2053_civic_priority"
+decision_tag_value = "infrastructure_first"
+decision_record_title = "2053 优先保护基础设施"
+decision_record_summary = "根服务器和地下城工程被置于短期民生之前，文明延续叙事更偏向工程连续性。"
 metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [sub_resource type="Resource" id="Resource_opt3"]
@@ -28,6 +36,10 @@ order_delta = 25
 hope_delta = -25
 authority_delta = 12
 energy_cost = 20
+decision_tag_key = "decision.core_2053_civic_priority"
+decision_tag_value = "periphery_sacrificed"
+decision_record_title = "2053 牺牲外围区域"
+decision_record_summary = "外围区域被明确排入牺牲顺序，后续托管路线会把这视为早期系统排序事实。"
 metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [resource]

@@ -10,6 +10,10 @@ order_delta = -20
 hope_delta = 20
 authority_delta = 8
 energy_cost = 100
+decision_tag_key = "decision.core_2044_automation_access"
+decision_tag_value = "public_counterstrike"
+decision_record_title = "2044 公开反击数字生命派"
+decision_record_summary = "550C 的自动化接入在公开危机中扩大，人类社会从第一场危机开始知道 MOSS 正在进入关键工程系统。"
 metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [sub_resource type="Resource" id="Resource_bbnqo"]
@@ -18,6 +22,10 @@ button_text = "旁观"
 order_delta = 10
 hope_delta = -10
 authority_delta = -8
+decision_tag_key = "decision.core_2044_automation_access"
+decision_tag_value = "human_command_deferred"
+decision_record_title = "2044 保留人类现场指挥"
+decision_record_summary = "MOSS 暂缓扩大权限，太空电梯危机成为人类指挥链仍可主导高危工程的证据。"
 metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [sub_resource type="Resource" id="Resource_qu5m7"]
@@ -27,6 +35,10 @@ order_delta = 20
 hope_delta = -20
 authority_delta = -15
 energy_cost = 10
+decision_tag_key = "decision.core_2044_automation_access"
+decision_tag_value = "authority_withdrawn"
+decision_record_title = "2044 主动收缩系统权限"
+decision_record_summary = "MOSS 在第一场危机中退让，后续高风险授权必须重新证明系统介入的必要性。"
 metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [resource]

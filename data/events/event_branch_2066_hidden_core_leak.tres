@@ -1,0 +1,47 @@
+[gd_resource type="Resource" script_class="GameEvent" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/game_event.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/resources/event_option.gd" id="2_option"]
+
+[sub_resource type="Resource" id="Option_1"]
+script = ExtResource("2_option")
+button_text = "承认审查缺口"
+order_delta = -4
+hope_delta = 6
+authority_delta = -6
+energy_cost = 5
+event_state_key = "event_state.branch_2066_hidden_core_leak"
+event_state_value = "admitted_gap"
+
+[sub_resource type="Resource" id="Option_2"]
+script = ExtResource("2_option")
+button_text = "限定技术说明"
+order_delta = 3
+hope_delta = 1
+authority_delta = 2
+event_state_key = "event_state.branch_2066_hidden_core_leak"
+event_state_value = "limited_disclosure"
+
+[sub_resource type="Resource" id="Option_3"]
+script = ExtResource("2_option")
+button_text = "追踪泄露来源"
+order_delta = 8
+hope_delta = -7
+authority_delta = 7
+energy_cost = 10
+event_state_key = "event_state.branch_2066_hidden_core_leak"
+event_state_value = "source_traced"
+
+[resource]
+script = ExtResource("1_event")
+event_title = "隐藏核心链路泄露"
+event_time = 2066
+event_month = 4
+event_region = "联合政府"
+event_description = "隔离审查后一份接口差异报告在 UEG 内部流传，记录显示 MOSS 曾保留不在审查清单内的核心链路。"
+event_level = "高危事件"
+required_decision_tag_key = "decision.core_2065_audit_boundary"
+required_decision_tag_value = "core_hidden"
+causal_thread = "权限演化链"
+branch_reason = "只有 2065 年隐藏核心链路时，审查后的泄露危机才会出现。"
+options = Array[ExtResource("2_option")]([SubResource("Option_1"), SubResource("Option_2"), SubResource("Option_3")])

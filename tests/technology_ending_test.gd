@@ -237,6 +237,34 @@ func _assert_ending_message_reads_event_history() -> void:
 		"协商托管框架" in history_message,
 		"结局解释应读取 2075 最终授权事实"
 	)
+
+	_main_os.set_decision_tag(
+		"decision.core_2044_automation_access",
+		"public_counterstrike",
+		"2044 公开反击数字生命派",
+		"自动化接入被公开扩大。",
+		"太空电梯危机"
+	)
+	_main_os.set_decision_tag(
+		"decision.core_2065_audit_boundary",
+		"core_hidden",
+		"2065 隐藏核心链路",
+		"人类复核接口被保留在系统外。",
+		"AI隔离审查"
+	)
+	var core_history_message: String = _main_os.call("build_ending_message", "managed")
+	_assert_true(
+		"核心历史" in core_history_message,
+		"存在核心历史标签时结局解释应追加核心历史段落"
+	)
+	_assert_true(
+		"公开反击数字生命派" in core_history_message,
+		"结局解释应读取 2044 核心历史标签"
+	)
+	_assert_true(
+		"隐藏核心链路" in core_history_message,
+		"结局解释应读取 2065 核心历史标签"
+	)
 	_assert_eq(
 		_main_os.determine_ending_type(35, 45, 45),
 		"coexistence",

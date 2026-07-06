@@ -102,6 +102,12 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "科技协议 1"
 
+[node name="DecisionArchiveButton" type="Button" parent="MainLayout/TopBarContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+disabled = true
+text = "因果档案 0"
+
 [node name="YearProgress" parent="MainLayout" unique_id=2033000003 instance=ExtResource("12_yearprogress")]
 unique_name_in_owner = true
 z_index = 10
@@ -428,6 +434,60 @@ layout_mode = 1
 grow_horizontal = 1
 grow_vertical = 1
 
+[node name="DecisionArchivePanel" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+visible = false
+z_index = 25
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 80.0
+offset_top = 80.0
+offset_right = -80.0
+offset_bottom = -80.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
+
+[node name="DecisionArchiveMargin" type="MarginContainer" parent="DecisionArchivePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="DecisionArchiveVBox" type="VBoxContainer" parent="DecisionArchivePanel/DecisionArchiveMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="DecisionArchiveHeader" type="HBoxContainer" parent="DecisionArchivePanel/DecisionArchiveMargin/DecisionArchiveVBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="DecisionArchiveTitle" type="Label" parent="DecisionArchivePanel/DecisionArchiveMargin/DecisionArchiveVBox/DecisionArchiveHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.545, 0.867, 0.851, 1)
+theme_override_font_sizes/font_size = 20
+text = "历史因果档案"
+
+[node name="DecisionArchiveCloseButton" type="Button" parent="DecisionArchivePanel/DecisionArchiveMargin/DecisionArchiveVBox/DecisionArchiveHeader"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "关闭"
+
+[node name="DecisionArchiveText" type="RichTextLabel" parent="DecisionArchivePanel/DecisionArchiveMargin/DecisionArchiveVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_colors/default_color = Color(0.722, 0.78, 0.839, 1)
+bbcode_enabled = false
+text = "暂无核心历史记录。"
+fit_content = false
+scroll_following = false
+
 [node name="Timer" type="Timer" parent="." unique_id=984637322]
 wait_time = 1.0
 autostart = true
@@ -446,4 +506,6 @@ offset_top = -60.5
 offset_bottom = 60.5
 
 [connection signal="pressed" from="MainLayout/TopBarContainer/TechnologyButton" to="." method="_on_technology_button_pressed"]
+[connection signal="pressed" from="MainLayout/TopBarContainer/DecisionArchiveButton" to="." method="_on_decision_archive_button_pressed"]
+[connection signal="pressed" from="DecisionArchivePanel/DecisionArchiveMargin/DecisionArchiveVBox/DecisionArchiveHeader/DecisionArchiveCloseButton" to="." method="_on_decision_archive_close_button_pressed"]
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]

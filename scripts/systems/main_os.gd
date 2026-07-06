@@ -119,6 +119,12 @@ var triggered_events: Array[String] = []
 ## 轻量事件状态 {"event_state.mid_01_lottery_ordering": "manual_review"}
 var event_states: Dictionary = {}
 
+## 核心历史标签 {"decision.core_2044_automation_access": "public_counterstrike"}
+var decision_tags: Dictionary = {}
+
+## 可展示的核心历史档案条目
+var decision_archive: Array[Dictionary] = []
+
 ## 重大事件期间的临时地球聚焦区域
 var _event_focus_region: String = ""
 
@@ -151,6 +157,8 @@ func _ready() -> void:
 
 	refresh_technology_effects()
 	update_technology_button()
+	update_decision_archive_button()
+	_refresh_decision_archive_panel()
 	update_global_resource_ui()
 	update_region_detail_ui()
 	update_command_buttons()
@@ -372,6 +380,69 @@ func update_technology_button() -> void:
 	btn.tooltip_text = "打开科技控制台"
 
 
+## 更新因果档案按钮的记录数量
+func update_decision_archive_button() -> void:
+	if not has_node("%DecisionArchiveButton"):
+		return
+	var button := %DecisionArchiveButton as Button
+	button.text = "因果档案 %d" % decision_archive.size()
+	button.disabled = decision_archive.is_empty()
+
+
+## 因果档案按钮回调：无其他模态界面时打开档案面板
+func _on_decision_archive_button_pressed() -> void:
+	if decision_archive.is_empty() or not _can_open_decision_archive_panel():
+		return
+	$Timer.stop()
+	_refresh_decision_archive_panel()
+	%DecisionArchivePanel.visible = true
+
+
+## 关闭因果档案面板
+func _on_decision_archive_close_button_pressed() -> void:
+	if has_node("%DecisionArchivePanel"):
+		%DecisionArchivePanel.visible = false
+	if not is_game_over:
+		$Timer.start()
+
+
+## 判断当前游戏状态是否允许打开因果档案面板
+func _can_open_decision_archive_panel() -> bool:
+	if is_game_over:
+		return false
+	for path in ["%EventPopup", "%AllocatePopup", "%TechnologyScreen"]:
+		if has_node(path) and get_node(path).visible:
+			return false
+	return has_node("%DecisionArchivePanel") and not %DecisionArchivePanel.visible
+
+
+## 刷新因果档案面板文本
+func _refresh_decision_archive_panel() -> void:
+	if not has_node("%DecisionArchiveText"):
+		return
+	var text := %DecisionArchiveText as RichTextLabel
+	text.text = _format_decision_archive_text()
+
+
+## 格式化核心历史档案，用普通文本避免 BBCode 泄漏到测试和 Label 路径
+func _format_decision_archive_text() -> String:
+	if decision_archive.is_empty():
+		return "暂无核心历史记录。"
+
+	var lines: Array[String] = []
+	for record in decision_archive:
+		lines.append("%04d.%02d  %s" % [
+			int(record.get("year", 0)),
+			int(record.get("month", 1)),
+			str(record.get("title", "")),
+		])
+		lines.append(str(record.get("summary", "")))
+		if str(record.get("source_event", "")) != "":
+			lines.append("来源事件：%s" % record.get("source_event"))
+		lines.append("")
+	return "\n".join(lines).strip_edges()
+
+
 ## 科技节点激活回调：重算效果、刷新按钮并记录操作
 func _on_technology_node_activated(node_id: String) -> void:
 	refresh_technology_effects()
@@ -570,6 +641,8 @@ func _on_timer_timeout() -> void:
 			var event_key := _get_event_trigger_key(event)
 			if event_key in triggered_events:
 				continue
+			if not can_trigger_event(event):
+				continue
 
 			# 事件触发时暂停时间，等待玩家决策
 			$Timer.stop()
@@ -598,7 +671,7 @@ func _on_timer_timeout() -> void:
 				event.event_title,
 				selected_opt.button_text
 			)
-			apply_event_option_state(selected_opt)
+			apply_event_option_state(selected_opt, event.event_title)
 
 			# 恢复事件发生前的玩家选区和地球聚焦
 			_event_focus_region = ""
@@ -631,6 +704,23 @@ func _on_timer_timeout() -> void:
 ## 生成事件触发去重键，允许同一年不同月份存在多个事件
 func _get_event_trigger_key(event: GameEvent) -> String:
 	return "%04d.%02d:%s" % [event.event_time, event.event_month, event.event_title]
+
+
+## 判断事件除日期和去重以外的分支条件是否满足
+func can_trigger_event(event: GameEvent) -> bool:
+	if event.required_decision_tag_key != "":
+		if not has_decision_tag(
+			event.required_decision_tag_key,
+			event.required_decision_tag_value
+		):
+			return false
+	if event.required_event_state_key != "":
+		if not has_event_state(
+			event.required_event_state_key,
+			event.required_event_state_value
+		):
+			return false
+	return true
 
 
 ## 构建事件弹窗使用的运行时副本，避免修改磁盘加载的 Resource 模板
@@ -928,8 +1018,88 @@ func has_event_state(state_key: String, expected_value: String = "") -> bool:
 
 
 ## 根据事件选项写入轻量历史状态
-func apply_event_option_state(option: EventOption) -> void:
+func apply_event_option_state(option: EventOption, event_title: String = "") -> void:
 	set_event_state(option.event_state_key, option.event_state_value)
+	set_decision_tag(
+		option.decision_tag_key,
+		option.decision_tag_value,
+		option.decision_record_title,
+		option.decision_record_summary,
+		event_title
+	)
+
+
+## 写入核心历史标签，空键不产生效果
+func set_decision_tag(
+	tag_key: String,
+	tag_value: String,
+	title: String,
+	summary: String,
+	source_event: String = ""
+) -> void:
+	if tag_key == "":
+		return
+	decision_tags[tag_key] = tag_value
+	_upsert_decision_archive_record(tag_key, tag_value, title, summary, source_event)
+	update_decision_archive_button()
+	_refresh_decision_archive_panel()
+
+
+## 查询核心历史标签；未写入时返回默认值
+func get_decision_tag(tag_key: String, default_value: String = "") -> String:
+	return str(decision_tags.get(tag_key, default_value))
+
+
+## 判断核心历史标签是否存在，传入 expected_value 时同时校验值
+func has_decision_tag(tag_key: String, expected_value: String = "") -> bool:
+	if not decision_tags.has(tag_key):
+		return false
+	if expected_value == "":
+		return true
+	return get_decision_tag(tag_key) == expected_value
+
+
+## 返回可展示的核心历史档案快照
+func get_decision_archive() -> Array[Dictionary]:
+	return decision_archive.duplicate(true)
+
+
+func _upsert_decision_archive_record(
+	tag_key: String,
+	tag_value: String,
+	title: String,
+	summary: String,
+	source_event: String
+) -> void:
+	for index in decision_archive.size():
+		if decision_archive[index].get("key") == tag_key:
+			decision_archive[index] = _create_decision_record(
+				tag_key,
+				tag_value,
+				title,
+				summary,
+				source_event
+			)
+			return
+	decision_archive.append(_create_decision_record(tag_key, tag_value, title, summary, source_event))
+
+
+func _create_decision_record(
+	tag_key: String,
+	tag_value: String,
+	title: String,
+	summary: String,
+	source_event: String
+) -> Dictionary:
+	return {
+		"year": current_year,
+		"month": current_month,
+		"key": tag_key,
+		"value": tag_value,
+		"title": title,
+		"summary": summary,
+		"source_event": source_event,
+	}
 
 
 ## 推进一个月
@@ -1423,13 +1593,31 @@ func build_ending_message(result: String) -> String:
 		"coexistence":
 			base_message = "MOSS 与人类保持有限协作。\n文明在控制与自主之间继续前进。"
 
+	var core_lines := _get_ending_core_history_lines(result)
 	var history_lines := _get_ending_history_lines(result)
-	if history_lines.is_empty():
+	if core_lines.is_empty() and history_lines.is_empty():
 		return base_message
-	return "%s\n\n历史回顾\n- %s" % [
-		base_message,
-		"\n- ".join(history_lines),
-	]
+
+	var sections: Array[String] = [base_message]
+	if not core_lines.is_empty():
+		sections.append("核心历史\n- %s" % "\n- ".join(core_lines))
+	if not history_lines.is_empty():
+		sections.append("历史回顾\n- %s" % "\n- ".join(history_lines))
+	return "\n\n".join(sections)
+
+
+func _get_ending_core_history_lines(_result: String) -> Array[String]:
+	var lines: Array[String] = []
+	for record in decision_archive:
+		var title := str(record.get("title", ""))
+		var summary := str(record.get("summary", ""))
+		if title == "":
+			continue
+		if summary == "":
+			lines.append(title)
+		else:
+			lines.append("%s：%s" % [title, summary])
+	return lines
 
 
 func _get_ending_history_lines(result: String) -> Array[String]:
@@ -1611,6 +1799,12 @@ func _on_restart_requested() -> void:
 	_clear_log_ui()
 	triggered_events.clear()
 	event_states.clear()
+	decision_tags.clear()
+	decision_archive.clear()
+	if has_node("%DecisionArchivePanel"):
+		%DecisionArchivePanel.visible = false
+	update_decision_archive_button()
+	_refresh_decision_archive_panel()
 	deselect_sector()
 
 	# 重置科技状态

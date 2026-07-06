@@ -1,0 +1,47 @@
+[gd_resource type="Resource" script_class="GameEvent" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/game_event.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/resources/event_option.gd" id="2_option"]
+
+[sub_resource type="Resource" id="Option_1"]
+script = ExtResource("2_option")
+button_text = "公开申诉样本"
+order_delta = -2
+hope_delta = 8
+authority_delta = -2
+energy_cost = 5
+event_state_key = "event_state.branch_2056_population_appeal"
+event_state_value = "public_record"
+
+[sub_resource type="Resource" id="Option_2"]
+script = ExtResource("2_option")
+button_text = "纳入迁移模型"
+order_delta = 4
+hope_delta = 2
+authority_delta = 3
+energy_cost = 10
+event_state_key = "event_state.branch_2056_population_appeal"
+event_state_value = "model_review"
+
+[sub_resource type="Resource" id="Option_3"]
+script = ExtResource("2_option")
+button_text = "封存争议记录"
+order_delta = 6
+hope_delta = -6
+authority_delta = 5
+event_state_key = "event_state.branch_2056_population_appeal"
+event_state_value = "sealed"
+
+[resource]
+script = ExtResource("1_event")
+event_title = "人口申诉复核记录"
+event_time = 2056
+event_month = 6
+event_region = "联合政府"
+event_description = "2053 年优先撤离人口后，多个地下城家庭提交申诉样本，要求确认撤离名单是否会在后续迁移中继续被读取。"
+event_level = "一般事件"
+required_decision_tag_key = "decision.core_2053_civic_priority"
+required_decision_tag_value = "population_first"
+causal_thread = "地下城民生链"
+branch_reason = "只有 2053 年优先保护人口撤离时，申诉复核记录才会成为后续治理议题。"
+options = Array[ExtResource("2_option")]([SubResource("Option_1"), SubResource("Option_2"), SubResource("Option_3")])

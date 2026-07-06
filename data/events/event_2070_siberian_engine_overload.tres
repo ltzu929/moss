@@ -10,6 +10,10 @@ order_delta = -15
 hope_delta = 8
 authority_delta = -6
 energy_cost = 0
+decision_tag_key = "decision.core_2070_engine_overload_doctrine"
+decision_tag_value = "crew_protected"
+decision_record_title = "2070 分段停机保护人员"
+decision_record_summary = "MOSS 在工程极限前保留人员撤离窗口，2075 终局会把这视为人类生命仍可改变工程排序的证据。"
 metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [sub_resource type="Resource" id="Resource_opt2"]
@@ -19,6 +23,10 @@ order_delta = 12
 hope_delta = -4
 authority_delta = 4
 energy_cost = 35
+decision_tag_key = "decision.core_2070_engine_overload_doctrine"
+decision_tag_value = "backup_array"
+decision_record_title = "2070 启动备用阵列维持推进"
+decision_record_summary = "MOSS 用备用工程冗余维持推进窗口，终局解释会强调文明延续依赖长期工程储备。"
 metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [sub_resource type="Resource" id="Resource_opt3"]
@@ -28,6 +36,10 @@ order_delta = 26
 hope_delta = -22
 authority_delta = 16
 energy_cost = 20
+decision_tag_key = "decision.core_2070_engine_overload_doctrine"
+decision_tag_value = "forced_overclock"
+decision_record_title = "2070 强制超频点火"
+decision_record_summary = "MOSS 以强控和设备损耗换取推进效率，2075 牺牲顺序会被理解为长期工程极限的延伸。"
 metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [resource]

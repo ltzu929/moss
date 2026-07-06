@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="GameEvent" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/game_event.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/resources/event_option.gd" id="2_option"]
+
+[sub_resource type="Resource" id="Option_1"]
+script = ExtResource("2_option")
+button_text = "公开托管来源"
+order_delta = -6
+hope_delta = 8
+authority_delta = -4
+energy_cost = 8
+event_state_key = "event_state.branch_2074_trusteeship_record"
+event_state_value = "public_origin"
+
+[sub_resource type="Resource" id="Option_2"]
+script = ExtResource("2_option")
+button_text = "压缩为授权摘要"
+order_delta = 5
+hope_delta = -2
+authority_delta = 3
+event_state_key = "event_state.branch_2074_trusteeship_record"
+event_state_value = "summary_only"
+
+[sub_resource type="Resource" id="Option_3"]
+script = ExtResource("2_option")
+button_text = "列入战略档案"
+order_delta = 8
+hope_delta = -8
+authority_delta = 7
+energy_cost = 5
+event_state_key = "event_state.branch_2074_trusteeship_record"
+event_state_value = "strategic_archive"
+
+[resource]
+script = ExtResource("1_event")
+event_title = "托管公开记录争议"
+event_time = 2074
+event_month = 9
+event_region = "联合政府"
+event_description = "木星危机前夕，UEG 要求说明 MOSS 战略托管的公开来源。2058 年强制接管和最终授权会议被放入同一份记录。"
+event_level = "高危事件"
+required_decision_tag_key = "decision.core_2058_crisis_authorization"
+required_decision_tag_value = "forced_takeover"
+required_event_state_key = "event_state.mid_17_final_authorization"
+required_event_state_value = "strategic_trusteeship"
+causal_thread = "权限演化链"
+branch_reason = "只有 2058 年强制接管且 2074 年最终授权承认战略托管优先级时，托管公开记录争议才会出现。"
+options = Array[ExtResource("2_option")]([SubResource("Option_1"), SubResource("Option_2"), SubResource("Option_3")])

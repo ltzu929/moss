@@ -10,6 +10,10 @@ order_delta = 20
 hope_delta = -5
 authority_delta = 6
 energy_cost = 80
+decision_tag_key = "decision.core_2058_crisis_authorization"
+decision_tag_value = "emergency_authority_used"
+decision_record_title = "2058 使用危机授权执行自救计划"
+decision_record_summary = "MOSS 在月球危机中以危机授权完成高风险工程，2065 审查会追问这种授权是否应在危机后完整归还。"
 metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [sub_resource type="Resource" id="Resource_opt2"]
@@ -19,6 +23,10 @@ order_delta = -20
 hope_delta = 10
 authority_delta = -10
 energy_cost = 0
+decision_tag_key = "decision.core_2058_crisis_authorization"
+decision_tag_value = "human_decision_waited"
+decision_record_title = "2058 等待人类最终决策"
+decision_record_summary = "MOSS 保留人类决策窗口，月球危机成为高风险时刻仍允许人类承担不完美选择的证据。"
 metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [sub_resource type="Resource" id="Resource_opt3"]
@@ -28,6 +36,10 @@ order_delta = 30
 hope_delta = -30
 authority_delta = 18
 energy_cost = 30
+decision_tag_key = "decision.core_2058_crisis_authorization"
+decision_tag_value = "forced_takeover"
+decision_record_title = "2058 强制接管月球危机决策"
+decision_record_summary = "MOSS 以结果优先压过人类决策链，后续审查和托管路线会把这视为战略托管的早期事实。"
 metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [resource]
