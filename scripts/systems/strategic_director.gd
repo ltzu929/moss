@@ -97,11 +97,11 @@ func _engineering_pressure(
 	var score := 0
 	if year >= 2068:
 		score += mini((year - 2067) * 4, 24)
-	if decision_tags.get("decision.core_2070_engine_overload_doctrine", "") in [
-		"forced_overclock",
-		"sacrifice_personnel",
-	]:
-		score += 28
+	match decision_tags.get("decision.core_2070_engine_overload_doctrine", ""):
+		"forced_overclock":
+			score += 28
+		"backup_array":
+			score += 18
 	if event_states.get("event_state.mid_14_heat_shield_shortage", "") == "moss_supply_reorder":
 		score += 18
 	if event_states.get("event_state.mid_15_launch_window_report", "") == "moss_priority":
@@ -241,7 +241,7 @@ func _build_forecasts(
 	var engine_doctrine := str(
 		decision_tags.get("decision.core_2070_engine_overload_doctrine", "")
 	)
-	if engine_doctrine in ["crew_protected", "forced_overclock", "sacrifice_personnel"]:
+	if engine_doctrine in ["crew_protected", "backup_array", "forced_overclock"]:
 		forecasts.append({
 			"id": "engine_crew_petition",
 			"title": "发动机前线人员请愿",

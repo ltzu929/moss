@@ -16,6 +16,7 @@ func _ready() -> void:
 	_assert_real_random_events_have_document_sources()
 	_assert_random_event_director_filters_candidates()
 	await _assert_main_scene_can_trigger_random_event()
+	await _assert_random_event_tick_continues_failure_and_cooldowns()
 
 	print("[MOSS-RANDOM-EVENT-DIRECTOR] 完成，失败断言：%d" % _failed)
 	await get_tree().create_timer(0.2).timeout
@@ -196,6 +197,83 @@ func _assert_main_scene_can_trigger_random_event() -> void:
 		_main_os.get_event_state("event_state.random_runtime_test"),
 		"acknowledged",
 		"随机事件选项应写入轻量事件状态"
+	)
+
+
+func _assert_random_event_tick_continues_failure_and_cooldowns() -> void:
+	_main_os = MAIN_SCENE.instantiate()
+	add_child(_main_os)
+	await get_tree().process_frame
+
+	var timer := _main_os.get_node("Timer") as Timer
+	timer.stop()
+	timer.wait_time = 999.0
+
+	var first_sector := _main_os.get_node("%SectorInfoContainer").get_child(0) as SectorInfo
+	_assert_true(first_sector != null, "随机事件 tick 回归需要真实区域卡片")
+	if first_sector == null:
+		return
+
+	for sector_node in _main_os.get_node("%SectorInfoContainer").get_children():
+		var sector := sector_node as SectorInfo
+		if sector == null:
+			continue
+		sector.data_card.authority = 1
+		sector.data_card.order = 60
+		sector.data_card.hope = 60
+		sector.update_display()
+
+	var random_event := _create_random_event("runtime_tick")
+	if random_event == null:
+		return
+	random_event.set("event_id", "random_runtime_tick")
+	random_event.set("event_title", "测试随机事件后续结算")
+	random_event.set("event_region", first_sector.data_card.region_name)
+	random_event.set("event_description", "测试随机事件触发后仍继续月结。")
+	random_event.set("event_level", "一般事件")
+	random_event.set("earliest_year", 2044)
+	random_event.set("latest_year", 2044)
+	random_event.set("min_pressure_score", 0)
+	random_event.set("pressure_axes", ["any"])
+	random_event.set("weight", 1)
+	random_event.set("cooldown_years", 2)
+	random_event.set("source_reference", "docs/design/游戏内容规范.md#随机事件")
+	random_event.set("design_role", "测试随机事件后同一 tick 的失败判定和冷却递减。")
+	var option := _create_runtime_option()
+	option.authority_delta = -20
+	option.event_state_key = "event_state.random_runtime_tick"
+	option.event_state_value = "authority_lost"
+	random_event.set("options", [option] as Array[EventOption])
+
+	_main_os.set("all_random_events", [random_event])
+	_main_os.set("all_events", [] as Array[GameEvent])
+	_main_os.set("random_event_monthly_chance", 1.0)
+	_main_os.set_random_seed(1)
+	_main_os.current_year = 2044
+	_main_os.current_month = 6
+	_main_os.command_cooldowns[CommandSystem.COMMAND_TAKEOVER] = 2
+
+	timer.start()
+	_main_os._on_timer_timeout()
+	await get_tree().process_frame
+	(_main_os.get_node("%EventPopup") as Control).option_selected.emit(0)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	timer.stop()
+
+	_assert_eq(
+		_main_os.current_month,
+		7,
+		"随机事件结算后同一 tick 仍应推进月份"
+	)
+	_assert_eq(
+		_main_os.command_cooldowns[CommandSystem.COMMAND_TAKEOVER],
+		1,
+		"随机事件结算后同一 tick 仍应递减指令冷却"
+	)
+	_assert_true(
+		_main_os.is_game_over,
+		"随机事件把平均控制权压到 0 时同一 tick 应立即失败"
 	)
 
 

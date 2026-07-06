@@ -85,7 +85,7 @@ func _assert_director_forecasts_route_specific_risks() -> void:
 		"current_cpu": 60,
 		"max_cpu": 150,
 		"decision_tags": {
-			"decision.core_2070_engine_overload_doctrine": "sacrifice_personnel",
+			"decision.core_2070_engine_overload_doctrine": "backup_array",
 		},
 		"event_states": {
 			"event_state.mid_17_final_authorization": "strategic_trusteeship",
@@ -97,7 +97,7 @@ func _assert_director_forecasts_route_specific_risks() -> void:
 	_assert_true(not forecasts.is_empty(), "路线事实应生成后续风险预告")
 	_assert_true(
 		_forecasts_include(forecasts, "engine_crew_petition"),
-		"牺牲人员的发动机教义应预告机组请愿风险"
+		"备用阵列的发动机教义应预告机组轮换和维护压力"
 	)
 	_assert_true(
 		_forecasts_include(forecasts, "trusteeship_public_record"),

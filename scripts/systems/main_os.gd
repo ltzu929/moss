@@ -36,6 +36,9 @@ const COMMAND_SYSTEM_SCRIPT := preload("res://scripts/systems/command_system.gd"
 const STRATEGIC_DIRECTOR_SCRIPT := preload("res://scripts/systems/strategic_director.gd")
 ## 随机事件导演领域服务脚本
 const RANDOM_EVENT_DIRECTOR_SCRIPT := preload("res://scripts/systems/random_event_director.gd")
+const THREAD_AUTHORITY := "权限演化链"
+const THREAD_CIVIC := "地下城民生链"
+const THREAD_ENGINEERING := "工程疲劳链"
 ## 游戏初始值
 const INITIAL_YEAR: int = 2044
 const INITIAL_MONTH: int = 1
@@ -290,6 +293,7 @@ func load_events_from_disk() -> void:
 				all_events.append(event)
 
 		file_name = dir.get_next()
+	dir.list_dir_end()
 
 
 ## 从随机事件目录加载所有随机事件资源文件
@@ -340,6 +344,7 @@ func load_commands_from_disk() -> void:
 				command_cooldowns[cmd.command_id] = 0
 
 		file_name = dir.get_next()
+	dir.list_dir_end()
 
 # ============================================================
 # 科技系统接入
@@ -689,53 +694,20 @@ func _on_timer_timeout() -> void:
 			if not can_trigger_event(event):
 				continue
 
-			# 事件触发时暂停时间，等待玩家决策
-			$Timer.stop()
 			var previous_selected_sector := selected_sector
-			_event_focus_region = event.event_region
-			_sync_orbital_focus()
 
 			# 标记事件已触发
 			triggered_events.append(event_key)
 			triggered_scheduled_event = true
 
-			# 显示事件弹窗
-			var display_event := build_display_event(event)
-			%EventPopup.popup_event(display_event, current_energy)
-
-			# await 挂起函数，等待玩家选择
-			var choice_index: int = await %EventPopup.option_selected
-			var selected_opt: EventOption = display_event.options[choice_index]
-
-			# 应用选择后果
-			apply_consequences(
-				event.event_region,
-				selected_opt.order_delta,
-				selected_opt.hope_delta,
-				selected_opt.authority_delta,
-				selected_opt.energy_cost,
-				event.event_title,
-				selected_opt.button_text
-			)
-			apply_event_option_state(selected_opt, event.event_title)
-
-			# 恢复事件发生前的玩家选区和地球聚焦
-			_event_focus_region = ""
-			if previous_selected_sector != null:
-				select_sector(previous_selected_sector)
-			else:
-				deselect_sector()
-			_sync_orbital_focus()
-
-			# 玩家决策完成，恢复时间流动
-			$Timer.start()
+			await _show_event_and_apply(event, previous_selected_sector)
 
 	if (
 		not triggered_scheduled_event
 		and not $Timer.is_stopped()
-		and await try_trigger_random_event()
+		and await try_trigger_random_event(true)
 	):
-		return
+		pass
 
 	# 终局日期需要先处理对应事件，再进入结局结算
 	if current_year == END_YEAR and current_month == END_MONTH:
@@ -781,25 +753,25 @@ func set_random_seed(rng_seed: int) -> void:
 	_random_event_rng.seed = rng_seed
 
 
-## 返回当前战略导演快照；没有 UI 刷新时也会即时构建
+## 返回当前战略导演快照；外部读取时刷新，运行时路径直接复用 UI 缓存
 func get_strategic_director_snapshot() -> Dictionary:
-	_strategic_director_snapshot = _strategic_director.build_snapshot(
-		_build_strategic_director_input()
-	)
-	return _strategic_director_snapshot.duplicate(true)
+	return _refresh_strategic_director_snapshot().duplicate()
 
 
 ## 返回当前可触发的随机事件候选
 func get_random_event_candidates() -> Array:
+	var snapshot := _strategic_director_snapshot
+	if snapshot.is_empty():
+		snapshot = _refresh_strategic_director_snapshot()
 	return _random_event_director.collect_candidates(
 		all_random_events,
-		get_strategic_director_snapshot(),
+		snapshot,
 		_random_event_years
 	)
 
 
 ## 尝试触发一个随机事件；概率、候选池、冷却和弹窗状态都会参与判断
-func try_trigger_random_event() -> bool:
+func try_trigger_random_event(wait_for_choice: bool = false) -> bool:
 	if is_game_over or all_random_events.is_empty():
 		return false
 	if has_node("%EventPopup") and %EventPopup.visible:
@@ -819,20 +791,27 @@ func try_trigger_random_event() -> bool:
 	if random_event == null:
 		return false
 
-	_run_random_event(random_event)
-	await get_tree().process_frame
+	if wait_for_choice:
+		await _run_random_event(random_event)
+	else:
+		_run_random_event(random_event)
+		await get_tree().process_frame
 	return true
 
 
 ## 执行随机事件弹窗、结算和状态写入
 func _run_random_event(random_event: RandomEvent) -> void:
-	$Timer.stop()
 	var previous_selected_sector := selected_sector
-	_event_focus_region = random_event.event_region
-	_sync_orbital_focus()
 	_random_event_years[random_event.event_id] = current_year
+	await _show_event_and_apply(random_event, previous_selected_sector)
 
-	var display_event := build_display_event(random_event)
+
+## 统一执行事件弹窗、选择结算、状态写入和焦点恢复。
+func _show_event_and_apply(event: GameEvent, previous_selected_sector: Node) -> void:
+	$Timer.stop()
+	_event_focus_region = event.event_region
+	_sync_orbital_focus()
+	var display_event := build_display_event(event)
 	%EventPopup.popup_event(display_event, current_energy)
 	var choice_index: int = await %EventPopup.option_selected
 	var selected_opt: EventOption = display_event.options[choice_index]
@@ -867,13 +846,13 @@ func build_display_event(event: GameEvent) -> GameEvent:
 
 ## 根据已写入的轻量事件状态调整主事件运行时选项代价，不写回 Resource 模板
 func apply_event_option_adjustments(event: GameEvent) -> void:
-	match event.event_title:
-		"月球坠落危机":
-			_apply_2058_option_adjustments(event)
-		"AI隔离审查":
-			_apply_2065_option_adjustments(event)
-		"西伯利亚发动机群过载":
-			_apply_2070_option_adjustments(event)
+	var route_key := _get_event_route_key(event)
+	if route_key == _get_route_key(THREAD_AUTHORITY, 2058):
+		_apply_2058_option_adjustments(event)
+	elif route_key == _get_route_key(THREAD_AUTHORITY, 2065):
+		_apply_2065_option_adjustments(event)
+	elif route_key == _get_route_key(THREAD_ENGINEERING, 2070):
+		_apply_2070_option_adjustments(event)
 
 
 func _apply_2058_option_adjustments(event: GameEvent) -> void:
@@ -952,18 +931,26 @@ func build_event_description(event: GameEvent) -> String:
 
 
 func _get_event_context_lines(event: GameEvent) -> Array[String]:
-	match event.event_title:
-		"大淹没事故":
-			return _get_2053_civic_context_lines()
-		"月球坠落危机":
-			return _get_2058_context_lines()
-		"AI隔离审查":
-			return _get_2065_context_lines()
-		"西伯利亚发动机群过载":
-			return _get_2070_context_lines()
-		"木星引力危机":
-			return _get_2075_civic_context_lines()
+	var route_key := _get_event_route_key(event)
+	if route_key == _get_route_key(THREAD_CIVIC, 2053):
+		return _get_2053_civic_context_lines()
+	if route_key == _get_route_key(THREAD_AUTHORITY, 2058):
+		return _get_2058_context_lines()
+	if route_key == _get_route_key(THREAD_AUTHORITY, 2065):
+		return _get_2065_context_lines()
+	if route_key == _get_route_key(THREAD_ENGINEERING, 2070):
+		return _get_2070_context_lines()
+	if route_key == _get_route_key(THREAD_AUTHORITY, 2075):
+		return _get_2075_civic_context_lines()
 	return []
+
+
+func _get_event_route_key(event: GameEvent) -> String:
+	return _get_route_key(event.causal_thread, event.event_time)
+
+
+func _get_route_key(causal_thread: String, year: int) -> String:
+	return "%s:%d" % [causal_thread, year]
 
 
 func _get_2053_civic_context_lines() -> Array[String]:
@@ -1584,30 +1571,35 @@ func update_global_resource_ui() -> void:
 
 ## 刷新战略导演面板，并缓存最近一次快照
 func update_strategic_director_ui() -> void:
-	_strategic_director_snapshot = _strategic_director.build_snapshot(
-		_build_strategic_director_input()
-	)
+	var snapshot := _refresh_strategic_director_snapshot()
 	if has_node("%StrategicPressureLabel"):
 		var pressure_label := %StrategicPressureLabel as Label
 		pressure_label.text = "战役压力: %d / %s" % [
-			int(_strategic_director_snapshot.get("pressure_score", 0)),
-			_format_pressure_band(str(_strategic_director_snapshot.get("pressure_band", ""))),
+			int(snapshot.get("pressure_score", 0)),
+			_format_pressure_band(str(snapshot.get("pressure_band", ""))),
 		]
 	if has_node("%StrategicGoalLabel"):
 		var goal_label := %StrategicGoalLabel as Label
-		var goal: Dictionary = _strategic_director_snapshot.get("active_goal", {})
+		var goal: Dictionary = snapshot.get("active_goal", {})
 		goal_label.text = "目标: %s" % str(goal.get("title", "维持战役余量"))
 		goal_label.tooltip_text = str(goal.get("summary", ""))
 	if has_node("%StrategicWarningLabel"):
 		var warning_label := %StrategicWarningLabel as Label
 		warning_label.text = "警告: %s" % _format_director_warning(
-			_strategic_director_snapshot.get("warnings", [])
+			snapshot.get("warnings", [])
 		)
 	if has_node("%StrategicForecastLabel"):
 		var forecast_label := %StrategicForecastLabel as Label
 		forecast_label.text = "预告: %s" % _format_director_forecast(
-			_strategic_director_snapshot.get("forecasts", [])
+			snapshot.get("forecasts", [])
 		)
+
+
+func _refresh_strategic_director_snapshot() -> Dictionary:
+	_strategic_director_snapshot = _strategic_director.build_snapshot(
+		_build_strategic_director_input()
+	)
+	return _strategic_director_snapshot
 
 
 func _build_strategic_director_input() -> Dictionary:
@@ -1620,8 +1612,8 @@ func _build_strategic_director_input() -> Dictionary:
 		"current_energy": current_energy,
 		"current_cpu": current_cpu,
 		"max_cpu": max_cpu,
-		"decision_tags": decision_tags.duplicate(true),
-		"event_states": event_states.duplicate(true),
+		"decision_tags": decision_tags,
+		"event_states": event_states,
 		"technology_tags": _collect_active_technology_tags(),
 	}
 

@@ -97,11 +97,16 @@ func _assert_civic_event_states_change_main_event_context() -> void:
 	_main_os.set_event_state("event_state.mid_06_ration_priority", "family_baseline")
 	_main_os.set_event_state("event_state.mid_07_migration_priority", "humanitarian")
 
-	var flood_event := _create_named_event("大淹没事故", 2053, "根服务器和地下城同时承压。")
+	var flood_event := _create_thread_event(
+		"重命名后的地下城主事件",
+		2053,
+		"根服务器和地下城同时承压。",
+		"地下城民生链"
+	)
 	var flood_description: String = _main_os.build_event_description(flood_event)
 	_assert_true(
 		"历史回声" in flood_description,
-		"2053 主事件正文应追加历史回声段落"
+		"2053 主事件正文应按因果链追加历史回声段落"
 	)
 	_assert_true(
 		"申诉窗口" in flood_description,
@@ -110,6 +115,13 @@ func _assert_civic_event_states_change_main_event_context() -> void:
 	_assert_true(
 		"家庭最低保障" in flood_description,
 		"2053 主事件应读取 MID-06 家庭配给背景"
+	)
+
+	var title_only_event := _create_named_event("大淹没事故", 2053, "标题相同但没有因果链。")
+	var title_only_description: String = _main_os.build_event_description(title_only_event)
+	_assert_true(
+		not "历史回声" in title_only_description,
+		"历史回声不应再依赖可本地化的事件标题"
 	)
 
 	var real_flood_event := load("res://data/events/event_2053_great_flood_accident.tres") as GameEvent
@@ -132,6 +144,7 @@ func _assert_civic_event_states_change_main_event_context() -> void:
 		)
 
 	var jupiter_event := _create_named_event("木星引力危机", 2075, "终局方案等待授权。")
+	jupiter_event.causal_thread = "权限演化链"
 	var jupiter_description: String = _main_os.build_event_description(jupiter_event)
 	_assert_true(
 		"普通人仍记得早年的申诉窗口" in jupiter_description,
@@ -209,6 +222,7 @@ func _assert_real_event_context(
 	_assert_true(real_event != null, "%s：应能加载真实事件资源" % message_prefix)
 	if real_event == null:
 		return
+	_assert_true(real_event.causal_thread != "", "%s：真实事件应声明因果链" % message_prefix)
 
 	var original_description: String = real_event.event_description
 	var display_event: GameEvent = _main_os.build_display_event(real_event)
@@ -428,12 +442,22 @@ func _create_state_event() -> GameEvent:
 
 
 func _create_named_event(title: String, year: int, description: String) -> GameEvent:
+	return _create_thread_event(title, year, description, "")
+
+
+func _create_thread_event(
+	title: String,
+	year: int,
+	description: String,
+	causal_thread: String
+) -> GameEvent:
 	var event := GameEvent.new()
 	event.event_title = title
 	event.event_time = year
 	event.event_month = 1
 	event.event_region = "联合政府"
 	event.event_description = description
+	event.causal_thread = causal_thread
 	return event
 
 

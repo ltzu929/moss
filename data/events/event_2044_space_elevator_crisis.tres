@@ -48,5 +48,6 @@ event_time = 2044
 event_month = 1
 event_region = "亚洲"
 event_description = "数字生命派袭击方舟号空间站"
+causal_thread = "权限演化链"
 options = Array[ExtResource("1_qu5m7")]([SubResource("Resource_j5aep"), SubResource("Resource_bbnqo"), SubResource("Resource_qu5m7")])
 metadata/_custom_type_script = "uid://dhndawkfhm8iq"

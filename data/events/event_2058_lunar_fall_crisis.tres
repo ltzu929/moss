@@ -49,5 +49,6 @@ event_time = 2058
 event_month = 1
 event_region = "亚洲"
 event_description = "月球卫星发动机过载爆炸，月球轨道偏离坠向地球。需重启全球互联网点火行星发动机。图恒宇与马兆在北京互联网中心执行任务。"
+causal_thread = "权限演化链"
 options = Array[ExtResource("1_option")]([SubResource("Resource_opt1"), SubResource("Resource_opt2"), SubResource("Resource_opt3")])
 metadata/_custom_type_script = "uid://dhndawkfhm8iq"
