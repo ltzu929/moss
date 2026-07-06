@@ -111,6 +111,7 @@ func _ready() -> void:
 
 	_assert_alternative_terminal_endings()
 	_assert_ending_message_reads_event_history()
+	print("[MOSS-TECH-ENDING] 完成，失败断言：%d" % _failed)
 	get_tree().quit(_failed)
 
 # ============================================================

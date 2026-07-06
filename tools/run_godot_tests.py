@@ -16,6 +16,8 @@ TEST_SCENES = [
     ("tests/event_state_test.tscn", "headless"),
     ("tests/decision_archive_test.tscn", "headless"),
     ("tests/event_branch_test.tscn", "headless"),
+    ("tests/strategic_director_test.tscn", "headless"),
+    ("tests/random_event_director_test.tscn", "headless"),
     ("tests/mid_event_resource_test.tscn", "headless"),
     ("tests/technology_gameplay_test.tscn", "headless"),
     ("tests/technology_ending_test.tscn", "headless"),

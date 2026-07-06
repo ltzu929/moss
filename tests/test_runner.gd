@@ -349,6 +349,7 @@ func _verify_hud_layout_contract() -> bool:
 	var right_panel_order: Array[String] = [
 		"RegionOrbitalPanel",
 		"GlobalOverviewPanel",
+		"StrategicDirectorPanel",
 		"LogPlaceholder",
 	]
 	ok = _assert_child_order(
@@ -373,6 +374,12 @@ func _verify_hud_layout_contract() -> bool:
 		"ui_layout"
 	)
 	ok = not has_moss_status_panel and ok
+
+	var has_strategic_director := _main_os.has_node(
+		"MainLayout/ContentRow/RightPanel/StrategicDirectorPanel"
+	)
+	_assert_true(has_strategic_director, "右栏应显示战略导演摘要面板", "ui_layout")
+	ok = has_strategic_director and ok
 
 	if _main_os.has_node("MainLayout/ContentRow/RightPanel/LogPlaceholder"):
 		var log_panel: Control = _main_os.get_node(

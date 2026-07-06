@@ -1,0 +1,57 @@
+[gd_resource type="Resource" script_class="RandomEvent" load_steps=5 format=3 uid="uid://random_digital_life_appeal"]
+
+[ext_resource type="Script" uid="uid://codfck7kk0m7q" path="res://scripts/resources/random_event.gd" id="1_event"]
+[ext_resource type="Script" uid="uid://bl7wa43xriuci" path="res://scripts/resources/event_option.gd" id="2_option"]
+
+[sub_resource type="Resource" id="Resource_opt1"]
+script = ExtResource("2_option")
+button_text = "公开伦理听证"
+order_delta = -5
+hope_delta = 6
+authority_delta = -2
+energy_cost = 2
+event_state_key = "event_state.random_digital_life_public_appeal"
+event_state_value = "public_hearing"
+metadata/_custom_type_script = "uid://bl7wa43xriuci"
+
+[sub_resource type="Resource" id="Resource_opt2"]
+script = ExtResource("2_option")
+button_text = "监控支持者网络"
+order_delta = 6
+hope_delta = -4
+authority_delta = 4
+energy_cost = 2
+event_state_key = "event_state.random_digital_life_public_appeal"
+event_state_value = "network_monitored"
+metadata/_custom_type_script = "uid://bl7wa43xriuci"
+
+[sub_resource type="Resource" id="Resource_opt3"]
+script = ExtResource("2_option")
+button_text = "转入科研备份议程"
+order_delta = 1
+hope_delta = 3
+authority_delta = 1
+energy_cost = 5
+event_state_key = "event_state.random_digital_life_public_appeal"
+event_state_value = "research_backup"
+metadata/_custom_type_script = "uid://bl7wa43xriuci"
+
+[resource]
+script = ExtResource("1_event")
+event_title = "数字生命公开请愿"
+event_time = 0
+event_month = 1
+event_region = "北美"
+event_description = "地下城资格不确定和现实生存压力让一批公开请愿者要求重新讨论数字生命备份，不同群体动机并不一致。"
+event_level = "一般事件"
+options = Array[ExtResource("2_option")]([SubResource("Resource_opt1"), SubResource("Resource_opt2"), SubResource("Resource_opt3")])
+event_id = "random_digital_life_public_appeal"
+earliest_year = 2047
+latest_year = 2068
+min_pressure_score = 40
+pressure_axes = Array[String](["civil", "authority"])
+cooldown_years = 5
+weight = 10
+source_reference = "docs/worldbuilding/canon/社会与民生.md#数字生命支持者的社会基础"
+design_role = "把数字生命路线的社会基础转化为舆论和伦理压力，不新增未确认幕后动机。"
+metadata/_custom_type_script = "uid://codfck7kk0m7q"

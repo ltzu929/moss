@@ -329,6 +329,54 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
 text = "威胁等级: --"
 
+[node name="StrategicDirectorPanel" type="PanelContainer" parent="MainLayout/ContentRow/RightPanel"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
+
+[node name="StrategicDirectorMargin" type="MarginContainer" parent="MainLayout/ContentRow/RightPanel/StrategicDirectorPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="StrategicDirectorVBox" type="VBoxContainer" parent="MainLayout/ContentRow/RightPanel/StrategicDirectorPanel/StrategicDirectorMargin"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="StrategicDirectorTitle" type="Label" parent="MainLayout/ContentRow/RightPanel/StrategicDirectorPanel/StrategicDirectorMargin/StrategicDirectorVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.545, 0.867, 0.851, 1)
+text = "战略导演"
+
+[node name="StrategicPressureLabel" type="Label" parent="MainLayout/ContentRow/RightPanel/StrategicDirectorPanel/StrategicDirectorMargin/StrategicDirectorVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.722, 0.78, 0.839, 1)
+text = "战役压力: --"
+
+[node name="StrategicGoalLabel" type="Label" parent="MainLayout/ContentRow/RightPanel/StrategicDirectorPanel/StrategicDirectorMargin/StrategicDirectorVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.722, 0.78, 0.839, 1)
+autowrap_mode = 3
+text = "目标: --"
+
+[node name="StrategicWarningLabel" type="Label" parent="MainLayout/ContentRow/RightPanel/StrategicDirectorPanel/StrategicDirectorMargin/StrategicDirectorVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
+autowrap_mode = 3
+text = "警告: --"
+
+[node name="StrategicForecastLabel" type="Label" parent="MainLayout/ContentRow/RightPanel/StrategicDirectorPanel/StrategicDirectorMargin/StrategicDirectorVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
+autowrap_mode = 3
+text = "预告: --"
+
 [node name="LogPlaceholder" type="Panel" parent="MainLayout/ContentRow/RightPanel" unique_id=809928747]
 custom_minimum_size = Vector2(220, 0)
 layout_mode = 2

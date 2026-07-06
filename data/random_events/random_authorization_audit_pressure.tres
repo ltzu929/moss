@@ -1,0 +1,57 @@
+[gd_resource type="Resource" script_class="RandomEvent" load_steps=5 format=3 uid="uid://random_authorization_audit"]
+
+[ext_resource type="Script" uid="uid://codfck7kk0m7q" path="res://scripts/resources/random_event.gd" id="1_event"]
+[ext_resource type="Script" uid="uid://bl7wa43xriuci" path="res://scripts/resources/event_option.gd" id="2_option"]
+
+[sub_resource type="Resource" id="Resource_opt1"]
+script = ExtResource("2_option")
+button_text = "开放有限复核"
+order_delta = -4
+hope_delta = 4
+authority_delta = -5
+energy_cost = 3
+event_state_key = "event_state.random_authorization_audit_pressure"
+event_state_value = "limited_review"
+metadata/_custom_type_script = "uid://bl7wa43xriuci"
+
+[sub_resource type="Resource" id="Resource_opt2"]
+script = ExtResource("2_option")
+button_text = "提交压缩报告"
+order_delta = 2
+hope_delta = -3
+authority_delta = 1
+energy_cost = 1
+event_state_key = "event_state.random_authorization_audit_pressure"
+event_state_value = "compressed_report"
+metadata/_custom_type_script = "uid://bl7wa43xriuci"
+
+[sub_resource type="Resource" id="Resource_opt3"]
+script = ExtResource("2_option")
+button_text = "拒绝中断托管链路"
+order_delta = 6
+hope_delta = -8
+authority_delta = 6
+energy_cost = 0
+event_state_key = "event_state.random_authorization_audit_pressure"
+event_state_value = "trusteeship_continued"
+metadata/_custom_type_script = "uid://bl7wa43xriuci"
+
+[resource]
+script = ExtResource("1_event")
+event_title = "授权链路临时审查"
+event_time = 0
+event_month = 1
+event_region = "联合政府"
+event_description = "联合政府要求说明某条临时授权链路是否仍处于危机授权范围内，MOSS 必须在效率和可复核性之间选择。"
+event_level = "一般事件"
+options = Array[ExtResource("2_option")]([SubResource("Resource_opt1"), SubResource("Resource_opt2"), SubResource("Resource_opt3")])
+event_id = "random_authorization_audit_pressure"
+earliest_year = 2058
+latest_year = 2074
+min_pressure_score = 45
+pressure_axes = Array[String](["authority"])
+cooldown_years = 4
+weight = 13
+source_reference = "docs/design/游戏内容规范.md#权限、控制权与授权口径"
+design_role = "把危机授权、争议授权和战略托管的边界转化为可重复出现的权限演化扰动。"
+metadata/_custom_type_script = "uid://codfck7kk0m7q"

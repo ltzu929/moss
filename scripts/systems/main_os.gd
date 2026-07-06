@@ -18,6 +18,11 @@ signal game_ended(result: String, message: String)
 ## 所有事件资源的列表
 ## 从 res://data/events/ 目录自动加载，无需手动配置
 @export var all_events: Array[GameEvent]
+## 随机事件资源列表
+## 从 res://data/random_events/ 目录自动加载，可由测试覆盖
+@export var all_random_events: Array = []
+## 每月随机事件触发概率；实际触发仍受战略压力、年份和冷却约束
+@export_range(0.0, 1.0, 0.01) var random_event_monthly_chance: float = 0.18
 
 # ============================================================
 # 常量
@@ -27,6 +32,10 @@ signal game_ended(result: String, message: String)
 const MOSS_THEME := preload("res://scripts/ui/moss_ui_theme.gd")
 ## 指令领域服务脚本
 const COMMAND_SYSTEM_SCRIPT := preload("res://scripts/systems/command_system.gd")
+## 战略导演领域服务脚本
+const STRATEGIC_DIRECTOR_SCRIPT := preload("res://scripts/systems/strategic_director.gd")
+## 随机事件导演领域服务脚本
+const RANDOM_EVENT_DIRECTOR_SCRIPT := preload("res://scripts/systems/random_event_director.gd")
 ## 游戏初始值
 const INITIAL_YEAR: int = 2044
 const INITIAL_MONTH: int = 1
@@ -112,6 +121,16 @@ var action_log: Array[Dictionary] = []
 
 ## 指令领域服务，不直接访问场景树或 UI
 var _command_system: CommandSystem = COMMAND_SYSTEM_SCRIPT.new()
+## 战略导演领域服务，不直接访问场景树或 UI
+var _strategic_director: StrategicDirector = STRATEGIC_DIRECTOR_SCRIPT.new()
+## 随机事件导演领域服务，不直接访问场景树或 UI
+var _random_event_director: RandomEventDirector = RANDOM_EVENT_DIRECTOR_SCRIPT.new()
+## 随机事件抽取器；测试可通过 set_random_seed 固定结果
+var _random_event_rng := RandomNumberGenerator.new()
+## 随机事件最近触发年份 {"random_id": 2055}
+var _random_event_years: Dictionary = {}
+## 最近一次战略导演快照，供测试、UI 和随机事件系统复用
+var _strategic_director_snapshot: Dictionary = {}
 
 ## 已触发的事件ID列表（防止重复触发）
 var triggered_events: Array[String] = []
@@ -136,6 +155,9 @@ func _ready() -> void:
 	# 初始化事件列表
 	all_events.clear()
 	load_events_from_disk()
+	all_random_events.clear()
+	load_random_events_from_disk()
+	_random_event_rng.randomize()
 
 	# 初始化指令列表
 	available_commands.clear()
@@ -268,6 +290,28 @@ func load_events_from_disk() -> void:
 				all_events.append(event)
 
 		file_name = dir.get_next()
+
+
+## 从随机事件目录加载所有随机事件资源文件
+func load_random_events_from_disk() -> void:
+	var path := "res://data/random_events/"
+	var dir := DirAccess.open(path)
+
+	if not dir:
+		push_warning("随机事件目录不存在: " + path)
+		return
+
+	dir.list_dir_begin()
+	var file_name := dir.get_next()
+
+	while file_name != "":
+		if not dir.current_is_dir() and file_name.ends_with(".tres"):
+			var event := load(path + file_name)
+			if event is RandomEvent:
+				all_random_events.append(event)
+
+		file_name = dir.get_next()
+	dir.list_dir_end()
 
 # ============================================================
 # 指令加载系统
@@ -635,6 +679,7 @@ func _on_timer_timeout() -> void:
 
 	# === 第一步：事件触发检查 ===
 	# 先检查当前年月的事件，再推进时间
+	var triggered_scheduled_event := false
 	for event in all_events:
 		if event.event_time == current_year and event.event_month == current_month:
 			# 跳过已触发的事件，防止重复触发
@@ -652,6 +697,7 @@ func _on_timer_timeout() -> void:
 
 			# 标记事件已触发
 			triggered_events.append(event_key)
+			triggered_scheduled_event = true
 
 			# 显示事件弹窗
 			var display_event := build_display_event(event)
@@ -683,6 +729,13 @@ func _on_timer_timeout() -> void:
 
 			# 玩家决策完成，恢复时间流动
 			$Timer.start()
+
+	if (
+		not triggered_scheduled_event
+		and not $Timer.is_stopped()
+		and await try_trigger_random_event()
+	):
+		return
 
 	# 终局日期需要先处理对应事件，再进入结局结算
 	if current_year == END_YEAR and current_month == END_MONTH:
@@ -721,6 +774,87 @@ func can_trigger_event(event: GameEvent) -> bool:
 		):
 			return false
 	return true
+
+
+## 设置随机事件抽取种子，供测试和可复现调试使用
+func set_random_seed(rng_seed: int) -> void:
+	_random_event_rng.seed = rng_seed
+
+
+## 返回当前战略导演快照；没有 UI 刷新时也会即时构建
+func get_strategic_director_snapshot() -> Dictionary:
+	_strategic_director_snapshot = _strategic_director.build_snapshot(
+		_build_strategic_director_input()
+	)
+	return _strategic_director_snapshot.duplicate(true)
+
+
+## 返回当前可触发的随机事件候选
+func get_random_event_candidates() -> Array:
+	return _random_event_director.collect_candidates(
+		all_random_events,
+		get_strategic_director_snapshot(),
+		_random_event_years
+	)
+
+
+## 尝试触发一个随机事件；概率、候选池、冷却和弹窗状态都会参与判断
+func try_trigger_random_event() -> bool:
+	if is_game_over or all_random_events.is_empty():
+		return false
+	if has_node("%EventPopup") and %EventPopup.visible:
+		return false
+
+	var candidates := get_random_event_candidates()
+	if candidates.is_empty():
+		return false
+	if _random_event_rng.randf() > random_event_monthly_chance:
+		return false
+
+	var selected_resource := _random_event_director.select_event(
+		candidates,
+		int(_random_event_rng.randi())
+	)
+	var random_event := selected_resource as RandomEvent
+	if random_event == null:
+		return false
+
+	_run_random_event(random_event)
+	await get_tree().process_frame
+	return true
+
+
+## 执行随机事件弹窗、结算和状态写入
+func _run_random_event(random_event: RandomEvent) -> void:
+	$Timer.stop()
+	var previous_selected_sector := selected_sector
+	_event_focus_region = random_event.event_region
+	_sync_orbital_focus()
+	_random_event_years[random_event.event_id] = current_year
+
+	var display_event := build_display_event(random_event)
+	%EventPopup.popup_event(display_event, current_energy)
+	var choice_index: int = await %EventPopup.option_selected
+	var selected_opt: EventOption = display_event.options[choice_index]
+	apply_consequences(
+		display_event.event_region,
+		selected_opt.order_delta,
+		selected_opt.hope_delta,
+		selected_opt.authority_delta,
+		selected_opt.energy_cost,
+		display_event.event_title,
+		selected_opt.button_text
+	)
+	apply_event_option_state(selected_opt, display_event.event_title)
+
+	_event_focus_region = ""
+	if previous_selected_sector != null:
+		select_sector(previous_selected_sector)
+	else:
+		deselect_sector()
+	_sync_orbital_focus()
+	if not is_game_over:
+		$Timer.start()
 
 
 ## 构建事件弹窗使用的运行时副本，避免修改磁盘加载的 Resource 模板
@@ -1001,6 +1135,7 @@ func set_event_state(state_key: String, state_value: String) -> void:
 	if state_key == "":
 		return
 	event_states[state_key] = state_value
+	update_strategic_director_ui()
 
 
 ## 查询轻量事件状态；未写入时返回默认值
@@ -1043,6 +1178,7 @@ func set_decision_tag(
 	_upsert_decision_archive_record(tag_key, tag_value, title, summary, source_event)
 	update_decision_archive_button()
 	_refresh_decision_archive_panel()
+	update_strategic_director_ui()
 
 
 ## 查询核心历史标签；未写入时返回默认值
@@ -1442,7 +1578,103 @@ func update_global_resource_ui() -> void:
 			year_progress.update_progress(current_year, current_month)
 
 	update_global_overview_ui()
+	update_strategic_director_ui()
 	_sync_world_map_states()
+
+
+## 刷新战略导演面板，并缓存最近一次快照
+func update_strategic_director_ui() -> void:
+	_strategic_director_snapshot = _strategic_director.build_snapshot(
+		_build_strategic_director_input()
+	)
+	if has_node("%StrategicPressureLabel"):
+		var pressure_label := %StrategicPressureLabel as Label
+		pressure_label.text = "战役压力: %d / %s" % [
+			int(_strategic_director_snapshot.get("pressure_score", 0)),
+			_format_pressure_band(str(_strategic_director_snapshot.get("pressure_band", ""))),
+		]
+	if has_node("%StrategicGoalLabel"):
+		var goal_label := %StrategicGoalLabel as Label
+		var goal: Dictionary = _strategic_director_snapshot.get("active_goal", {})
+		goal_label.text = "目标: %s" % str(goal.get("title", "维持战役余量"))
+		goal_label.tooltip_text = str(goal.get("summary", ""))
+	if has_node("%StrategicWarningLabel"):
+		var warning_label := %StrategicWarningLabel as Label
+		warning_label.text = "警告: %s" % _format_director_warning(
+			_strategic_director_snapshot.get("warnings", [])
+		)
+	if has_node("%StrategicForecastLabel"):
+		var forecast_label := %StrategicForecastLabel as Label
+		forecast_label.text = "预告: %s" % _format_director_forecast(
+			_strategic_director_snapshot.get("forecasts", [])
+		)
+
+
+func _build_strategic_director_input() -> Dictionary:
+	return {
+		"year": current_year,
+		"month": current_month,
+		"avg_order": _get_average_stat("order"),
+		"avg_hope": _get_average_stat("hope"),
+		"avg_authority": get_average_authority(),
+		"current_energy": current_energy,
+		"current_cpu": current_cpu,
+		"max_cpu": max_cpu,
+		"decision_tags": decision_tags.duplicate(true),
+		"event_states": event_states.duplicate(true),
+		"technology_tags": _collect_active_technology_tags(),
+	}
+
+
+func _collect_active_technology_tags() -> Array[String]:
+	var tags: Array[String] = []
+	if not has_node("%TechnologySystem"):
+		return tags
+	for node_id in %TechnologySystem.get_active_node_ids():
+		var node_data: TechNodeData = %TechnologySystem.get_node_data(node_id)
+		if node_data == null:
+			continue
+		for tag in node_data.tags:
+			if tag not in tags:
+				tags.append(tag)
+	return tags
+
+
+func _format_pressure_band(band: String) -> String:
+	match band:
+		"terminal":
+			return "终局"
+		"critical":
+			return "高危"
+		"strained":
+			return "承压"
+		"stable":
+			return "稳定"
+		_:
+			return "未知"
+
+
+func _format_director_warning(warnings_variant: Variant) -> String:
+	var warnings: Array = warnings_variant if warnings_variant is Array else []
+	if warnings.is_empty():
+		return "暂无"
+	var first_warning: Dictionary = warnings[0]
+	return str(first_warning.get("text", "暂无"))
+
+
+func _format_director_forecast(forecasts_variant: Variant) -> String:
+	var forecasts: Array = forecasts_variant if forecasts_variant is Array else []
+	if forecasts.is_empty():
+		return "无"
+	var titles: Array[String] = []
+	for forecast in forecasts:
+		if not forecast is Dictionary:
+			continue
+		titles.append(str((forecast as Dictionary).get("title", "")))
+		if titles.size() >= 2:
+			break
+	return "、".join(titles)
+
 
 ## 获取当前 MOSS 型号显示名称
 func get_moss_model_name() -> String:
@@ -1801,6 +2033,8 @@ func _on_restart_requested() -> void:
 	event_states.clear()
 	decision_tags.clear()
 	decision_archive.clear()
+	_random_event_years.clear()
+	_strategic_director_snapshot.clear()
 	if has_node("%DecisionArchivePanel"):
 		%DecisionArchivePanel.visible = false
 	update_decision_archive_button()
