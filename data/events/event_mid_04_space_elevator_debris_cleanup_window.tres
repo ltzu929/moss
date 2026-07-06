@@ -1,7 +1,9 @@
-[gd_resource type="Resource" script_class="GameEvent" format=3]
+[gd_resource type="Resource" script_class="GameEvent" format=3 uid="uid://ce1ouynd6yxtn"]
 
-[ext_resource type="Script" path="res://scripts/resources/game_event.gd" id="1_event"]
-[ext_resource type="Script" path="res://scripts/resources/event_option.gd" id="2_option"]
+[ext_resource type="Texture2D" uid="uid://ekdfoegbhoife" path="res://assets/event/太空电梯残骸清理窗口.png" id="1_image"]
+
+[ext_resource type="Script" uid="uid://dhndawkfhm8iq" path="res://scripts/resources/game_event.gd" id="1_event"]
+[ext_resource type="Script" uid="uid://bl7wa43xriuci" path="res://scripts/resources/event_option.gd" id="2_option"]
 
 [sub_resource type="Resource" id="Option_1"]
 script = ExtResource("2_option")
@@ -36,8 +38,8 @@ event_state_value = "delayed"
 script = ExtResource("1_event")
 event_title = "太空电梯残骸清理窗口"
 event_time = 2048
-event_month = 1
 event_region = "非洲"
 event_description = "太空电梯前线仍有残骸、轨道碎片和受损高空设施。工程团队提出短窗口清理计划，但地下城和发动机工程正在争夺机械队。"
+event_image = ExtResource("1_image")
 event_level = "一般事件"
 options = Array[ExtResource("2_option")]([SubResource("Option_1"), SubResource("Option_2"), SubResource("Option_3")])

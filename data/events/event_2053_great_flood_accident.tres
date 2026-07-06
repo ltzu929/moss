@@ -1,5 +1,7 @@
 [gd_resource type="Resource" script_class="GameEvent" format=3 uid="uid://event2053"]
 
+[ext_resource type="Texture2D" uid="uid://famgdmlckblim" path="res://assets/event/大淹没事故.png" id="1_image"]
+
 [ext_resource type="Script" uid="uid://dhndawkfhm8iq" path="res://scripts/resources/game_event.gd" id="1_event"]
 [ext_resource type="Script" uid="uid://bl7wa43xriuci" path="res://scripts/resources/event_option.gd" id="1_option"]
 
@@ -18,7 +20,6 @@ button_text = "坚守重建"
 order_delta = -15
 hope_delta = 20
 authority_delta = 5
-energy_cost = 0
 metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [sub_resource type="Resource" id="Resource_opt3"]
@@ -34,8 +35,8 @@ metadata/_custom_type_script = "uid://bl7wa43xriuci"
 script = ExtResource("1_event")
 event_title = "大淹没事故"
 event_time = 2053
-event_month = 1
 event_region = "联合政府"
 event_description = "全球互联网停止运作，海水涌向两极，高纬度地下城遭遇海水倒灌与岩浆渗入。常规农业崩溃，蚯蚓干成为唯一口粮。"
+event_image = ExtResource("1_image")
 options = Array[ExtResource("1_option")]([SubResource("Resource_opt1"), SubResource("Resource_opt2"), SubResource("Resource_opt3")])
 metadata/_custom_type_script = "uid://dhndawkfhm8iq"

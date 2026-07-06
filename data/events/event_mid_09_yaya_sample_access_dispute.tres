@@ -1,7 +1,9 @@
-[gd_resource type="Resource" script_class="GameEvent" format=3]
+[gd_resource type="Resource" script_class="GameEvent" format=3 uid="uid://c4s6orxu47aey"]
 
-[ext_resource type="Script" path="res://scripts/resources/game_event.gd" id="1_event"]
-[ext_resource type="Script" path="res://scripts/resources/event_option.gd" id="2_option"]
+[ext_resource type="Texture2D" uid="uid://nhoifikedppej" path="res://assets/event/丫丫样本访问争议.png" id="1_image"]
+
+[ext_resource type="Script" uid="uid://dhndawkfhm8iq" path="res://scripts/resources/game_event.gd" id="1_event"]
+[ext_resource type="Script" uid="uid://bl7wa43xriuci" path="res://scripts/resources/event_option.gd" id="2_option"]
 
 [sub_resource type="Resource" id="Option_1"]
 script = ExtResource("2_option")
@@ -35,8 +37,8 @@ event_state_value = "next_platform_interface"
 script = ExtResource("1_event")
 event_title = "丫丫样本访问争议"
 event_time = 2056
-event_month = 1
 event_region = "亚洲"
 event_description = "下一代 550 平台验证前夜，科研机构内部再次讨论丫丫样本和数字生命相关接口的访问边界。"
+event_image = ExtResource("1_image")
 event_level = "一般事件"
 options = Array[ExtResource("2_option")]([SubResource("Option_1"), SubResource("Option_2"), SubResource("Option_3")])

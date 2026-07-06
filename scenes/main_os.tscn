@@ -429,7 +429,6 @@ grow_horizontal = 1
 grow_vertical = 1
 
 [node name="Timer" type="Timer" parent="." unique_id=984637322]
-wait_time = 1.0
 autostart = true
 
 [node name="EventPopup" parent="." unique_id=701897754 instance=ExtResource("9_b37nj")]
