@@ -10,6 +10,7 @@ import sys
 TEST_SCENES = [
     ("tests/project_hygiene_test.tscn", "headless"),
     ("tests/project_conventions_test.tscn", "headless"),
+    ("tests/development_log_test.tscn", "headless"),
     ("tests/technology_system_test.tscn", "headless"),
     ("tests/command_system_test.tscn", "headless"),
     ("tests/time_system_test.tscn", "headless"),
