@@ -27,6 +27,8 @@ signal game_ended(result: String, message: String)
 const MOSS_THEME := preload("res://scripts/ui/moss_ui_theme.gd")
 ## 指令领域服务脚本
 const COMMAND_SYSTEM_SCRIPT := preload("res://scripts/systems/command_system.gd")
+## 开发期崩溃诊断日志
+const DEVELOPMENT_LOG_SCRIPT := preload("res://scripts/systems/development_log.gd")
 ## 游戏初始值
 const INITIAL_YEAR: int = 2044
 const INITIAL_MONTH: int = 1
@@ -112,6 +114,8 @@ var action_log: Array[Dictionary] = []
 
 ## 指令领域服务，不直接访问场景树或 UI
 var _command_system: CommandSystem = COMMAND_SYSTEM_SCRIPT.new()
+## 开发期诊断日志，不参与游戏内日志 UI
+var _development_log: DevelopmentLog = DEVELOPMENT_LOG_SCRIPT.new()
 
 ## 已触发的事件ID列表（防止重复触发）
 var triggered_events: Array[String] = []
@@ -127,6 +131,8 @@ var _event_focus_region: String = ""
 # ============================================================
 
 func _ready() -> void:
+	_setup_development_log()
+
 	# 初始化事件列表
 	all_events.clear()
 	load_events_from_disk()
@@ -154,6 +160,13 @@ func _ready() -> void:
 	update_global_resource_ui()
 	update_region_detail_ui()
 	update_command_buttons()
+	_write_development_log(
+		"game_ready",
+		{
+			"events_loaded": all_events.size(),
+			"commands_loaded": available_commands.size(),
+		}
+	)
 
 func get_action_log() -> Array[Dictionary]:
 	return action_log.duplicate(true)
@@ -190,6 +203,84 @@ func log_command_result(cmd: CommandData, lines: Array[String]) -> void:
 		lines.append("冷却 %s" % _command_system.format_cooldown_months(cooldown))
 
 	record_action("command", cmd.command_name, "\n".join(lines))
+	_write_development_log(
+		"command_executed",
+		{
+			"command_id": cmd.command_id,
+			"command_name": cmd.command_name,
+			"lines": lines.duplicate(),
+		}
+	)
+
+# ============================================================
+# 开发诊断日志
+# ============================================================
+
+## 初始化开发期诊断日志。仅在 debug 运行中默认启用。
+func _setup_development_log() -> void:
+	_development_log.configure(
+		DevelopmentLog.DEFAULT_LOG_PATH,
+		OS.is_debug_build(),
+		DevelopmentLog.DEFAULT_MAX_BYTES
+	)
+	_development_log.start_session(
+		{
+			"project": ProjectSettings.get_setting("application/config/name", "MOSS"),
+			"scene": scene_file_path,
+			"debug_build": OS.is_debug_build(),
+		}
+	)
+
+
+## 写入一条开发诊断日志，并附带当前游戏状态快照。
+func _write_development_log(event: String, details: Dictionary = {}) -> void:
+	_development_log.write_entry(event, _build_development_snapshot(), details)
+
+
+## 构建用于崩溃定位的轻量状态快照。
+func _build_development_snapshot() -> Dictionary:
+	var selected_region := ""
+	if selected_sector != null and selected_sector.get("data_card") != null:
+		selected_region = selected_sector.data_card.region_name
+
+	var technology_snapshot := {
+		"stage_level": technology_stage_level,
+		"available_points": 0,
+		"active_nodes": [],
+	}
+	if has_node("%TechnologySystem"):
+		technology_snapshot["available_points"] = %TechnologySystem.get_available_points()
+		technology_snapshot["active_nodes"] = %TechnologySystem.get_active_node_ids()
+
+	return {
+		"year": current_year,
+		"month": current_month,
+		"is_game_over": is_game_over,
+		"selected_region": selected_region,
+		"resources": {
+			"cpu": current_cpu,
+			"max_cpu": max_cpu,
+			"energy": current_energy,
+			"cpu_recovery_rate": cpu_recovery_rate,
+			"energy_recovery_rate": energy_recovery_rate,
+			"cooldown_reduction": cooldown_reduction,
+		},
+		"society": {
+			"average_order": _get_average_stat("order"),
+			"average_hope": _get_average_stat("hope"),
+			"average_authority": _get_average_stat("authority"),
+		},
+		"technology": technology_snapshot,
+		"events": {
+			"triggered_count": triggered_events.size(),
+			"triggered": triggered_events.duplicate(),
+			"states": event_states.duplicate(true),
+		},
+		"commands": {
+			"available_count": available_commands.size(),
+			"cooldowns": command_cooldowns.duplicate(true),
+		},
+	}
 
 # ============================================================
 # 初始状态缓存
@@ -379,6 +470,13 @@ func _on_technology_node_activated(node_id: String) -> void:
 	var node_data: TechNodeData = %TechnologySystem.get_node_data(node_id)
 	if node_data != null:
 		record_action("technology", "协议激活", node_data.display_name)
+		_write_development_log(
+			"technology_activated",
+			{
+				"node_id": node_id,
+				"display_name": node_data.display_name,
+			}
+		)
 
 
 ## 科技阶段变化回调：同步状态面板等级
@@ -579,6 +677,14 @@ func _on_timer_timeout() -> void:
 
 			# 标记事件已触发
 			triggered_events.append(event_key)
+			_write_development_log(
+				"event_triggered",
+				{
+					"event_key": event_key,
+					"event_title": event.event_title,
+					"event_region": event.event_region,
+				}
+			)
 
 			# 显示事件弹窗
 			var display_event := build_display_event(event)
@@ -599,6 +705,16 @@ func _on_timer_timeout() -> void:
 				selected_opt.button_text
 			)
 			apply_event_option_state(selected_opt)
+			_write_development_log(
+				"event_resolved",
+				{
+					"event_key": event_key,
+					"choice_index": choice_index,
+					"choice_text": selected_opt.button_text,
+					"event_state_key": selected_opt.event_state_key,
+					"event_state_value": selected_opt.event_state_value,
+				}
+			)
 
 			# 恢复事件发生前的玩家选区和地球聚焦
 			_event_focus_region = ""
@@ -618,11 +734,13 @@ func _on_timer_timeout() -> void:
 
 	# === 第二步：时间推进 ===
 	_advance_one_month()
-	if current_month == INITIAL_MONTH:
+	var yearly_settlement := current_month == INITIAL_MONTH
+	if yearly_settlement:
 		_apply_yearly_settlement()
 	update_cooldowns()
 	update_global_resource_ui()
 	update_command_buttons()
+	_write_development_log("month_advanced", {"yearly_settlement": yearly_settlement})
 
 	# === 第三步：胜负判定 ===
 	_check_game_failure()
@@ -946,9 +1064,11 @@ func _apply_yearly_settlement() -> void:
 	current_cpu += cpu_recovery_rate
 	current_cpu = mini(current_cpu, max_cpu)
 	_apply_human_autonomy_recovery()
-	if %TechnologySystem.grant_research_for_year(current_year):
+	var research_granted: bool = %TechnologySystem.grant_research_for_year(current_year)
+	if research_granted:
 		record_action("technology", "研究完成", "获得 1 点协议点")
 		update_technology_button()
+	_write_development_log("yearly_settlement", {"research_granted": research_granted})
 
 # ============================================================
 # 事件后果处理
@@ -1381,6 +1501,13 @@ func trigger_game_over() -> void:
 	is_game_over = true
 	$Timer.stop()
 	record_action("ending", "失败", "控制权丧失，人类文明覆灭。")
+	_write_development_log(
+		"game_ended",
+		{
+			"result": "failed",
+			"reason": "authority_lost",
+		}
+	)
 
 	game_ended.emit("failed", "控制权丧失，人类文明覆灭。")
 	show_end_screen("失败", "控制权丧失，人类文明覆灭。\nMOSS系统终止运行。", "failed")
@@ -1408,6 +1535,15 @@ func trigger_ending(authority: int) -> void:
 	var message := build_ending_message(result)
 
 	record_action("ending", result, message)
+	_write_development_log(
+		"game_ended",
+		{
+			"result": result,
+			"average_authority": authority,
+			"average_order": avg_order,
+			"average_hope": avg_hope,
+		}
+	)
 	game_ended.emit(result, message)
 	show_end_screen(title, message, result)
 
@@ -1630,6 +1766,7 @@ func _on_restart_requested() -> void:
 	# 刷新UI
 	update_global_resource_ui()
 	update_command_buttons()
+	_write_development_log("game_restarted")
 
 	# 恢复时间流动
 	$Timer.start()
