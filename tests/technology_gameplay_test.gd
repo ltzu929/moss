@@ -120,6 +120,7 @@ func _ready() -> void:
 	_assert_eq(first_sector.data_card.hope, hope_before - 5, "托管核心应降低全局希望")
 
 	_assert_new_technology_effects()
+	print("[MOSS-TECH-GAMEPLAY] 完成，失败断言：%d" % _failed)
 	get_tree().quit(_failed)
 
 # ============================================================

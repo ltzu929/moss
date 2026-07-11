@@ -497,12 +497,32 @@ func _respond_to_event_popup(event_popup: PanelContainer) -> void:
 		"month": month,
 		"event_title": title,
 	}
-	_log("  [EVENT] 日期=%s 自动选择选项 %d (%s)" % [date_key, _auto_choice, title])
+	var option_list := event_popup.get_node("%OptionList") as VBoxContainer
+	var option_buttons: Array[Node] = option_list.get_children()
+	var selected_index := -1
+	if _auto_choice < option_buttons.size():
+		var preferred_button := option_buttons[_auto_choice] as Button
+		if preferred_button != null and not preferred_button.disabled:
+			selected_index = _auto_choice
+	if selected_index == -1:
+		for index in range(option_buttons.size()):
+			var candidate := option_buttons[index] as Button
+			if candidate != null and not candidate.disabled:
+				selected_index = index
+				break
 
-	# 发出选择信号并隐藏弹窗
-	# 注意：直接emit信号不会触发popup的hide()，必须手动隐藏
-	event_popup.option_selected.emit(_auto_choice)
-	event_popup.hide()
+	_assert_true(
+		selected_index != -1,
+		"事件弹窗必须至少提供一个真实可点击方案：%s" % title,
+		"event_playability"
+	)
+	if selected_index == -1:
+		# 只用于让失败测试退出，不能把不可点击方案记为通过。
+		event_popup.option_selected.emit(0)
+		event_popup.hide()
+	else:
+		_log("  [EVENT] 日期=%s 自动点击选项 %d (%s)" % [date_key, selected_index, title])
+		(option_buttons[selected_index] as Button).pressed.emit()
 	_event_popup_responding = false
 
 
@@ -644,6 +664,19 @@ func _assert_event_triggering() -> void:
 		var key := "%04d.01" % year
 		var triggered: bool = (key in _event_log)
 		_assert_true(triggered, "日期%s应有事件触发" % key, "event_triggering")
+
+	_assert_eq(
+		_main_os.get_decision_tag("decision.core_2044_automation_access"),
+		"public_counterstrike",
+		"真实点击 2044 首选方案应写入核心决策标签",
+		"event_triggering"
+	)
+	_assert_eq(
+		_main_os.get_decision_records().size(),
+		1,
+		"完整通关应保留一条 2044 核心决策档案",
+		"event_triggering"
+	)
 
 
 ## 验证科技节点加载、年度协议点累计和无操作时的激活状态

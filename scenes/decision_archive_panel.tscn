@@ -1,0 +1,80 @@
+[gd_scene format=3 uid="uid://kianyj80h6sh"]
+
+[ext_resource type="Script" uid="uid://dd2d3nr5kftbv" path="res://scripts/ui/decision_archive_panel.gd" id="1_qpbxu"]
+
+[node name="DecisionArchivePanel" type="Control" unique_id=75133822]
+z_index = 40
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_qpbxu")
+
+[node name="Backdrop" type="ColorRect" parent="." unique_id=927684382]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0, 0.023529412, 0.043137256, 0.8)
+
+[node name="ArchiveCenter" type="CenterContainer" parent="." unique_id=635766328]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="ArchiveWindow" type="PanelContainer" parent="ArchiveCenter" unique_id=1636953670]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(960, 680)
+layout_mode = 2
+
+[node name="ArchiveMargin" type="MarginContainer" parent="ArchiveCenter/ArchiveWindow" unique_id=341292042]
+layout_mode = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 28
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 28
+
+[node name="ArchiveVBox" type="VBoxContainer" parent="ArchiveCenter/ArchiveWindow/ArchiveMargin" unique_id=71175157]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="ArchiveHeader" type="HBoxContainer" parent="ArchiveCenter/ArchiveWindow/ArchiveMargin/ArchiveVBox" unique_id=628270082]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ArchiveTitle" type="Label" parent="ArchiveCenter/ArchiveWindow/ArchiveMargin/ArchiveVBox/ArchiveHeader" unique_id=130089518]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "决策档案  //  DECISION ARCHIVE"
+
+[node name="ArchiveHeaderSpacer" type="Control" parent="ArchiveCenter/ArchiveWindow/ArchiveMargin/ArchiveVBox/ArchiveHeader" unique_id=1160447187]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ArchiveCountLabel" type="Label" parent="ArchiveCenter/ArchiveWindow/ArchiveMargin/ArchiveVBox/ArchiveHeader" unique_id=1359815427]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "0 条不可逆记录"
+
+[node name="ArchiveSeparator" type="HSeparator" parent="ArchiveCenter/ArchiveWindow/ArchiveMargin/ArchiveVBox" unique_id=1480740862]
+layout_mode = 2
+
+[node name="DecisionArchiveText" type="RichTextLabel" parent="ArchiveCenter/ArchiveWindow/ArchiveMargin/ArchiveVBox" unique_id=649270369]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 480)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/default_color = Color(0.72156864, 0.78039217, 0.8392157, 1)
+theme_override_font_sizes/normal_font_size = 18
+bbcode_enabled = true
+text = "尚未形成核心决策记录。"
+
+[node name="ArchiveCloseButton" type="Button" parent="ArchiveCenter/ArchiveWindow/ArchiveMargin/ArchiveVBox" unique_id=1419326484]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 48)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 17
+text = "关闭档案"

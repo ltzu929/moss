@@ -32,6 +32,7 @@ func _process(_delta: float) -> void:
 
 
 func popup_event(event: GameEvent, current_energy: int) -> void:
+	_ensure_affordable_option(event, current_energy)
 	%EventTitle.text = event.event_title
 	%EventLevelLabel.text = event.event_level
 	%EventMetaLabel.text = "影响区域：%s  /  记录时间：%04d.%02d  /  MOSS 自动归档" % [
@@ -64,6 +65,25 @@ func popup_event(event: GameEvent, current_energy: int) -> void:
 
 	show()
 	move_to_front()
+
+
+## 强制事件必须始终可继续；内容资源仍应至少提供一个零能源方案。
+## 如果资源或运行时调整破坏了该约束，只开放最低成本方案并耗尽剩余能源，
+## 同时留下警告，避免玩家永久卡在模态弹窗中。
+func _ensure_affordable_option(event: GameEvent, current_energy: int) -> void:
+	if event.options.is_empty():
+		return
+	for option in event.options:
+		if option.energy_cost <= current_energy:
+			return
+
+	var fallback: EventOption = event.options[0]
+	for option in event.options:
+		if option.energy_cost < fallback.energy_cost:
+			fallback = option
+	fallback.energy_cost = maxi(0, current_energy)
+	fallback.button_text = "%s（紧急降级）" % fallback.button_text
+	push_warning("事件没有可负担方案，已启用紧急降级：%s" % event.event_title)
 
 
 func get_impact_preview_delay() -> float:

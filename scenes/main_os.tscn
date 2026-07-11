@@ -18,6 +18,7 @@
 [ext_resource type="Script" uid="uid://doo72uu83jjx3" path="res://scripts/ui/region_orbital_view.gd" id="15_orbital"]
 [ext_resource type="Script" uid="uid://ce33podwj0fgt" path="res://scripts/systems/technology_system.gd" id="16_technology"]
 [ext_resource type="PackedScene" uid="uid://bn2cwv0ewn4kv" path="res://scenes/technology_screen.tscn" id="17_technology_screen"]
+[ext_resource type="PackedScene" uid="uid://kianyj80h6sh" path="res://scenes/decision_archive_panel.tscn" id="19_a6tgg"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hud"]
 content_margin_left = 8.0
@@ -96,6 +97,13 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "能源:100"
 vertical_alignment = 1
+
+[node name="DecisionArchiveButton" type="Button" parent="MainLayout/TopBarContainer" unique_id=192180034]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(128, 64)
+layout_mode = 2
+tooltip_text = "查看不可逆核心决策记录"
+text = "决策档案  0"
 
 [node name="TechnologyButton" type="Button" parent="MainLayout/TopBarContainer" unique_id=888888001]
 unique_name_in_owner = true
@@ -444,5 +452,14 @@ layout_mode = 1
 offset_top = -60.5
 offset_bottom = 60.5
 
+[node name="DecisionArchivePanel" parent="." unique_id=75133822 instance=ExtResource("19_a6tgg")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+grow_horizontal = 2
+grow_vertical = 2
+
+[connection signal="pressed" from="MainLayout/TopBarContainer/DecisionArchiveButton" to="." method="_on_decision_archive_button_pressed"]
 [connection signal="pressed" from="MainLayout/TopBarContainer/TechnologyButton" to="." method="_on_technology_button_pressed"]
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
+[connection signal="close_requested" from="DecisionArchivePanel" to="." method="_on_decision_archive_closed"]

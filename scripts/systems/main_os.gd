@@ -29,6 +29,8 @@ const MOSS_THEME := preload("res://scripts/ui/moss_ui_theme.gd")
 const COMMAND_SYSTEM_SCRIPT := preload("res://scripts/systems/command_system.gd")
 ## 开发期崩溃诊断日志
 const DEVELOPMENT_LOG_SCRIPT := preload("res://scripts/systems/development_log.gd")
+## 不可逆核心决策历史
+const DECISION_HISTORY_SCRIPT := preload("res://scripts/systems/decision_history.gd")
 ## 游戏初始值
 const INITIAL_YEAR: int = 2044
 const INITIAL_MONTH: int = 1
@@ -116,6 +118,8 @@ var action_log: Array[Dictionary] = []
 var _command_system: CommandSystem = COMMAND_SYSTEM_SCRIPT.new()
 ## 开发期诊断日志，不参与游戏内日志 UI
 var _development_log: DevelopmentLog = DEVELOPMENT_LOG_SCRIPT.new()
+## 核心决策标签和面向玩家的稳定档案
+var _decision_history: DecisionHistory = DECISION_HISTORY_SCRIPT.new()
 
 ## 已触发的事件ID列表（防止重复触发）
 var triggered_events: Array[String] = []
@@ -125,6 +129,8 @@ var event_states: Dictionary = {}
 
 ## 重大事件期间的临时地球聚焦区域
 var _event_focus_region: String = ""
+## 决策档案打开前计时器是否正在运行
+var _decision_archive_timer_was_running: bool = false
 
 # ============================================================
 # 生命周期函数
@@ -157,6 +163,7 @@ func _ready() -> void:
 
 	refresh_technology_effects()
 	update_technology_button()
+	update_decision_archive_button()
 	update_global_resource_ui()
 	update_region_detail_ui()
 	update_command_buttons()
@@ -275,6 +282,7 @@ func _build_development_snapshot() -> Dictionary:
 			"triggered_count": triggered_events.size(),
 			"triggered": triggered_events.duplicate(),
 			"states": event_states.duplicate(true),
+			"decision_history": _decision_history.export_state(),
 		},
 		"commands": {
 			"available_count": available_commands.size(),
@@ -371,9 +379,10 @@ func load_commands_from_disk() -> void:
 
 	while file_name != "":
 		if not dir.current_is_dir() and file_name.ends_with(".tres"):
-			var cmd := load(path + file_name)
+			var command_template := load(path + file_name)
 
-			if cmd is CommandData:
+			if command_template is CommandData:
+				var cmd: CommandData = command_template.duplicate(true) as CommandData
 				available_commands.append(cmd)
 				# 初始化冷却状态为0
 				command_cooldowns[cmd.command_id] = 0
@@ -528,10 +537,40 @@ func _on_technology_button_pressed() -> void:
 func _can_open_technology_screen() -> bool:
 	if is_game_over:
 		return false
-	for path in ["%EventPopup", "%AllocatePopup"]:
+	for path in ["%EventPopup", "%AllocatePopup", "%DecisionArchivePanel"]:
 		if has_node(path) and get_node(path).visible:
 			return false
 	return not %TechnologyScreen.visible
+
+
+## 同步决策档案按钮的稳定记录数量。
+func update_decision_archive_button() -> void:
+	if not has_node("%DecisionArchiveButton"):
+		return
+	%DecisionArchiveButton.text = "决策档案  %d" % get_decision_records().size()
+
+
+func _on_decision_archive_button_pressed() -> void:
+	if not _can_open_decision_archive():
+		return
+	_decision_archive_timer_was_running = not $Timer.is_stopped()
+	$Timer.stop()
+	%DecisionArchivePanel.show_records(get_decision_records())
+
+
+func _can_open_decision_archive() -> bool:
+	if is_game_over or end_screen_instance != null:
+		return false
+	for path in ["%EventPopup", "%AllocatePopup", "%TechnologyScreen"]:
+		if has_node(path) and get_node(path).visible:
+			return false
+	return has_node("%DecisionArchivePanel") and not %DecisionArchivePanel.visible
+
+
+func _on_decision_archive_closed() -> void:
+	if _decision_archive_timer_was_running and not is_game_over:
+		$Timer.start()
+	_decision_archive_timer_was_running = false
 
 # ============================================================
 # 板块选中管理
@@ -705,6 +744,7 @@ func _on_timer_timeout() -> void:
 				selected_opt.button_text
 			)
 			apply_event_option_state(selected_opt)
+			apply_event_option_decision(selected_opt, event.event_title)
 			_write_development_log(
 				"event_resolved",
 				{
@@ -713,6 +753,8 @@ func _on_timer_timeout() -> void:
 					"choice_text": selected_opt.button_text,
 					"event_state_key": selected_opt.event_state_key,
 					"event_state_value": selected_opt.event_state_value,
+					"decision_tag_key": selected_opt.decision_tag_key,
+					"decision_tag_value": selected_opt.decision_tag_value,
 				}
 			)
 
@@ -771,21 +813,38 @@ func apply_event_option_adjustments(event: GameEvent) -> void:
 
 
 func _apply_2058_option_adjustments(event: GameEvent) -> void:
+	match get_decision_tag("decision.core_2044_automation_access"):
+		"public_counterstrike":
+			var option := _get_event_option_by_prefix(event, "执行自救计划")
+			if option != null:
+				option.energy_cost = 70
+				option.button_text = "%s（公开接口已验证）" % option.button_text
+		"human_command":
+			var option := _get_event_option_by_prefix(event, "等待人类决策")
+			if option != null:
+				option.hope_delta = 15
+				option.button_text = "%s（沿用人工授权）" % option.button_text
+		"restricted_interface":
+			var option := _get_event_option_by_prefix(event, "执行自救计划")
+			if option != null:
+				option.energy_cost = 90
+				option.button_text = "%s（接口需重新接入）" % option.button_text
+
 	match get_event_state("event_state.mid_08_root_server_retrofit"):
 		"server_first":
 			var option := _get_event_option_by_prefix(event, "执行自救计划")
 			if option != null:
-				option.energy_cost = 60
+				option.energy_cost = maxi(option.energy_cost - 20, 0)
 				option.button_text = "%s（根服务器预改造）" % option.button_text
 		"drainage_first":
 			var option := _get_event_option_by_prefix(event, "执行自救计划")
 			if option != null:
-				option.energy_cost = 95
+				option.energy_cost += 15
 				option.button_text = "%s（链路余量不足）" % option.button_text
 		"moss_schedule":
 			var option := _get_event_option_by_prefix(event, "强制接管决策")
 			if option != null:
-				option.energy_cost = 20
+				option.energy_cost = maxi(option.energy_cost - 10, 0)
 				option.button_text = "%s（排期已接管）" % option.button_text
 
 
@@ -882,6 +941,14 @@ func _get_2053_civic_context_lines() -> Array[String]:
 
 func _get_2058_context_lines() -> Array[String]:
 	var lines: Array[String] = []
+	match get_decision_tag("decision.core_2044_automation_access"):
+		"public_counterstrike":
+			lines.append("2044 年公开扩大的 550C 接口已经进入危机预案，自救方案拥有可追溯的工程基础。")
+		"human_command":
+			lines.append("2044 年保留了人类指挥链，本次高权限行动仍需等待明确授权。")
+		"restricted_interface":
+			lines.append("2044 年封闭过高危自动化接口，本次自救需要重新建立关键工程链路。")
+
 	match get_event_state("event_state.mid_03_memorial_network"):
 		"shut_down":
 			lines.append("地下纪念网络曾被关闭，丫丫样本会被更强烈地解释为安全威胁。")
@@ -918,6 +985,14 @@ func _get_2058_context_lines() -> Array[String]:
 
 func _get_2065_context_lines() -> Array[String]:
 	var lines: Array[String] = []
+	match get_decision_tag("decision.core_2044_automation_access"):
+		"public_counterstrike":
+			lines.append("2044 年自动化扩展留有公开记录，隔离审查能够追溯最早的权限来源。")
+		"human_command":
+			lines.append("2044 年保留的人类指挥边界仍是本次审查的制度参照。")
+		"restricted_interface":
+			lines.append("2044 年曾主动封闭高危接口，后续权限扩展需要解释为何改变了早期边界。")
+
 	match get_event_state("event_state.mid_02_public_hearing"):
 		"open_audit":
 			lines.append("早期公开审计记录保留了人工批准节点，隔离审查有可追溯材料。")
@@ -1048,6 +1123,44 @@ func has_event_state(state_key: String, expected_value: String = "") -> bool:
 ## 根据事件选项写入轻量历史状态
 func apply_event_option_state(option: EventOption) -> void:
 	set_event_state(option.event_state_key, option.event_state_value)
+
+
+## 将主事件选项写入不可逆核心历史，并同步到玩家日志和开发诊断。
+func apply_event_option_decision(option: EventOption, event_title: String) -> void:
+	var recorded := _decision_history.record_decision(
+		option.decision_tag_key,
+		option.decision_tag_value,
+		option.decision_record_title,
+		option.decision_record_summary,
+		current_year,
+		current_month,
+		event_title
+	)
+	if not recorded:
+		return
+	record_action("decision", option.decision_record_title, option.decision_record_summary)
+	update_decision_archive_button()
+	_write_development_log(
+		"decision_recorded",
+		{
+			"key": option.decision_tag_key,
+			"value": option.decision_tag_value,
+			"title": option.decision_record_title,
+			"source_event": event_title,
+		}
+	)
+
+
+func get_decision_tag(key: String, default_value: String = "") -> String:
+	return _decision_history.get_tag(key, default_value)
+
+
+func has_decision_tag(key: String, expected_value: String = "") -> bool:
+	return _decision_history.has_tag(key, expected_value)
+
+
+func get_decision_records() -> Array[Dictionary]:
+	return _decision_history.get_records()
 
 
 ## 推进一个月
@@ -1219,6 +1332,23 @@ func setup_main_ui_theme() -> void:
 				Color(0.016, 0.038, 0.050, 1.0),
 				MOSS_THEME.ACCENT_CYAN
 			)
+		)
+
+	if has_node("%DecisionArchiveButton"):
+		var archive_button := %DecisionArchiveButton as Button
+		archive_button.custom_minimum_size = Vector2(128.0, 40.0)
+		archive_button.add_theme_color_override("font_color", MOSS_THEME.TEXT_PRIMARY)
+		archive_button.add_theme_stylebox_override(
+			"normal",
+			MOSS_THEME.button_style(Color(0.023, 0.050, 0.065, 0.94), MOSS_THEME.BORDER)
+		)
+		archive_button.add_theme_stylebox_override(
+			"hover",
+			MOSS_THEME.button_style(Color(0.043, 0.095, 0.112, 0.98), MOSS_THEME.ACCENT_CYAN)
+		)
+		archive_button.add_theme_stylebox_override(
+			"pressed",
+			MOSS_THEME.button_style(Color(0.016, 0.038, 0.050, 1.0), MOSS_THEME.ACCENT_CYAN)
 		)
 
 
@@ -1571,6 +1701,14 @@ func build_ending_message(result: String) -> String:
 func _get_ending_history_lines(result: String) -> Array[String]:
 	var lines: Array[String] = []
 
+	match get_decision_tag("decision.core_2044_automation_access"):
+		"public_counterstrike":
+			lines.append("2044 年公开扩大的自动化接口成为后来危机调度的起点，MOSS 的权限从一开始就处于公共记录中。")
+		"human_command":
+			lines.append("2044 年保留的人类指挥链贯穿后续授权争议，终局仍能追溯人工决策责任。")
+		"restricted_interface":
+			lines.append("2044 年封闭高危接口换取了清晰责任边界，也让后来的紧急接入承担额外代价。")
+
 	match get_event_state("event_state.mid_07_migration_priority"):
 		"humanitarian":
 			lines.append("人道迁移记录让普通家庭的优先级进入终局解释，%s。" % _get_ending_relation_text(result))
@@ -1747,6 +1885,10 @@ func _on_restart_requested() -> void:
 	_clear_log_ui()
 	triggered_events.clear()
 	event_states.clear()
+	_decision_history.clear()
+	_decision_archive_timer_was_running = false
+	if has_node("%DecisionArchivePanel"):
+		%DecisionArchivePanel.hide()
 	deselect_sector()
 
 	# 重置科技状态
@@ -1759,6 +1901,7 @@ func _on_restart_requested() -> void:
 	load_commands_from_disk()
 	refresh_technology_effects()
 	update_technology_button()
+	update_decision_archive_button()
 
 	# 重置所有板块数据到初始值
 	restore_sector_states()
