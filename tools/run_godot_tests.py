@@ -21,7 +21,7 @@ TEST_SCENES = [
     ("tests/time_system_test.tscn", "headless"),
     ("tests/event_state_test.tscn", "headless"),
     ("tests/event_playability_test.tscn", "headless"),
-    ("tests/decision_history_test.tscn", "headless"),
+    ("tests/decision_history_test.tscn", "display"),
     ("tests/mid_event_resource_test.tscn", "headless"),
     ("tests/technology_gameplay_test.tscn", "headless"),
     ("tests/technology_ending_test.tscn", "headless"),
