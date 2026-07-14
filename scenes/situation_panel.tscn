@@ -1,0 +1,148 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/situation_panel.gd" id="1_script"]
+
+[node name="SituationPanel" type="Control"]
+z_index = 30
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_script")
+
+[node name="SituationWindow" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -500.0
+offset_top = 112.0
+offset_right = -20.0
+offset_bottom = 690.0
+grow_horizontal = 0
+mouse_filter = 0
+
+[node name="WindowMargin" type="MarginContainer" parent="SituationWindow"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 16
+
+[node name="MainVBox" type="VBoxContainer" parent="SituationWindow/WindowMargin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HeaderRow" type="HBoxContainer" parent="SituationWindow/WindowMargin/MainVBox"]
+layout_mode = 2
+
+[node name="SituationTitle" type="Label" parent="SituationWindow/WindowMargin/MainVBox/HeaderRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "局势追踪  //  SITUATIONS"
+
+[node name="HeaderSpacer" type="Control" parent="SituationWindow/WindowMargin/MainVBox/HeaderRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SituationCount" type="Label" parent="SituationWindow/WindowMargin/MainVBox/HeaderRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "0 / 2"
+
+[node name="CloseButton" type="Button" parent="SituationWindow/WindowMargin/MainVBox/HeaderRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(72, 36)
+layout_mode = 2
+text = "关闭"
+
+[node name="EntryList" type="VBoxContainer" parent="SituationWindow/WindowMargin/MainVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Separator" type="HSeparator" parent="SituationWindow/WindowMargin/MainVBox"]
+layout_mode = 2
+
+[node name="EmptyLabel" type="Label" parent="SituationWindow/WindowMargin/MainVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+text = "当前没有正在发展的随机局势。\n完成 2044 核心选择后，局势系统将开始监测风险。"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="DetailVBox" type="VBoxContainer" parent="SituationWindow/WindowMargin/MainVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="DetailTitle" type="Label" parent="SituationWindow/WindowMargin/MainVBox/DetailVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "未选择局势"
+
+[node name="DetailMeta" type="Label" parent="SituationWindow/WindowMargin/MainVBox/DetailVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "地区  //  阶段"
+
+[node name="SituationProgress" type="ProgressBar" parent="SituationWindow/WindowMargin/MainVBox/DetailVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 22)
+layout_mode = 2
+value = 35.0
+show_percentage = true
+
+[node name="TrendLabel" type="Label" parent="SituationWindow/WindowMargin/MainVBox/DetailVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "预计月度变化：--"
+
+[node name="DescriptionLabel" type="Label" parent="SituationWindow/WindowMargin/MainVBox/DetailVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "局势说明"
+autowrap_mode = 3
+
+[node name="CurrentApproachLabel" type="Label" parent="SituationWindow/WindowMargin/MainVBox/DetailVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "当前方针：尚未选择"
+
+[node name="SwitchLockLabel" type="Label" parent="SituationWindow/WindowMargin/MainVBox/DetailVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "方针可调整"
+
+[node name="ApproachScroll" type="ScrollContainer" parent="SituationWindow/WindowMargin/MainVBox/DetailVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 210)
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="ApproachList" type="VBoxContainer" parent="SituationWindow/WindowMargin/MainVBox/DetailVBox/ApproachScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="StatusLabel" type="Label" parent="SituationWindow/WindowMargin/MainVBox/DetailVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 3
+
+[node name="FocusRegionButton" type="Button" parent="SituationWindow/WindowMargin/MainVBox/DetailVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+text = "定位相关地区"

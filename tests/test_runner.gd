@@ -60,6 +60,7 @@ var _assertions_done: bool = false
 ## 弹窗自动响应标记（防止重复响应）
 var _event_popup_responding: bool = false
 var _alloc_popup_responding: bool = false
+var _seen_situation_ids: Array[String] = []
 
 # ============================================================
 # 生命周期函数
@@ -87,6 +88,7 @@ func _ready() -> void:
 	var timer: Timer = _main_os.get_node("Timer")
 	timer.stop()
 	timer.wait_time = TEST_TIMER_INTERVAL
+	_main_os.set_situation_seed_for_test(424242)
 
 	# 验证场景完整性
 	if not _verify_scene_integrity():
@@ -130,6 +132,7 @@ func _process(_delta: float) -> void:
 
 	# 轮询弹窗自动响应
 	_poll_popups()
+	_poll_situations()
 
 	# 跟踪日期变化
 	var current_year: int = _main_os.current_year
@@ -142,6 +145,28 @@ func _process(_delta: float) -> void:
 	# 游戏已结束，停止处理
 	if _game_ended:
 		set_process(false)
+
+
+## 为完整通关选择每项局势的地方方案，并处理新局势/阶段恶化自动暂停。
+func _poll_situations() -> void:
+	var snapshots: Array[Dictionary] = _main_os.get_situation_snapshots()
+	for snapshot in snapshots:
+		var instance_id := str(snapshot.get("instance_id", ""))
+		if instance_id not in _seen_situation_ids:
+			_seen_situation_ids.append(instance_id)
+			_log("发现随机局势: %s" % str(snapshot.get("title", "")))
+		if str(snapshot.get("approach_id", "")) != "":
+			continue
+		var approaches: Array = snapshot.get("approaches", [])
+		if approaches.is_empty():
+			continue
+		_main_os._on_situation_approach_requested(
+			instance_id,
+			str(approaches[0].get("approach_id", ""))
+		)
+
+	if bool(_main_os.get("_situation_auto_paused")):
+		_main_os._on_time_control_button_pressed()
 
 # ============================================================
 # 场景完整性验证
@@ -629,6 +654,7 @@ func _run_all_assertions() -> void:
 	_assert_region_detail_sync()
 	_assert_global_overview_sync()
 	_assert_event_triggering()
+	_assert_situation_progress()
 	_assert_technology_progress()
 	_assert_resource_bounds()
 	_assert_final_state()
@@ -676,6 +702,15 @@ func _assert_event_triggering() -> void:
 		1,
 		"完整通关应保留一条 2044 核心决策档案",
 		"event_triggering"
+	)
+
+
+func _assert_situation_progress() -> void:
+	_log("[断言组] 随机局势")
+	_assert_true(
+		not _seen_situation_ids.is_empty(),
+		"固定种子的完整通关应至少处理一项随机局势",
+		"situations"
 	)
 
 

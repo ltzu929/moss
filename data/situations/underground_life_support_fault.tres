@@ -1,0 +1,48 @@
+[gd_resource type="Resource" script_class="SituationData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/situation_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://scripts/resources/situation_approach_data.gd" id="2_approach"]
+
+[sub_resource type="Resource" id="Approach_maintenance_teams"]
+script = ExtResource("2_approach")
+approach_id = "maintenance_teams"
+display_name = "地方维护队"
+description = "保留地下城维护队现场判断，恢复较慢但维持自治。"
+monthly_severity_delta = -4
+resolution_order_delta = 1
+resolution_hope_delta = 2
+resolution_authority_delta = -1
+
+[sub_resource type="Resource" id="Approach_supply_reallocation"]
+script = ExtResource("2_approach")
+approach_id = "supply_reallocation"
+display_name = "调拨维生资源"
+description = "持续调入能源和备件，压缩其他设施的资源窗口。"
+monthly_severity_delta = -6
+monthly_energy_cost = 1
+resolution_order_delta = 2
+
+[sub_resource type="Resource" id="Approach_automated_trusteeship"]
+script = ExtResource("2_approach")
+approach_id = "automated_trusteeship"
+display_name = "自动化托管"
+description = "MOSS 直接接管维生参数与人员调度，恢复最快但扩大控制。"
+monthly_severity_delta = -8
+monthly_cpu_cost = 1
+monthly_energy_cost = 1
+resolution_hope_delta = -2
+resolution_authority_delta = 4
+
+[resource]
+script = ExtResource("1_data")
+situation_id = "underground_life_support_fault"
+title = "地下城维生系统异常"
+description = "通风、温控与水循环出现联动偏差，居民区风险正在累积。"
+eligible_regions = Array[String](["亚洲", "北美", "非洲", "俄罗斯", "大洋洲", "南美"])
+base_weight = 90
+initial_severity = 34
+monthly_growth = 3
+failure_order_delta = -12
+failure_hope_delta = -12
+approaches = Array[ExtResource("2_approach")]([SubResource("Approach_maintenance_teams"), SubResource("Approach_supply_reallocation"), SubResource("Approach_automated_trusteeship")])
+command_interventions = {"energy_convert": 10, "allocate": 10, "takeover": 14, "technology_aid": 18, "global_takeover": 10}

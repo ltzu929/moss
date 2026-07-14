@@ -6,6 +6,11 @@ const MAP_SIZE := Vector2(1603.0, 1004.0)
 const RESIZED_MAP_SIZE := Vector2(1920.0, 1080.0)
 const ASIA_MASK_PATH := "res://assets/ui/world-map/mask_asia.png"
 const TEST_REGIONS: Array[String] = ["北美", "南美", "非洲", "亚洲", "大洋洲"]
+const SITUATION_PATHS: Array[String] = [
+	"res://data/situations/emergency_communication_congestion.tres",
+	"res://data/situations/regional_power_instability.tres",
+	"res://data/situations/underground_life_support_fault.tres",
+]
 
 var _failed: int = 0
 var _world_map: Control
@@ -33,6 +38,7 @@ func _ready() -> void:
 	_assert_true(_world_map.has_method("get_region_names"), "应保留 get_region_names")
 
 	_assert_region_names()
+	_assert_situation_targets_have_map_warnings()
 	_assert_clear_asset_names()
 	_assert_masks_loaded()
 	_assert_editor_preview_contract(world_map_script)
@@ -51,6 +57,21 @@ func _assert_region_names() -> void:
 	_assert_eq(names.size(), TEST_REGIONS.size(), "get_region_names 应只返回五个可点击区域")
 	for region_name in TEST_REGIONS:
 		_assert_true(region_name in names, "应包含可点击区域：%s" % region_name)
+
+
+func _assert_situation_targets_have_map_warnings() -> void:
+	var names: Array = _world_map.call("get_region_names")
+	for path in SITUATION_PATHS:
+		var data := load(path) as SituationData
+		_assert_true(data != null, "地图警示测试应能加载局势：%s" % path)
+		if data == null:
+			continue
+		for region_name in data.eligible_regions:
+			var map_region := "亚洲" if region_name == "俄罗斯" else region_name
+			_assert_true(
+				map_region in names,
+				"%s 的合法目标 %s 应能映射到地图警示" % [data.title, region_name]
+			)
 
 
 func _assert_clear_asset_names() -> void:

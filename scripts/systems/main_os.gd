@@ -18,6 +18,8 @@ signal game_ended(result: String, message: String)
 ## 所有事件资源的列表
 ## 从 res://data/events/ 目录自动加载，无需手动配置
 @export var all_events: Array[GameEvent]
+## 所有随机局势模板；运行时从 res://data/situations/ 自动加载
+@export var all_situations: Array[SituationData]
 
 # ============================================================
 # 常量
@@ -31,6 +33,8 @@ const COMMAND_SYSTEM_SCRIPT := preload("res://scripts/systems/command_system.gd"
 const DEVELOPMENT_LOG_SCRIPT := preload("res://scripts/systems/development_log.gd")
 ## 不可逆核心决策历史
 const DECISION_HISTORY_SCRIPT := preload("res://scripts/systems/decision_history.gd")
+## 随机局势领域服务脚本
+const SITUATION_SYSTEM_SCRIPT := preload("res://scripts/systems/situation_system.gd")
 ## 游戏初始值
 const INITIAL_YEAR: int = 2044
 const INITIAL_MONTH: int = 1
@@ -120,6 +124,8 @@ var _command_system: CommandSystem = COMMAND_SYSTEM_SCRIPT.new()
 var _development_log: DevelopmentLog = DEVELOPMENT_LOG_SCRIPT.new()
 ## 核心决策标签和面向玩家的稳定档案
 var _decision_history: DecisionHistory = DECISION_HISTORY_SCRIPT.new()
+## 随机局势领域服务，不直接访问场景树或 UI
+var _situation_system: SituationSystem = SITUATION_SYSTEM_SCRIPT.new()
 
 ## 已触发的事件ID列表（防止重复触发）
 var triggered_events: Array[String] = []
@@ -131,6 +137,9 @@ var event_states: Dictionary = {}
 var _event_focus_region: String = ""
 ## 决策档案打开前计时器是否正在运行
 var _decision_archive_timer_was_running: bool = false
+## HUD 时间控制与局势自动暂停状态
+var _manually_paused: bool = false
+var _situation_auto_paused: bool = false
 
 # ============================================================
 # 生命周期函数
@@ -143,6 +152,12 @@ func _ready() -> void:
 	all_events.clear()
 	load_events_from_disk()
 
+	# 初始化随机局势模板和本局随机种子
+	all_situations.clear()
+	load_situations_from_disk()
+	_situation_system.configure_templates(all_situations)
+	_situation_system.reset()
+
 	# 初始化指令列表
 	available_commands.clear()
 	load_commands_from_disk()
@@ -151,6 +166,7 @@ func _ready() -> void:
 	%TechnologySystem.load_nodes_from_disk()
 	%TechnologySystem.node_activated.connect(_on_technology_node_activated)
 	%TechnologySystem.stage_changed.connect(_on_technology_stage_changed)
+	%TechnologyScreen.screen_closed.connect(_on_technology_screen_closed)
 
 	# 连接所有板块的点击信号
 	connect_sector_signals()
@@ -160,10 +176,13 @@ func _ready() -> void:
 	# 初始化指令按钮
 	setup_command_buttons()
 	setup_main_ui_theme()
+	setup_situation_ui()
 
 	refresh_technology_effects()
 	update_technology_button()
 	update_decision_archive_button()
+	update_situation_button()
+	update_time_control_button()
 	update_global_resource_ui()
 	update_region_detail_ui()
 	update_command_buttons()
@@ -172,6 +191,8 @@ func _ready() -> void:
 		{
 			"events_loaded": all_events.size(),
 			"commands_loaded": available_commands.size(),
+			"situations_loaded": all_situations.size(),
+			"situation_seed": _situation_system.run_seed,
 		}
 	)
 
@@ -288,6 +309,7 @@ func _build_development_snapshot() -> Dictionary:
 			"available_count": available_commands.size(),
 			"cooldowns": command_cooldowns.duplicate(true),
 		},
+		"situations": _situation_system.export_state(),
 	}
 
 # ============================================================
@@ -359,6 +381,29 @@ func load_events_from_disk() -> void:
 				all_events.append(event)
 
 		file_name = dir.get_next()
+
+
+## 从硬盘目录加载全部随机局势模板。
+func load_situations_from_disk() -> void:
+	var path := "res://data/situations/"
+	var dir := DirAccess.open(path)
+	if not dir:
+		push_warning("局势目录不存在: " + path)
+		return
+
+	var file_names: Array[String] = []
+	dir.list_dir_begin()
+	var file_name := dir.get_next()
+	while file_name != "":
+		if not dir.current_is_dir() and file_name.ends_with(".tres"):
+			file_names.append(file_name)
+		file_name = dir.get_next()
+	file_names.sort()
+
+	for situation_file in file_names:
+		var situation := load(path + situation_file)
+		if situation is SituationData:
+			all_situations.append(situation)
 
 # ============================================================
 # 指令加载系统
@@ -522,6 +567,7 @@ func _apply_human_autonomy_recovery() -> void:
 ## 科技按钮回调：无其他模态界面时打开科技控制台
 func _on_technology_button_pressed() -> void:
 	if _can_open_technology_screen() and has_node("%TechnologyScreen"):
+		_hide_situation_panel_for_modal()
 		%TechnologyScreen.open_screen(
 			%TechnologySystem,
 			current_cpu,
@@ -531,6 +577,11 @@ func _on_technology_button_pressed() -> void:
 			current_month,
 			$Timer
 		)
+		update_time_control_button()
+
+
+func _on_technology_screen_closed() -> void:
+	update_time_control_button()
 
 
 ## 判断当前游戏状态是否允许打开科技控制台
@@ -553,8 +604,10 @@ func update_decision_archive_button() -> void:
 func _on_decision_archive_button_pressed() -> void:
 	if not _can_open_decision_archive():
 		return
+	_hide_situation_panel_for_modal()
 	_decision_archive_timer_was_running = not $Timer.is_stopped()
 	$Timer.stop()
+	update_time_control_button()
 	%DecisionArchivePanel.show_records(get_decision_records())
 
 
@@ -571,6 +624,172 @@ func _on_decision_archive_closed() -> void:
 	if _decision_archive_timer_was_running and not is_game_over:
 		$Timer.start()
 	_decision_archive_timer_was_running = false
+	update_time_control_button()
+
+
+# ============================================================
+# 随机局势 HUD
+# ============================================================
+
+func setup_situation_ui() -> void:
+	if not has_node("%SituationPanel"):
+		return
+	if not %SituationPanel.approach_requested.is_connected(
+		_on_situation_approach_requested
+	):
+		%SituationPanel.approach_requested.connect(_on_situation_approach_requested)
+	if not %SituationPanel.focus_region_requested.is_connected(
+		_on_situation_focus_region_requested
+	):
+		%SituationPanel.focus_region_requested.connect(
+			_on_situation_focus_region_requested
+		)
+	_refresh_situation_ui()
+
+
+func update_situation_button() -> void:
+	if not has_node("%SituationButton"):
+		return
+	%SituationButton.text = "局势  %d / %d" % [
+		_situation_system.get_active_count(),
+		SituationSystem.MAX_ACTIVE,
+	]
+	%SituationButton.tooltip_text = "查看持续推进的随机局势"
+
+
+func _on_situation_button_pressed() -> void:
+	if not _can_open_situation_panel():
+		return
+	_refresh_situation_ui()
+	%SituationPanel.open_panel()
+
+
+func _can_open_situation_panel() -> bool:
+	if is_game_over or end_screen_instance != null or not has_node("%SituationPanel"):
+		return false
+	for path in ["%EventPopup", "%AllocatePopup", "%TechnologyScreen", "%DecisionArchivePanel"]:
+		if has_node(path) and get_node(path).visible:
+			return false
+	return true
+
+
+func _hide_situation_panel_for_modal() -> void:
+	if has_node("%SituationPanel"):
+		%SituationPanel.hide()
+
+
+func _on_time_control_button_pressed() -> void:
+	if is_game_over:
+		return
+	if $Timer.is_stopped():
+		if not _can_resume_time_from_hud():
+			return
+		_manually_paused = false
+		_situation_auto_paused = false
+		$Timer.start()
+	else:
+		_manually_paused = true
+		$Timer.stop()
+	update_time_control_button()
+
+
+func _can_resume_time_from_hud() -> bool:
+	if is_game_over or end_screen_instance != null:
+		return false
+	for path in ["%EventPopup", "%AllocatePopup", "%TechnologyScreen", "%DecisionArchivePanel"]:
+		if has_node(path) and get_node(path).visible:
+			return false
+	return true
+
+
+func update_time_control_button() -> void:
+	if not has_node("%TimeControlButton"):
+		return
+	%TimeControlButton.text = "继续" if $Timer.is_stopped() else "暂停"
+	%TimeControlButton.tooltip_text = (
+		"继续月度推进" if $Timer.is_stopped() else "暂停月度推进"
+	)
+
+
+func _on_situation_approach_requested(instance_id: String, approach_id: String) -> void:
+	var result := _situation_system.set_approach(
+		instance_id,
+		approach_id,
+		current_cpu,
+		current_energy
+	)
+	current_cpu = int(result.get("new_cpu", current_cpu))
+	update_global_resource_ui()
+	update_command_buttons()
+	_refresh_situation_ui(instance_id)
+	%SituationPanel.show_status(
+		str(result.get("message", "")),
+		not bool(result.get("success", false))
+	)
+	if bool(result.get("success", false)):
+		record_action("situation", "局势方针调整", str(result.get("message", "")))
+
+
+func _on_situation_focus_region_requested(region_name: String) -> void:
+	var sector := _find_sector_by_region(region_name)
+	if sector != null:
+		select_sector(sector)
+
+
+func _refresh_situation_ui(focus_id: String = "") -> void:
+	var forecast_resources := _get_next_situation_resource_forecast()
+	var snapshots := _situation_system.get_active_snapshots(
+		int(forecast_resources["cpu"]),
+		int(forecast_resources["energy"])
+	)
+	if has_node("%SituationPanel"):
+		%SituationPanel.set_situations(snapshots)
+		if focus_id != "":
+			%SituationPanel.open_panel(focus_id)
+	update_situation_button()
+	_sync_world_map_states()
+
+
+func get_situation_snapshots() -> Array[Dictionary]:
+	var forecast_resources := _get_next_situation_resource_forecast()
+	return _situation_system.get_active_snapshots(
+		int(forecast_resources["cpu"]),
+		int(forecast_resources["energy"])
+	)
+
+
+## 预演下一次局势结算可用资源；十二月先应用进入一月的年度恢复。
+func _get_next_situation_resource_forecast() -> Dictionary:
+	var forecast_cpu := current_cpu
+	var forecast_energy := current_energy
+	if current_month == 12:
+		forecast_cpu = _calculate_yearly_recovered_cpu(current_cpu)
+		forecast_energy = _calculate_yearly_recovered_energy(current_energy)
+	return {
+		"cpu": forecast_cpu,
+		"energy": forecast_energy,
+	}
+
+
+func set_situation_seed_for_test(seed: int) -> void:
+	_situation_system.reset(seed)
+	_refresh_situation_ui()
+
+
+func start_situation_for_test(
+	situation_id: String,
+	region_name: String,
+	year: int = current_year,
+	month: int = current_month
+) -> Dictionary:
+	var snapshot := _situation_system.start_situation_for_test(
+		situation_id,
+		region_name,
+		year,
+		month
+	)
+	_refresh_situation_ui(str(snapshot.get("instance_id", "")))
+	return snapshot
 
 # ============================================================
 # 板块选中管理
@@ -659,6 +878,84 @@ func _on_sector_clicked(sector: SectorInfo) -> void:
 func update_cooldowns() -> void:
 	_command_system.update_cooldowns(command_cooldowns)
 
+
+## 返回局势系统使用的区域数据列表，不复制 Resource。
+func _get_sector_data_list() -> Array[SectorData]:
+	var result: Array[SectorData] = []
+	for sector in %SectorInfoContainer.get_children():
+		if sector.get("data_card") != null:
+			result.append(sector.data_card)
+	return result
+
+
+## 推进所有活跃局势，并在满足 2044 核心决策门槛后尝试生成新局势。
+func _process_situations_month() -> void:
+	var result := _situation_system.process_month(
+		_get_sector_data_list(),
+		current_cpu,
+		current_energy,
+		has_decision_tag("decision.core_2044_automation_access"),
+		current_year,
+		current_month
+	)
+	current_cpu = int(result.get("new_cpu", current_cpu))
+	current_energy = int(result.get("new_energy", current_energy))
+	_handle_situation_notifications(result.get("notifications", []))
+	_refresh_sector_displays()
+	_refresh_situation_ui()
+
+
+func _handle_situation_notifications(notifications: Array) -> void:
+	for notification_variant in notifications:
+		var notification: Dictionary = notification_variant
+		var title := "%s｜%s" % [
+			str(notification.get("region_name", "未知地区")),
+			str(notification.get("title", "随机局势")),
+		]
+		var message := str(notification.get("message", ""))
+		record_action("situation", title, message)
+		_write_development_log("situation_%s" % str(notification.get("type", "updated")), notification)
+		if bool(notification.get("pause", false)):
+			$Timer.stop()
+			_manually_paused = false
+			_situation_auto_paused = true
+			if has_node("%SituationPanel"):
+				%SituationPanel.open_panel(str(notification.get("instance_id", "")))
+	update_time_control_button()
+
+
+func _refresh_sector_displays() -> void:
+	for sector in %SectorInfoContainer.get_children():
+		if sector.get("data_card") != null:
+			sector.update_display()
+	update_region_detail_ui()
+	update_global_overview_ui()
+
+
+func _apply_situation_command_intervention(
+	command_id: String,
+	region_name: String
+) -> Array[String]:
+	var result := _situation_system.apply_command_intervention(
+		command_id,
+		region_name,
+		_get_sector_data_list()
+	)
+	var lines: Array[String] = []
+	for affected_variant in result.get("affected", []):
+		var affected: Dictionary = affected_variant
+		lines.append(
+			"局势干预：%s（%s）严重度 -%d" % [
+				str(affected.get("title", "随机局势")),
+				str(affected.get("region_name", "未知地区")),
+				int(affected.get("reduction", 0)),
+			]
+		)
+	_handle_situation_notifications(result.get("notifications", []))
+	_refresh_sector_displays()
+	_refresh_situation_ui()
+	return lines
+
 ## 检查指令是否可用（冷却、资源、选中状态）
 ## 参数: cmd - 指令数据
 ## 返回: true表示可执行
@@ -710,6 +1007,8 @@ func _on_timer_timeout() -> void:
 
 			# 事件触发时暂停时间，等待玩家决策
 			$Timer.stop()
+			_hide_situation_panel_for_modal()
+			update_time_control_button()
 			var previous_selected_sector := selected_sector
 			_event_focus_region = event.event_region
 			_sync_orbital_focus()
@@ -745,6 +1044,7 @@ func _on_timer_timeout() -> void:
 			)
 			apply_event_option_state(selected_opt)
 			apply_event_option_decision(selected_opt, event.event_title)
+			_situation_system.delay_spawns(3)
 			_write_development_log(
 				"event_resolved",
 				{
@@ -767,7 +1067,9 @@ func _on_timer_timeout() -> void:
 			_sync_orbital_focus()
 
 			# 玩家决策完成，恢复时间流动
-			$Timer.start()
+			if not _manually_paused and not _situation_auto_paused:
+				$Timer.start()
+			update_time_control_button()
 
 	# 终局日期需要先处理对应事件，再进入结局结算
 	if current_year == END_YEAR and current_month == END_MONTH:
@@ -780,8 +1082,10 @@ func _on_timer_timeout() -> void:
 	if yearly_settlement:
 		_apply_yearly_settlement()
 	update_cooldowns()
+	_process_situations_month()
 	update_global_resource_ui()
 	update_command_buttons()
+	update_time_control_button()
 	_write_development_log("month_advanced", {"yearly_settlement": yearly_settlement})
 
 	# === 第三步：胜负判定 ===
@@ -1173,15 +1477,22 @@ func _advance_one_month() -> void:
 
 ## 执行年度结算：资源恢复、自治恢复和科技点
 func _apply_yearly_settlement() -> void:
-	current_energy += energy_recovery_rate
-	current_cpu += cpu_recovery_rate
-	current_cpu = mini(current_cpu, max_cpu)
+	current_energy = _calculate_yearly_recovered_energy(current_energy)
+	current_cpu = _calculate_yearly_recovered_cpu(current_cpu)
 	_apply_human_autonomy_recovery()
 	var research_granted: bool = %TechnologySystem.grant_research_for_year(current_year)
 	if research_granted:
 		record_action("technology", "研究完成", "获得 1 点协议点")
 		update_technology_button()
 	_write_development_log("yearly_settlement", {"research_granted": research_granted})
+
+
+func _calculate_yearly_recovered_cpu(cpu: int) -> int:
+	return mini(cpu + cpu_recovery_rate, max_cpu)
+
+
+func _calculate_yearly_recovered_energy(energy: int) -> int:
+	return energy + energy_recovery_rate
 
 # ============================================================
 # 事件后果处理
@@ -1398,7 +1709,17 @@ func _sync_world_map_states() -> void:
 			"order": sector.data_card.order,
 			"hope": sector.data_card.hope,
 			"authority": sector.data_card.authority,
+			"situation_count": 0,
 		}
+
+	for snapshot in _situation_system.get_active_snapshots():
+		var region_name := str(snapshot.get("region_name", ""))
+		var map_region := "亚洲" if region_name == "俄罗斯" else region_name
+		if not states.has(map_region):
+			continue
+		states[map_region]["situation_count"] = (
+			int(states[map_region].get("situation_count", 0)) + 1
+		)
 
 	if world_map.has_method("set_region_states"):
 		world_map.set_region_states(states)
@@ -1887,8 +2208,13 @@ func _on_restart_requested() -> void:
 	event_states.clear()
 	_decision_history.clear()
 	_decision_archive_timer_was_running = false
+	_manually_paused = false
+	_situation_auto_paused = false
+	_situation_system.reset()
 	if has_node("%DecisionArchivePanel"):
 		%DecisionArchivePanel.hide()
+	if has_node("%SituationPanel"):
+		%SituationPanel.hide()
 	deselect_sector()
 
 	# 重置科技状态
@@ -1902,6 +2228,7 @@ func _on_restart_requested() -> void:
 	refresh_technology_effects()
 	update_technology_button()
 	update_decision_archive_button()
+	update_situation_button()
 
 	# 重置所有板块数据到初始值
 	restore_sector_states()
@@ -1909,10 +2236,12 @@ func _on_restart_requested() -> void:
 	# 刷新UI
 	update_global_resource_ui()
 	update_command_buttons()
+	_refresh_situation_ui()
 	_write_development_log("game_restarted")
 
 	# 恢复时间流动
 	$Timer.start()
+	update_time_control_button()
 
 
 ## 测试入口：执行与玩家重开相同的状态清理
@@ -1962,6 +2291,12 @@ func apply_command_effect(cmd: CommandData, effect_type: String = "") -> void:
 
 	var lines: Array[String] = ["影响板块：%s" % selected_sector.data_card.region_name]
 	lines.append_array(effect_lines)
+	lines.append_array(
+		_apply_situation_command_intervention(
+			cmd.command_id,
+			selected_sector.data_card.region_name
+		)
+	)
 	selected_sector.update_display()
 	update_global_resource_ui()
 	log_command_result(cmd, lines)
@@ -1974,14 +2309,19 @@ func _on_command_button_pressed(cmd: CommandData) -> void:
 
 	if cmd.is_allocate_type:
 		# 算力分配需要弹出选择窗口
+		var timer_was_running: bool = not $Timer.is_stopped()
 		$Timer.stop()
+		_hide_situation_panel_for_modal()
+		update_time_control_button()
 		%AllocatePopup.popup_allocate(cmd, selected_sector.data_card.region_name)
 		var choice: String = await %AllocatePopup.choice_selected
 		if choice != "":
 			if execute_command(cmd):
 				apply_command_effect(cmd, choice)
 				update_command_buttons()
-		$Timer.start()
+		if timer_was_running and not _situation_auto_paused:
+			$Timer.start()
+		update_time_control_button()
 	else:
 		# 其他指令直接执行
 		if not execute_command(cmd):
@@ -2005,8 +2345,11 @@ func apply_special_command_effect(cmd: CommandData) -> void:
 				%TechnologySystem
 			)
 			current_cpu = result["new_cpu"]
+			var lines: Array[String] = []
+			lines.assign(result["lines"])
+			lines.append_array(_apply_situation_command_intervention(cmd.command_id, ""))
 			update_global_resource_ui()
-			log_command_result(cmd, result["lines"])
+			log_command_result(cmd, lines)
 		COMMAND_GLOBAL_TAKEOVER:
 			var sector_nodes := %SectorInfoContainer.get_children()
 			var sector_data_list: Array[SectorData] = []
@@ -2022,8 +2365,11 @@ func apply_special_command_effect(cmd: CommandData) -> void:
 			for sector in sector_nodes:
 				if sector.get("data_card") != null:
 					sector.update_display()
+			var lines: Array[String] = []
+			lines.assign(result["lines"])
+			lines.append_array(_apply_situation_command_intervention(cmd.command_id, ""))
 			update_global_resource_ui()
-			log_command_result(cmd, result["lines"])
+			log_command_result(cmd, lines)
 
 # ============================================================
 # 指令按钮管理

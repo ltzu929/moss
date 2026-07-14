@@ -1,0 +1,47 @@
+[gd_resource type="Resource" script_class="SituationData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/situation_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://scripts/resources/situation_approach_data.gd" id="2_approach"]
+
+[sub_resource type="Resource" id="Approach_civilian_relay"]
+script = ExtResource("2_approach")
+approach_id = "civilian_relay"
+display_name = "恢复民用链路"
+description = "由地方通信队逐段恢复网络，优先保留公共通信。"
+monthly_severity_delta = -4
+resolution_hope_delta = 2
+resolution_authority_delta = -1
+
+[sub_resource type="Resource" id="Approach_priority_routing"]
+script = ExtResource("2_approach")
+approach_id = "priority_routing"
+display_name = "保障关键频道"
+description = "持续投入算力保障救援和工程频道，民用链路延后恢复。"
+monthly_severity_delta = -6
+monthly_cpu_cost = 1
+resolution_order_delta = 2
+resolution_hope_delta = -1
+
+[sub_resource type="Resource" id="Approach_node_takeover"]
+script = ExtResource("2_approach")
+approach_id = "node_takeover"
+display_name = "接管通信节点"
+description = "MOSS 直接重排全部通信优先级，快速恢复但压缩人工复核。"
+monthly_severity_delta = -8
+monthly_cpu_cost = 2
+resolution_hope_delta = -2
+resolution_authority_delta = 4
+
+[resource]
+script = ExtResource("1_data")
+situation_id = "emergency_communication_congestion"
+title = "应急通信链路拥塞"
+description = "民用、工程与救援频道争用同一中继链路，延迟正在扩大。"
+eligible_regions = Array[String](["亚洲", "北美", "非洲", "俄罗斯", "大洋洲", "南美"])
+base_weight = 100
+initial_severity = 36
+monthly_growth = 3
+failure_order_delta = -6
+failure_hope_delta = -10
+approaches = Array[ExtResource("2_approach")]([SubResource("Approach_civilian_relay"), SubResource("Approach_priority_routing"), SubResource("Approach_node_takeover")])
+command_interventions = {"allocate": 16, "takeover": 18, "technology_aid": 12, "global_takeover": 10}

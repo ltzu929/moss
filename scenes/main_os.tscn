@@ -19,6 +19,7 @@
 [ext_resource type="Script" uid="uid://ce33podwj0fgt" path="res://scripts/systems/technology_system.gd" id="16_technology"]
 [ext_resource type="PackedScene" uid="uid://bn2cwv0ewn4kv" path="res://scenes/technology_screen.tscn" id="17_technology_screen"]
 [ext_resource type="PackedScene" uid="uid://kianyj80h6sh" path="res://scenes/decision_archive_panel.tscn" id="19_a6tgg"]
+[ext_resource type="PackedScene" path="res://scenes/situation_panel.tscn" id="20_situation_panel"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hud"]
 content_margin_left = 8.0
@@ -109,6 +110,20 @@ text = "决策档案  0"
 unique_name_in_owner = true
 layout_mode = 2
 text = "科技协议 1"
+
+[node name="SituationButton" type="Button" parent="MainLayout/TopBarContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(112, 64)
+layout_mode = 2
+tooltip_text = "查看持续推进的随机局势"
+text = "局势  0 / 2"
+
+[node name="TimeControlButton" type="Button" parent="MainLayout/TopBarContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(80, 64)
+layout_mode = 2
+tooltip_text = "暂停月度推进"
+text = "暂停"
 
 [node name="YearProgress" parent="MainLayout" unique_id=2033000003 instance=ExtResource("12_yearprogress")]
 unique_name_in_owner = true
@@ -459,7 +474,12 @@ layout_mode = 1
 grow_horizontal = 2
 grow_vertical = 2
 
+[node name="SituationPanel" parent="." instance=ExtResource("20_situation_panel")]
+unique_name_in_owner = true
+
 [connection signal="pressed" from="MainLayout/TopBarContainer/DecisionArchiveButton" to="." method="_on_decision_archive_button_pressed"]
 [connection signal="pressed" from="MainLayout/TopBarContainer/TechnologyButton" to="." method="_on_technology_button_pressed"]
+[connection signal="pressed" from="MainLayout/TopBarContainer/SituationButton" to="." method="_on_situation_button_pressed"]
+[connection signal="pressed" from="MainLayout/TopBarContainer/TimeControlButton" to="." method="_on_time_control_button_pressed"]
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
 [connection signal="close_requested" from="DecisionArchivePanel" to="." method="_on_decision_archive_closed"]
