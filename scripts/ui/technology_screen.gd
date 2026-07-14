@@ -43,7 +43,6 @@ var _technology: TechnologySystem
 var _timer: Timer
 var _timer_was_stopped: bool = true
 var _selected_node_id: String = ""
-var _confirming_node_id: String = ""
 var _node_cards: Dictionary = {}
 var _route_buttons: Dictionary = {}
 var _route_pages: Dictionary = {}
@@ -256,7 +255,7 @@ func _refresh_details() -> void:
 		_activate_button.disabled = true
 	elif state == "available":
 		_activate_button.disabled = false
-		_activate_button.text = "确认不可逆激活" if _confirming_node_id == _selected_node_id else "激活协议"
+		_activate_button.text = "激活协议"
 	else:
 		_activate_button.text = STATE_NAMES.get(state, "不可激活")
 		_activate_button.disabled = true
@@ -264,7 +263,6 @@ func _refresh_details() -> void:
 
 func _clear_selection() -> void:
 	_selected_node_id = ""
-	_confirming_node_id = ""
 	_reset_details()
 	if _technology != null:
 		_refresh_nodes()
@@ -281,7 +279,6 @@ func _switch_route(route: TechNodeData.Route, clear_selection: bool = true) -> v
 
 func _on_node_selected(node_id: String) -> void:
 	_selected_node_id = node_id
-	_confirming_node_id = ""
 	_refresh_nodes()
 	_refresh_details()
 
@@ -289,12 +286,7 @@ func _on_node_selected(node_id: String) -> void:
 func _on_activate_pressed() -> void:
 	if _selected_node_id == "" or _technology == null:
 		return
-	if _confirming_node_id != _selected_node_id:
-		_confirming_node_id = _selected_node_id
-		_refresh_details()
-		return
 	if _technology.activate(_selected_node_id):
-		_confirming_node_id = ""
 		_refresh_status()
 
 
