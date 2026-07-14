@@ -2515,6 +2515,7 @@ func _process_typewriter_queue() -> void:
 	log_label.add_theme_color_override("font_color", text_color)
 
 	# 自动换行
+	log_label.custom_maximum_size = Vector2(maxf(log_container.size.x, 1.0), -1.0)
 	log_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
 	log_container.add_child(log_label)

@@ -58,6 +58,7 @@ func _ready() -> void:
 	_assert_function_return_types()
 	_assert_no_chained_get_parent()
 	_assert_process_has_no_blocking_work()
+	_assert_autowrap_labels_have_maximum_width()
 
 	print("[MOSS-CONVENTIONS] 完成，失败断言：%d" % _failed)
 	await get_tree().create_timer(0.2).timeout
@@ -130,6 +131,21 @@ func _assert_process_has_no_blocking_work() -> void:
 						"%s() 不应执行加载或磁盘访问：%s" % [block["name"], path]
 					)
 
+
+## 自动换行 Label 必须声明最大宽度，避免容器最小尺寸计算失去边界
+func _assert_autowrap_labels_have_maximum_width() -> void:
+	for path in _collect_files("res://scenes", "tscn"):
+		var node_blocks := _read_text(path).split("\n[node ")
+		for block_index in range(1, node_blocks.size()):
+			var block := String(node_blocks[block_index])
+			var header := block.get_slice("\n", 0)
+			if not 'type="Label"' in header or not _node_uses_autowrap(block):
+				continue
+			_assert_true(
+				_get_vector2_x(block, "custom_maximum_size") > 0.0,
+				"自动换行 Label 必须配置最大宽度：%s [%s" % [path, header]
+			)
+
 # ============================================================
 # 文件辅助方法
 # ============================================================
@@ -179,6 +195,28 @@ func _source_has_pattern(path: String, pattern: String) -> bool:
 		if pattern in source_line:
 			return true
 	return false
+
+
+## 判断场景节点块是否启用了自动换行
+func _node_uses_autowrap(block: String) -> bool:
+	for line in block.split("\n"):
+		var stripped := String(line).strip_edges()
+		if stripped.begins_with("autowrap_mode = "):
+			return stripped.get_slice("=", 1).strip_edges().to_int() != 0
+	return false
+
+
+## 读取场景节点块中 Vector2 属性的横向值
+func _get_vector2_x(block: String, property_name: String) -> float:
+	var prefix := property_name + " = Vector2("
+	for line in block.split("\n"):
+		var stripped := String(line).strip_edges()
+		if not stripped.begins_with(prefix):
+			continue
+		var values := stripped.trim_prefix(prefix).trim_suffix(")").split(",")
+		if not values.is_empty():
+			return String(values[0]).strip_edges().to_float()
+	return -1.0
 
 
 ## 收集可能跨多行的函数声明

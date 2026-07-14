@@ -144,6 +144,10 @@ Godot 会复用已加载路径对应的 Resource。直接修改共享 Resource �
 
 - 场景结构优先通过 Godot 编辑器或 Godot MCP 修改。
 - 手动编辑 `.tscn` 时必须保持资源引用、节点路径和唯一节点名称有效。
+- 启用 `autowrap_mode` 的 `Label` 必须在自身配置正数横向
+  `custom_maximum_size`；运行时代码创建的自动换行 `Label` 也必须在加入容器前，
+  按容器可用宽度设置最大宽度。不得只依赖容器最终分配的 `size.x`，因为 Label
+  在最小尺寸计算阶段仍然缺少换行边界。
 - 修改场景、节点路径、信号连接或导出资源后，至少运行相关场景加载或测试。
 - 删除场景或脚本时同步清理 `.uid`、文档和测试引用。
 - 低误伤的工程约定由 `tests/project_conventions_test.tscn` 自动检查。
