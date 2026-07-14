@@ -1,5 +1,7 @@
 # Godot 4+ specific ignores
 .godot/
+# External Godot AI MCP plugin; provision locally and do not vendor updates
+/addons/godot_ai/
 /android/
 *.tmp
 
