@@ -712,7 +712,12 @@ func update_time_control_button() -> void:
 
 
 func _on_situation_approach_requested(instance_id: String, approach_id: String) -> void:
-	var result := _situation_system.set_approach(instance_id, approach_id, current_cpu)
+	var result := _situation_system.set_approach(
+		instance_id,
+		approach_id,
+		current_cpu,
+		current_energy
+	)
 	current_cpu = int(result.get("new_cpu", current_cpu))
 	update_global_resource_ui()
 	update_command_buttons()
@@ -732,7 +737,7 @@ func _on_situation_focus_region_requested(region_name: String) -> void:
 
 
 func _refresh_situation_ui(focus_id: String = "") -> void:
-	var snapshots := _situation_system.get_active_snapshots()
+	var snapshots := _situation_system.get_active_snapshots(current_cpu, current_energy)
 	if has_node("%SituationPanel"):
 		%SituationPanel.set_situations(snapshots)
 		if focus_id != "":
@@ -742,7 +747,7 @@ func _refresh_situation_ui(focus_id: String = "") -> void:
 
 
 func get_situation_snapshots() -> Array[Dictionary]:
-	return _situation_system.get_active_snapshots()
+	return _situation_system.get_active_snapshots(current_cpu, current_energy)
 
 
 func set_situation_seed_for_test(seed: int) -> void:

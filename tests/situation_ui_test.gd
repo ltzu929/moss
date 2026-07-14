@@ -45,11 +45,35 @@ func _assert_situation_details_and_approach() -> void:
 	_assert_eq((_panel.get_node("%SituationProgress") as ProgressBar).value, 38.0, "严重度进度条应显示当前风险")
 	var approach_list := _panel.get_node("%ApproachList")
 	_assert_eq(approach_list.get_child_count(), 3, "详情页应显示三种专属方针")
-	var first_button := approach_list.get_child(0) as Button
-	first_button.pressed.emit()
+	_main_os.current_cpu = 0
+	_main_os.current_energy = 0
+	var paid_button := approach_list.get_child(2) as Button
+	paid_button.pressed.emit()
 	await get_tree().process_frame
 	var active: Array[Dictionary] = _main_os.get_situation_snapshots()
-	_assert_eq(str(active[0].get("approach_id", "")), "local_repair", "方针选择应回写局势运行时")
+	_assert_eq(
+		str(active[0].get("approach_id", "")),
+		"grid_takeover",
+		"付费方针选择应回写局势运行时"
+	)
+	_assert_eq(
+		int(active[0].get("expected_monthly_delta", -1)),
+		6,
+		"付费方针断供后预计趋势应转为恶化"
+	)
+	_assert_true(not bool(active[0].get("is_funded", true)), "局势快照应暴露持续成本不足")
+	_assert_true(
+		"+6" in (_panel.get_node("%TrendLabel") as Label).text,
+		"局势面板应显示断供后的真实恶化值"
+	)
+	_assert_true(
+		"持续成本不足" in (_panel.get_node("%TrendLabel") as Label).text,
+		"局势面板应说明方针因断供不会生效"
+	)
+	_assert_true(
+		"供给：不足" in (_panel.get_node("%CurrentApproachLabel") as Label).text,
+		"局势面板应明确显示当前供给状态"
+	)
 
 
 func _assert_responsive_bounds() -> void:

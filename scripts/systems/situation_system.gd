@@ -69,33 +69,43 @@ func process_month(
 		"new_cpu": resources["cpu"],
 		"new_energy": resources["energy"],
 		"notifications": notifications,
-		"situations": get_active_snapshots(),
+		"situations": get_active_snapshots(
+			int(resources["cpu"]),
+			int(resources["energy"])
+		),
 	}
 
 
-func set_approach(instance_id: String, approach_id: String, current_cpu: int) -> Dictionary:
+func set_approach(
+	instance_id: String,
+	approach_id: String,
+	current_cpu: int,
+	current_energy: int = -1
+) -> Dictionary:
 	var state := _find_state(instance_id)
 	if state.is_empty():
-		return _approach_result(false, current_cpu, "局势已结束")
+		return _approach_result(false, current_cpu, current_energy, "局势已结束")
 
 	var data: SituationData = state["data"]
 	var approach := data.get_approach(approach_id)
 	if approach == null:
-		return _approach_result(false, current_cpu, "应对方针不存在")
+		return _approach_result(false, current_cpu, current_energy, "应对方针不存在")
 	if state["approach_id"] == approach_id:
-		return _approach_result(true, current_cpu, "当前方针未改变")
+		return _approach_result(true, current_cpu, current_energy, "当前方针未改变")
 
 	var switching := str(state["approach_id"]) != ""
 	if switching and int(state["switch_lock_months"]) > 0:
 		return _approach_result(
 			false,
 			current_cpu,
+			current_energy,
 			"重配置锁定剩余 %d 个月" % int(state["switch_lock_months"])
 		)
 	if switching and current_cpu < APPROACH_SWITCH_CPU_COST:
 		return _approach_result(
 			false,
 			current_cpu,
+			current_energy,
 			"算力不足（切换需要 %d）" % APPROACH_SWITCH_CPU_COST
 		)
 
@@ -105,7 +115,12 @@ func set_approach(instance_id: String, approach_id: String, current_cpu: int) ->
 		state["switch_lock_months"] = APPROACH_SWITCH_LOCK_MONTHS
 	state["approach_id"] = approach_id
 	state["last_unfunded"] = false
-	return _approach_result(true, new_cpu, "已切换为：%s" % approach.display_name)
+	return _approach_result(
+		true,
+		new_cpu,
+		current_energy,
+		"已切换为：%s" % approach.display_name
+	)
 
 
 func apply_command_intervention(
@@ -158,10 +173,21 @@ func start_situation_for_test(
 	return _snapshot(state)
 
 
-func get_active_snapshots() -> Array[Dictionary]:
+func get_active_snapshots(
+	current_cpu: int = -1,
+	current_energy: int = -1
+) -> Array[Dictionary]:
 	var snapshots: Array[Dictionary] = []
+	var funding_forecasts: Dictionary = {}
+	if current_cpu >= 0 and current_energy >= 0:
+		funding_forecasts = _build_funding_forecasts(current_cpu, current_energy)
 	for state in _active:
-		snapshots.append(_snapshot(state))
+		var instance_id := str(state["instance_id"])
+		var funding_known := funding_forecasts.has(instance_id)
+		var is_funded := bool(
+			funding_forecasts.get(instance_id, not bool(state["last_unfunded"]))
+		)
+		snapshots.append(_snapshot(state, funding_known, is_funded))
 	return snapshots
 
 
@@ -355,7 +381,11 @@ func _create_state(
 	}
 
 
-func _snapshot(state: Dictionary) -> Dictionary:
+func _snapshot(
+	state: Dictionary,
+	funding_known: bool = false,
+	is_funded: bool = true
+) -> Dictionary:
 	var data: SituationData = state["data"]
 	var approaches: Array[Dictionary] = []
 	for approach in data.approaches:
@@ -374,8 +404,17 @@ func _snapshot(state: Dictionary) -> Dictionary:
 	var active_approach := data.get_approach(str(state["approach_id"]))
 	var expected_delta := data.monthly_growth
 	var approach_name := "尚未选择"
+	var funding_required := false
+	var effective_funded := is_funded if funding_known else not bool(state["last_unfunded"])
 	if active_approach != null:
-		expected_delta += active_approach.monthly_severity_delta
+		funding_required = (
+			active_approach.monthly_cpu_cost > 0
+			or active_approach.monthly_energy_cost > 0
+		)
+		if effective_funded:
+			expected_delta += active_approach.monthly_severity_delta
+		else:
+			expected_delta += data.unfunded_growth_penalty
 		approach_name = active_approach.display_name
 	return {
 		"instance_id": state["instance_id"],
@@ -390,10 +429,36 @@ func _snapshot(state: Dictionary) -> Dictionary:
 		"approach_name": approach_name,
 		"switch_lock_months": state["switch_lock_months"],
 		"expected_monthly_delta": expected_delta,
+		"funding_required": funding_required,
+		"funding_known": funding_known,
+		"is_funded": effective_funded,
+		"last_unfunded": state["last_unfunded"],
 		"started_year": state["started_year"],
 		"started_month": state["started_month"],
 		"approaches": approaches,
 	}
+
+
+## 按真实月结算顺序预演持续成本，避免多个局势重复承诺同一份资源。
+func _build_funding_forecasts(current_cpu: int, current_energy: int) -> Dictionary:
+	var forecasts: Dictionary = {}
+	var remaining_cpu := current_cpu
+	var remaining_energy := current_energy
+	for index in range(_active.size() - 1, -1, -1):
+		var state: Dictionary = _active[index]
+		var data: SituationData = state["data"]
+		var approach := data.get_approach(str(state["approach_id"]))
+		var funded := true
+		if approach != null:
+			funded = (
+				remaining_cpu >= approach.monthly_cpu_cost
+				and remaining_energy >= approach.monthly_energy_cost
+			)
+			if funded:
+				remaining_cpu -= approach.monthly_cpu_cost
+				remaining_energy -= approach.monthly_energy_cost
+		forecasts[str(state["instance_id"])] = funded
+	return forecasts
 
 
 func _build_notification(
@@ -413,12 +478,17 @@ func _build_notification(
 	}
 
 
-func _approach_result(success: bool, new_cpu: int, message: String) -> Dictionary:
+func _approach_result(
+	success: bool,
+	new_cpu: int,
+	current_energy: int,
+	message: String
+) -> Dictionary:
 	return {
 		"success": success,
 		"new_cpu": new_cpu,
 		"message": message,
-		"situations": get_active_snapshots(),
+		"situations": get_active_snapshots(new_cpu, current_energy),
 	}
 
 

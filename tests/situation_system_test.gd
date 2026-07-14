@@ -39,6 +39,10 @@ func _assert_content_contract() -> void:
 		ids.append(data.situation_id)
 		_assert_eq(data.approaches.size(), 3, "%s 应提供三种局势专属方针" % data.title)
 		_assert_true(not data.command_interventions.is_empty(), "%s 应响应现有指令" % data.title)
+		_assert_true(
+			"联合政府" not in data.eligible_regions,
+			"%s 不应生成在地图外目标" % data.title
+		)
 	_assert_true("regional_power_instability" in ids, "应包含区域电网负荷失衡")
 	_assert_true("emergency_communication_congestion" in ids, "应包含应急通信拥塞")
 	_assert_true("underground_life_support_fault" in ids, "应包含地下城维生异常")
@@ -73,6 +77,18 @@ func _assert_concurrency_and_approach_switching() -> void:
 	var locked := system.set_approach(first_id, "rolling_ration", 15)
 	_assert_true(not bool(locked.get("success", true)), "重配置锁定期间不得再次切换")
 
+	var second_id := str(second.get("instance_id", ""))
+	system.set_approach(second_id, "priority_routing", 15, 1)
+	var forecasts := system.get_active_snapshots(1, 1)
+	_assert_true(
+		not bool(forecasts[0].get("is_funded", true)),
+		"共享资源不足时，后结算的局势不应继续显示供给充足"
+	)
+	_assert_true(
+		bool(forecasts[1].get("is_funded", false)),
+		"共享资源应按真实月结算顺序分配给先结算的局势"
+	)
+
 
 func _assert_unfunded_growth_and_stage_pause() -> void:
 	var system := _new_system(17)
@@ -86,6 +102,13 @@ func _assert_unfunded_growth_and_stage_pause() -> void:
 	var result := system.process_month(sectors, 0, 0, false, 2045, 4)
 	var snapshots: Array = result.get("situations", [])
 	_assert_eq(int(snapshots[0].get("severity", -1)), 40, "持续成本不足时严重度应额外恶化")
+	_assert_eq(
+		int(snapshots[0].get("expected_monthly_delta", -1)),
+		6,
+		"断供后的预计趋势应按真实规则显示恶化"
+	)
+	_assert_true(bool(snapshots[0].get("funding_known", false)), "月结算快照应包含供给状态")
+	_assert_true(not bool(snapshots[0].get("is_funded", true)), "断供快照应明确标记供给不足")
 	_assert_eq(int(result.get("new_cpu", -1)), 0, "资源不足不应产生负算力")
 	var types := _notification_types(result.get("notifications", []))
 	_assert_true("unfunded" in types, "首次断供应生成持续成本不足记录")

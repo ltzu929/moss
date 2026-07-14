@@ -137,11 +137,29 @@ func _render_selected() -> void:
 	%SituationProgress.value = int(snapshot.get("severity", 0))
 	var monthly_delta := int(snapshot.get("expected_monthly_delta", 0))
 	var trend_prefix := "+" if monthly_delta > 0 else ""
-	%TrendLabel.text = "预计月度变化：%s%d  （正数表示恶化）" % [trend_prefix, monthly_delta]
+	var funding_required := bool(snapshot.get("funding_required", false))
+	var funding_known := bool(snapshot.get("funding_known", false))
+	var is_funded := bool(snapshot.get("is_funded", true))
+	if funding_required and funding_known and not is_funded:
+		%TrendLabel.text = "预计月度变化：%s%d（持续成本不足，方针不会生效）" % [
+			trend_prefix,
+			monthly_delta,
+		]
+	else:
+		%TrendLabel.text = "预计月度变化：%s%d  （正数表示恶化）" % [
+			trend_prefix,
+			monthly_delta,
+		]
 	%DescriptionLabel.text = str(snapshot.get("description", ""))
-	%CurrentApproachLabel.text = "当前方针：%s" % str(
-		snapshot.get("approach_name", "尚未选择")
-	)
+	var funding_text := ""
+	if funding_required and funding_known:
+		funding_text = "｜供给：充足" if is_funded else "｜供给：不足"
+	elif funding_required and bool(snapshot.get("last_unfunded", false)):
+		funding_text = "｜供给：上月断供"
+	%CurrentApproachLabel.text = "当前方针：%s%s" % [
+		str(snapshot.get("approach_name", "尚未选择")),
+		funding_text,
+	]
 	var lock_months := int(snapshot.get("switch_lock_months", 0))
 	%SwitchLockLabel.text = (
 		"重配置锁定：%d 个月" % lock_months
