@@ -55,13 +55,14 @@ func _ready() -> void:
 	managed_card.pressed.emit()
 	_assert_eq(_screen.get_node("%DetailName").text, "辅助决策接口", "详情应同步节点名称")
 	_screen.get_node("%ActivateButton").pressed.emit()
-	_assert_eq(_screen.get_node("%ActivateButton").text, "确认不可逆激活", "首次点击应进入确认")
+	_assert_true(_technology.is_active("managed_decision"), "首次点击应直接激活节点")
+	_assert_eq(_screen.get_node("%ActivateButton").text, "协议已激活", "激活后按钮应立即更新")
 
 	_screen.get_node("%CoreRouteButton").pressed.emit()
 	_assert_route_page(TechNodeData.Route.MANAGED, false)
 	_assert_route_page(TechNodeData.Route.CORE, true)
 	_assert_eq(_screen.get_node("%DetailName").text, "未选择", "切换路线应清除节点选择")
-	_assert_true(_screen.get_node("%ActivateButton").disabled, "切换路线应清除激活确认")
+	_assert_true(_screen.get_node("%ActivateButton").disabled, "切换路线后未选择节点时按钮应禁用")
 
 	_screen.close_screen()
 	technology_button.pressed.emit()
@@ -73,17 +74,10 @@ func _ready() -> void:
 		"重复打开不得重建节点卡"
 	)
 
-	_screen.get_node("%ManagedRouteButton").pressed.emit()
-	managed_card.pressed.emit()
-	_screen.get_node("%ActivateButton").pressed.emit()
-	_screen.get_node("%ActivateButton").pressed.emit()
-	_assert_true(_technology.is_active("managed_decision"), "第二次点击应激活节点")
 	_technology.grant_research_for_year(2048)
-	_screen.get_node("%CoreRouteButton").pressed.emit()
 	core_card.pressed.emit()
 	_screen.get_node("%ActivateButton").pressed.emit()
-	_screen.get_node("%ActivateButton").pressed.emit()
-	_assert_true(_technology.is_active("core_energy_mapping"), "跨页激活应推动阶段升级")
+	_assert_true(_technology.is_active("core_energy_mapping"), "单次点击激活应推动阶段升级")
 	_assert_eq(
 		_technology.get_activation_state("managed_infrastructure"),
 		"points_locked",
