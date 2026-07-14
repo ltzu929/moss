@@ -38,6 +38,11 @@ const FLUSH_BATCH_LIMIT := 200
 const FIRST_FRAME_WAIT_SEC := 6.0
 
 const GameLogger := preload("res://addons/godot_ai/runtime/game_logger.gd")
+const ErrorCodes := preload("res://addons/godot_ai/utils/error_codes.gd")
+## Shared with the editor-side copy in editor_handler.gd (#716). Preload by
+## path, not class_name: this autoload runs in the game process and must not
+## depend on the editor's global-class cache being warm.
+const ScreenshotEncode := preload("res://addons/godot_ai/utils/screenshot_encode.gd")
 
 var _registered := false
 ## Captures game-process print, warning, and error output for the editor.
@@ -175,27 +180,15 @@ func _handle_take_screenshot(data: Array) -> void:
 		_reply_error(request_id, "Captured an empty image from game viewport")
 		return
 
-	var original_width := image.get_width()
-	var original_height := image.get_height()
-
-	if max_resolution > 0:
-		var longest := maxi(original_width, original_height)
-		if longest > max_resolution:
-			var scale := float(max_resolution) / float(longest)
-			var new_w := maxi(1, int(original_width * scale))
-			var new_h := maxi(1, int(original_height * scale))
-			image.resize(new_w, new_h, Image.INTERPOLATE_LANCZOS)
-
-	var png := image.save_png_to_buffer()
-	var b64 := Marshalls.raw_to_base64(png)
+	var encoded: Dictionary = ScreenshotEncode.downscale_and_encode(image, max_resolution)
 
 	EngineDebugger.send_message("mcp:screenshot_response", [
 		request_id,
-		b64,
-		image.get_width(),
-		image.get_height(),
-		original_width,
-		original_height,
+		encoded.base64,
+		encoded.width,
+		encoded.height,
+		encoded.original_width,
+		encoded.original_height,
 	])
 
 
@@ -625,11 +618,12 @@ func _mouse_button_index(name: String) -> int:
 ## `debugger/mcp_debugger_plugin.gd::request_game_eval` (`timeout_sec`,
 ## default 10.0), which in turn stays below the dispatcher's `game_eval`
 ## budget in `dispatcher.gd` (15000 ms). So: game 8s < editor 10s <
-## dispatcher 15s. Only this game-side guard emits the actionable
-## "Eval exceeded 8s" message; the editor timer emits a *generic* "Game eval
-## timed out" message. Raise this at/above the editor timer (or drop that
-## timer below this) and the generic message wins the race, silently losing
-## the diagnostic this fix exists to provide. Nothing enforces the order —
+## dispatcher 15s. Only this game-side guard emits the specific
+## "Eval exceeded 8s" message (both it and the editor backstop now carry the
+## EVAL_HUNG code, #518, but the editor's message can't name the cause).
+## Raise this at/above the editor timer (or drop that timer below this) and
+## the less specific editor message wins the race, silently losing the
+## diagnostic this fix exists to provide. Nothing enforces the order —
 ## change one, re-check the other two.
 ##
 ## NOTE: this catches a hung `await`, not a CPU-bound loop with no `await` —
@@ -743,7 +737,8 @@ func _handle_eval(data: Array) -> void:
 			("Eval exceeded %ds and was aborted — the code likely awaits "
 				+ "something that never completes (a signal that never fires, a timer on "
 				+ "a paused tree) or loops forever. Check logs_read(source='game').")
-				% int(EVAL_TIMEOUT_SEC))
+				% int(EVAL_TIMEOUT_SEC),
+			ErrorCodes.EVAL_HUNG)
 		return
 
 	## Clean finish.
@@ -775,13 +770,45 @@ func _drive_eval(node: Node, holder: Dictionary) -> void:
 	holder["done"] = true
 
 
-func _reply_eval_error(request_id: String, message: String) -> void:
-	EngineDebugger.send_message("mcp:eval_error", [request_id, message])
+## #518: cap on the serialized eval result. Godot's remote-debugger TCP peer
+## silently discards any single message over ~8 MiB, so a bigger reply never
+## reaches the editor and the request rides to the 10s backstop as a phantom
+## "hang". (Results over the editor↔server WebSocket buffer cap of 4 MiB fail
+## there with their own explicit error; this game-side cap only needs to stay
+## under the debugger peer's drop threshold to keep the failure visible.)
+const EVAL_RESULT_MAX_BYTES := 6 * 1024 * 1024
+
+## Testing seam: the last eval reply, recorded before hitting the
+## EngineDebugger channel (inactive in the editor-side test harness).
+var _last_eval_reply: Dictionary = {}
+
+
+## `code` (optional) rides as a third payload element so the editor can map
+## the reply to a specific error code instead of the generic INTERNAL_ERROR;
+## the editor allowlists the value (see mcp_debugger_plugin._on_eval_error).
+func _reply_eval_error(request_id: String, message: String, code: String = "") -> void:
+	_last_eval_reply = {"kind": "error", "request_id": request_id,
+		"message": message, "code": code}
+	var payload := [request_id, message]
+	if not code.is_empty():
+		payload.append(code)
+	if EngineDebugger.is_active():
+		EngineDebugger.send_message("mcp:eval_error", payload)
 
 
 func _reply_eval_response(request_id: String, value: Variant) -> void:
-	EngineDebugger.send_message("mcp:eval_response",
-		[request_id, JSON.stringify(_variant_to_json(value))])
+	var serialized := JSON.stringify(_variant_to_json(value))
+	var serialized_bytes := serialized.to_utf8_buffer().size()
+	if serialized_bytes > EVAL_RESULT_MAX_BYTES:
+		_reply_eval_error(request_id,
+			("Eval result too large to return (%d bytes serialized, limit %d). "
+				+ "Return a smaller slice instead — e.g. counts, node paths, or a "
+				+ "truncated substring.") % [serialized_bytes, EVAL_RESULT_MAX_BYTES],
+			ErrorCodes.EVAL_RESULT_TOO_LARGE)
+		return
+	_last_eval_reply = {"kind": "response", "request_id": request_id}
+	if EngineDebugger.is_active():
+		EngineDebugger.send_message("mcp:eval_response", [request_id, serialized])
 
 
 ## #490: if a logged script error past THIS eval's baseline carries its unique
