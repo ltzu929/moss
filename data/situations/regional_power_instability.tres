@@ -1,0 +1,48 @@
+[gd_resource type="Resource" script_class="SituationData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/situation_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://scripts/resources/situation_approach_data.gd" id="2_approach"]
+
+[sub_resource type="Resource" id="Approach_local_repair"]
+script = ExtResource("2_approach")
+approach_id = "local_repair"
+display_name = "地方抢修"
+description = "保留地方工程队指挥，恢复较慢但不扩大 MOSS 权限。"
+monthly_severity_delta = -4
+resolution_order_delta = 1
+resolution_hope_delta = 2
+resolution_authority_delta = -1
+
+[sub_resource type="Resource" id="Approach_rolling_ration"]
+script = ExtResource("2_approach")
+approach_id = "rolling_ration"
+display_name = "分区配给"
+description = "使用算力维持轮流供电，以持续调度换取稳定恢复。"
+monthly_severity_delta = -6
+monthly_cpu_cost = 1
+resolution_order_delta = 2
+
+[sub_resource type="Resource" id="Approach_grid_takeover"]
+script = ExtResource("2_approach")
+approach_id = "grid_takeover"
+display_name = "接管电网"
+description = "MOSS 直接覆盖调度限制，恢复最快但提高系统控制。"
+monthly_severity_delta = -8
+monthly_cpu_cost = 1
+monthly_energy_cost = 1
+resolution_hope_delta = -2
+resolution_authority_delta = 4
+
+[resource]
+script = ExtResource("1_data")
+situation_id = "regional_power_instability"
+title = "区域电网负荷失衡"
+description = "供电频率持续偏离安全窗口，部分设施已转入限电序列。"
+eligible_regions = Array[String](["亚洲", "北美", "联合政府", "非洲", "俄罗斯", "大洋洲", "南美"])
+base_weight = 110
+initial_severity = 38
+monthly_growth = 3
+failure_order_delta = -10
+failure_hope_delta = -8
+approaches = Array[ExtResource("2_approach")]([SubResource("Approach_local_repair"), SubResource("Approach_rolling_ration"), SubResource("Approach_grid_takeover")])
+command_interventions = {"energy_convert": 20, "allocate": 8, "takeover": 14, "technology_aid": 12, "global_takeover": 10}

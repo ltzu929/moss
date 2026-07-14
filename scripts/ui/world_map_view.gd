@@ -224,11 +224,23 @@ func _draw_region(region_name: String, map_rect: Rect2) -> void:
 func _draw_region_label(region_name: String, map_rect: Rect2) -> void:
 	var state: Dictionary = _region_states.get(region_name, {})
 	var authority := int(state.get("authority", 50))
+	var situation_count := int(state.get("situation_count", 0))
 	var label_position := _normalized_to_map(_label_positions[region_name], map_rect)
 	var marker_color := _region_marker_color(region_name)
 
 	draw_circle(label_position, 4.0, marker_color)
 	draw_circle(label_position, 9.0, Color(marker_color, 0.16), false, 1.0)
+	if situation_count > 0:
+		draw_circle(label_position, 15.0, Color(1.0, 0.24, 0.20, 0.82), false, 2.0)
+		draw_string(
+			ThemeDB.fallback_font,
+			label_position + Vector2(-4.0, -18.0),
+			"!%d" % situation_count,
+			HORIZONTAL_ALIGNMENT_LEFT,
+			-1.0,
+			13,
+			Color(1.0, 0.42, 0.34, 1.0)
+		)
 
 	var label_text := region_name
 	if not state.is_empty():

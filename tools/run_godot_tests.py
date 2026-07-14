@@ -19,6 +19,7 @@ TEST_SCENES = [
     ("tests/technology_system_test.tscn", "headless"),
     ("tests/command_system_test.tscn", "headless"),
     ("tests/time_system_test.tscn", "headless"),
+    ("tests/situation_system_test.tscn", "headless"),
     ("tests/event_state_test.tscn", "headless"),
     ("tests/event_playability_test.tscn", "headless"),
     ("tests/decision_history_test.tscn", "display"),
@@ -26,6 +27,7 @@ TEST_SCENES = [
     ("tests/technology_gameplay_test.tscn", "headless"),
     ("tests/technology_ending_test.tscn", "headless"),
     ("tests/technology_ui_test.tscn", "display"),
+    ("tests/situation_ui_test.tscn", "display"),
     ("tests/world_map_view_test.tscn", "headless"),
     ("tests/test_runner.tscn", "headless"),
 ]
