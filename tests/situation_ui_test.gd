@@ -75,6 +75,41 @@ func _assert_situation_details_and_approach() -> void:
 		"局势面板应明确显示当前供给状态"
 	)
 
+	_main_os.current_year = 2044
+	_main_os.current_month = 12
+	_main_os._refresh_situation_ui()
+	active = _main_os.get_situation_snapshots()
+	_assert_eq(
+		int(active[0].get("expected_monthly_delta", 0)),
+		-5,
+		"十二月趋势应先计入进入一月的年度恢复"
+	)
+	_assert_true(
+		bool(active[0].get("is_funded", false)),
+		"十二月低资源预测应标记一月恢复后的持续成本供给充足"
+	)
+	_assert_true(
+		"-5" in (_panel.get_node("%TrendLabel") as Label).text,
+		"跨年面板应显示年度恢复后的真实缓解值"
+	)
+	_assert_true(
+		"供给：充足" in (_panel.get_node("%CurrentApproachLabel") as Label).text,
+		"跨年面板应显示年度恢复后的供给状态"
+	)
+
+	_main_os._on_timer_timeout()
+	await get_tree().process_frame
+	active = _main_os.get_situation_snapshots()
+	_assert_eq(_main_os.current_year, 2045, "十二月推进后应进入下一年")
+	_assert_eq(_main_os.current_month, 1, "十二月推进后应进入一月")
+	_assert_eq(
+		int(active[0].get("severity", -1)),
+		33,
+		"一月实际局势变化应与十二月预测一致"
+	)
+	_assert_eq(_main_os.current_cpu, 9, "一月恢复后应支付 1 算力持续成本")
+	_assert_eq(_main_os.current_energy, 9, "一月恢复后应支付 1 能源持续成本")
+
 
 func _assert_responsive_bounds() -> void:
 	for viewport_size in [Vector2(1920, 1080), Vector2(1280, 720)]:

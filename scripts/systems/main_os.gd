@@ -737,7 +737,11 @@ func _on_situation_focus_region_requested(region_name: String) -> void:
 
 
 func _refresh_situation_ui(focus_id: String = "") -> void:
-	var snapshots := _situation_system.get_active_snapshots(current_cpu, current_energy)
+	var forecast_resources := _get_next_situation_resource_forecast()
+	var snapshots := _situation_system.get_active_snapshots(
+		int(forecast_resources["cpu"]),
+		int(forecast_resources["energy"])
+	)
 	if has_node("%SituationPanel"):
 		%SituationPanel.set_situations(snapshots)
 		if focus_id != "":
@@ -747,7 +751,24 @@ func _refresh_situation_ui(focus_id: String = "") -> void:
 
 
 func get_situation_snapshots() -> Array[Dictionary]:
-	return _situation_system.get_active_snapshots(current_cpu, current_energy)
+	var forecast_resources := _get_next_situation_resource_forecast()
+	return _situation_system.get_active_snapshots(
+		int(forecast_resources["cpu"]),
+		int(forecast_resources["energy"])
+	)
+
+
+## 预演下一次局势结算可用资源；十二月先应用进入一月的年度恢复。
+func _get_next_situation_resource_forecast() -> Dictionary:
+	var forecast_cpu := current_cpu
+	var forecast_energy := current_energy
+	if current_month == 12:
+		forecast_cpu = _calculate_yearly_recovered_cpu(current_cpu)
+		forecast_energy = _calculate_yearly_recovered_energy(current_energy)
+	return {
+		"cpu": forecast_cpu,
+		"energy": forecast_energy,
+	}
 
 
 func set_situation_seed_for_test(seed: int) -> void:
@@ -1456,15 +1477,22 @@ func _advance_one_month() -> void:
 
 ## 执行年度结算：资源恢复、自治恢复和科技点
 func _apply_yearly_settlement() -> void:
-	current_energy += energy_recovery_rate
-	current_cpu += cpu_recovery_rate
-	current_cpu = mini(current_cpu, max_cpu)
+	current_energy = _calculate_yearly_recovered_energy(current_energy)
+	current_cpu = _calculate_yearly_recovered_cpu(current_cpu)
 	_apply_human_autonomy_recovery()
 	var research_granted: bool = %TechnologySystem.grant_research_for_year(current_year)
 	if research_granted:
 		record_action("technology", "研究完成", "获得 1 点协议点")
 		update_technology_button()
 	_write_development_log("yearly_settlement", {"research_granted": research_granted})
+
+
+func _calculate_yearly_recovered_cpu(cpu: int) -> int:
+	return mini(cpu + cpu_recovery_rate, max_cpu)
+
+
+func _calculate_yearly_recovered_energy(energy: int) -> int:
+	return energy + energy_recovery_rate
 
 # ============================================================
 # 事件后果处理
