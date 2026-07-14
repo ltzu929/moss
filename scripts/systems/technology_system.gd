@@ -282,8 +282,7 @@ func validate_graph() -> Array[String]:
 		var group_nodes: Array = exclusive_groups[group_name]
 		if group_nodes.size() != 2:
 			errors.append("互斥组 %s 必须包含2个MOSS终端" % group_name)
-		continue
-		if group_nodes[0].route != group_nodes[1].route:
+		elif group_nodes[0].route != group_nodes[1].route:
 			errors.append("互斥组 %s 的终端必须属于同一路线" % group_name)
 
 	# 使用深度优先搜索的访问中集合检测前置关系中的环。

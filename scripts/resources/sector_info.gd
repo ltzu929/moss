@@ -67,6 +67,8 @@ func _ready() -> void:
 
 	# 如果插槽里有卡，就读取数据
 	if data_card != null:
+		# 外部 .tres 是只读模板；每个场景实例持有独立运行态副本。
+		data_card = data_card.duplicate(true) as SectorData
 		update_display()
 
 	# 设置默认边框

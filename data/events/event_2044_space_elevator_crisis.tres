@@ -1,34 +1,45 @@
 [gd_resource type="Resource" script_class="GameEvent" format=3 uid="uid://bgrmda00hq7ef"]
 
-[ext_resource type="Texture2D" uid="uid://fkohcodegbmdm" path="res://assets/event/太空电梯危机.png" id="1_image"]
-
+[ext_resource type="Texture2D" uid="uid://bpalqmf4u3qlu" path="res://assets/event/太空电梯危机.png" id="1_image"]
 [ext_resource type="Script" uid="uid://dhndawkfhm8iq" path="res://scripts/resources/game_event.gd" id="1_j8jfo"]
 [ext_resource type="Script" uid="uid://bl7wa43xriuci" path="res://scripts/resources/event_option.gd" id="1_qu5m7"]
 
 [sub_resource type="Resource" id="Resource_j5aep"]
 script = ExtResource("1_qu5m7")
-button_text = "反击"
+button_text = "公开扩大接口，协助人类反击"
 order_delta = -20
 hope_delta = 20
 authority_delta = 8
 energy_cost = 100
+decision_tag_key = "decision.core_2044_automation_access"
+decision_tag_value = "public_counterstrike"
+decision_record_title = "2044 公开扩大自动化接入"
+decision_record_summary = "550C 的关键工程接口在危机中公开扩展；后续社会知道 MOSS 已进入高风险调度链。"
 metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [sub_resource type="Resource" id="Resource_bbnqo"]
 script = ExtResource("1_qu5m7")
-button_text = "旁观"
+button_text = "保留人工指挥，仅提供风险预测"
 order_delta = 10
 hope_delta = -10
 authority_delta = -8
+decision_tag_key = "decision.core_2044_automation_access"
+decision_tag_value = "human_command"
+decision_record_title = "2044 保留人类指挥链"
+decision_record_summary = "550C 只提供预测与建议，关键工程授权继续由人类承担。"
 metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [sub_resource type="Resource" id="Resource_qu5m7"]
 script = ExtResource("1_qu5m7")
-button_text = "投降"
+button_text = "封闭高危接口，服从撤离命令"
 order_delta = 20
 hope_delta = -20
 authority_delta = -15
 energy_cost = 10
+decision_tag_key = "decision.core_2044_automation_access"
+decision_tag_value = "restricted_interface"
+decision_record_title = "2044 封闭高危自动化接口"
+decision_record_summary = "550C 主动退出关键工程链路；短期责任边界清晰，但未来危机缺少既有自动化接口。"
 metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [resource]

@@ -33,6 +33,7 @@ func _ready() -> void:
 	_assert_eq(system.get_stage(), TechNodeData.Stage.C550, "开局形态应为550C")
 	_assert_true(system.validate_graph().is_empty(), "科技节点图应完整且无环")
 	_assert_route_stage_layout(system)
+	_assert_exclusive_group_rejects_cross_route_pair(system)
 
 	for year in [2048, 2052, 2056, 2060, 2064, 2068, 2072]:
 		_assert_true(system.grant_research_for_year(year), "%d年应发放协议点" % year)
@@ -133,6 +134,35 @@ func _assert_route_stage_layout(system: TechnologySystem) -> void:
 			2,
 			"每条路线应有2个MOSS终端"
 		)
+
+
+## 回归：互斥组数量正确时也必须继续校验两个终端是否属于同一路线。
+func _assert_exclusive_group_rejects_cross_route_pair(system: TechnologySystem) -> void:
+	var groups: Dictionary = {}
+	for node_data in system.get_all_nodes():
+		if node_data.exclusive_group.is_empty():
+			continue
+		if not groups.has(node_data.exclusive_group):
+			groups[node_data.exclusive_group] = []
+		groups[node_data.exclusive_group].append(node_data)
+
+	var pair: Array = groups.values()[0]
+	var changed_node: TechNodeData = pair[1]
+	var original_route: TechNodeData.Route = changed_node.route
+	changed_node.route = (
+		TechNodeData.Route.CORE
+		if pair[0].route != TechNodeData.Route.CORE
+		else TechNodeData.Route.HUMAN
+	)
+	var errors: Array[String] = system.validate_graph()
+	changed_node.route = original_route
+
+	var found_cross_route_error := false
+	for error in errors:
+		if "终端必须属于同一路线" in error:
+			found_cross_route_error = true
+			break
+	_assert_true(found_cross_route_error, "科技图校验应拒绝跨路线终端互斥组")
 
 
 ## 校验同路线MOSS终端互斥，且界面可查询冲突节点

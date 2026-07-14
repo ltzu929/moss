@@ -17,6 +17,7 @@ const OBSOLETE_PATHS: Array[String] = [
 const RETAINED_SCENES: Array[String] = [
 	"res://scenes/allocate_popup.tscn",
 	"res://scenes/command_button.tscn",
+	"res://scenes/decision_archive_panel.tscn",
 	"res://scenes/event_popup.tscn",
 	"res://scenes/game_over.tscn",
 	"res://scenes/main_os.tscn",
