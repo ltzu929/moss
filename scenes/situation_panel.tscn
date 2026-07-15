@@ -71,6 +71,7 @@ layout_mode = 2
 
 [node name="EmptyLabel" type="Label" parent="SituationWindow/WindowMargin/MainVBox"]
 unique_name_in_owner = true
+custom_maximum_size = Vector2(444, -1)
 layout_mode = 2
 size_flags_vertical = 3
 text = "当前没有正在发展的随机局势。\n完成 2044 核心选择后，局势系统将开始监测风险。"
@@ -109,6 +110,7 @@ text = "预计月度变化：--"
 
 [node name="DescriptionLabel" type="Label" parent="SituationWindow/WindowMargin/MainVBox/DetailVBox"]
 unique_name_in_owner = true
+custom_maximum_size = Vector2(444, -1)
 layout_mode = 2
 text = "局势说明"
 autowrap_mode = 3
@@ -138,6 +140,7 @@ theme_override_constants/separation = 6
 
 [node name="StatusLabel" type="Label" parent="SituationWindow/WindowMargin/MainVBox/DetailVBox"]
 unique_name_in_owner = true
+custom_maximum_size = Vector2(444, -1)
 layout_mode = 2
 autowrap_mode = 3
 

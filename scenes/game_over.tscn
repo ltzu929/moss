@@ -168,6 +168,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="VisualPlaceholderNote" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/VisualPanel/VisualMargin/VisualVBox"]
+custom_maximum_size = Vector2(490, -1)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.43, 0.51, 0.58, 1)
 text = "主视觉占位，后续可替换为地球/太空素材。"
@@ -389,6 +390,7 @@ vertical_alignment = 1
 
 [node name="EndMessage" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/EvaluationPanel/EvaluationMargin/EvaluationRow" unique_id=988669389]
 unique_name_in_owner = true
+custom_maximum_size = Vector2(1610, -1)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16

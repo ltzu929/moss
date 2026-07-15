@@ -1743,6 +1743,7 @@ text = "请选择科技节点"
 
 [node name="DetailName" type="Label" parent="CenterContainer/WindowPanel/WindowMargin/MainVBox/BodyRow/DetailsPanel/DetailsVBox/DetailsScroll/DetailsContent" unique_id=452439445]
 unique_name_in_owner = true
+custom_maximum_size = Vector2(332, -1)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.78, 0.84, 0.9, 1)
 theme_override_font_sizes/font_size = 24
@@ -1754,6 +1755,7 @@ layout_mode = 2
 
 [node name="DetailDescription" type="Label" parent="CenterContainer/WindowPanel/WindowMargin/MainVBox/BodyRow/DetailsPanel/DetailsVBox/DetailsScroll/DetailsContent" unique_id=1431779452]
 unique_name_in_owner = true
+custom_maximum_size = Vector2(332, -1)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.68, 0.74, 1)
 autowrap_mode = 3
@@ -1765,6 +1767,7 @@ text = "解锁效果"
 
 [node name="DetailEffect" type="Label" parent="CenterContainer/WindowPanel/WindowMargin/MainVBox/BodyRow/DetailsPanel/DetailsVBox/DetailsScroll/DetailsContent" unique_id=968613289]
 unique_name_in_owner = true
+custom_maximum_size = Vector2(332, -1)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.55, 0.84, 0.86, 1)
 autowrap_mode = 3
@@ -1772,6 +1775,7 @@ autowrap_mode = 3
 [node name="DetailRisk" type="Label" parent="CenterContainer/WindowPanel/WindowMargin/MainVBox/BodyRow/DetailsPanel/DetailsVBox/DetailsScroll/DetailsContent" unique_id=1140143349]
 unique_name_in_owner = true
 visible = false
+custom_maximum_size = Vector2(332, -1)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.34, 0.38, 1)
 autowrap_mode = 3
@@ -1783,6 +1787,7 @@ text = "前置条件"
 
 [node name="DetailRequirements" type="Label" parent="CenterContainer/WindowPanel/WindowMargin/MainVBox/BodyRow/DetailsPanel/DetailsVBox/DetailsScroll/DetailsContent" unique_id=553107740]
 unique_name_in_owner = true
+custom_maximum_size = Vector2(332, -1)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.68, 0.74, 1)
 autowrap_mode = 3

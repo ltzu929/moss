@@ -176,7 +176,8 @@ clip_text = true
 
 [node name="RegionDescriptionLabel" type="Label" parent="MainLayout/ContentRow/LeftPanel/LeftMargin/LeftVBox" unique_id=2074453506]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(1, 58)
+custom_minimum_size = Vector2(0, 58)
+custom_maximum_size = Vector2(320, -1)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
