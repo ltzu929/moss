@@ -698,9 +698,15 @@ func _assert_event_triggering() -> void:
 		"event_triggering"
 	)
 	_assert_eq(
+		_main_os.get_decision_tag("decision.core_2053_population_vs_infrastructure"),
+		"population_first",
+		"真实点击 2053 首选方案应写入核心决策标签",
+		"event_triggering"
+	)
+	_assert_eq(
 		_main_os.get_decision_records().size(),
-		1,
-		"完整通关应保留一条 2044 核心决策档案",
+		2,
+		"完整通关应保留 2044 与 2053 两条核心决策档案",
 		"event_triggering"
 	)
 

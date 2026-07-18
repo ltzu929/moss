@@ -26,6 +26,9 @@ func _ready() -> void:
 	_assert_history_is_irreversible()
 	_assert_real_2044_event_defines_core_decisions()
 	_assert_2044_and_2055_decisions_stack_in_2058()
+	_assert_real_2053_event_defines_core_decisions()
+	_assert_2053_choice_changes_2075_and_ending()
+	_assert_2044_and_2053_decisions_stack_in_ending()
 	_assert_2044_choice_changes_2058_and_ending()
 	await _assert_archive_ui_reads_stable_records()
 	_assert_restart_clears_history()
@@ -301,6 +304,114 @@ func _assert_archive_ui_reads_stable_records() -> void:
 	_assert_true(not panel.visible, "关闭按钮应隐藏决策档案")
 	_assert_true(not timer.is_stopped(), "关闭档案后应恢复此前运行的计时器")
 	timer.stop()
+
+
+func _assert_real_2053_event_defines_core_decisions() -> void:
+	var event := load("res://data/events/event_2053_great_flood_accident.tres") as GameEvent
+	_assert_true(event != null, "应能加载真实 2053 主事件")
+	if event == null:
+		return
+	_assert_eq(event.options.size(), 3, "2053 主事件应保留三种行为逻辑")
+	var zero_energy := false
+	var values: Dictionary = {}
+	for option in event.options:
+		_assert_eq(
+			option.decision_tag_key,
+			"decision.core_2053_population_vs_infrastructure",
+			"2053 每个方案应写入同一个核心事实维度"
+		)
+		_assert_true(not option.decision_tag_value.is_empty(), "2053 核心决策值不得为空")
+		_assert_true(not option.decision_record_title.is_empty(), "2053 核心决策应提供档案标题")
+		_assert_true(not option.decision_record_summary.is_empty(), "2053 核心决策应解释长期影响")
+		values[option.decision_tag_value] = true
+		zero_energy = zero_energy or option.energy_cost == 0
+	_assert_eq(values.size(), 3, "2053 三个方案应形成三个不同历史事实")
+	_assert_true(zero_energy, "2053 强制事件应保留零能源保底方案")
+
+
+func _assert_2053_choice_changes_2075_and_ending() -> void:
+	var event_2053 := load(
+		"res://data/events/event_2053_great_flood_accident.tres"
+	) as GameEvent
+	var event_2075 := load(
+		"res://data/events/event_2075_jupiter_gravity_crisis.tres"
+	) as GameEvent
+	var cases: Array[Dictionary] = [
+		{
+			"index": 0,
+			"value": "population_first",
+			"context_2075": "民生优先的治理承诺",
+			"ending": "优先撤离人口的记录",
+		},
+		{
+			"index": 1,
+			"value": "infrastructure_first",
+			"context_2075": "工程延续逻辑来自更早的取舍",
+			"ending": "坚守基础设施的记录",
+		},
+		{
+			"index": 2,
+			"value": "sacrifice_perimeter",
+			"context_2075": "长期治理事实的延伸",
+			"ending": "牺牲外围的记录",
+		},
+	]
+
+	for choice_case in cases:
+		_main_os.restart_game_for_test()
+		_main_os.get_node("Timer").stop()
+		var selected_option: EventOption = event_2053.options[int(choice_case["index"])]
+		_main_os.apply_event_option_decision(selected_option, event_2053.event_title)
+
+		_assert_true(
+			_main_os.has_decision_tag(
+				"decision.core_2053_population_vs_infrastructure",
+				str(choice_case["value"])
+			),
+			"2053 选择应写入核心标签：%s" % choice_case["value"]
+		)
+		var display_2075: GameEvent = _main_os.build_display_event(event_2075)
+		_assert_true(
+			str(choice_case["context_2075"]) in display_2075.event_description,
+			"2075 应回读 2053 核心选择：%s" % choice_case["value"]
+		)
+		_assert_true(
+			str(choice_case["ending"]) in _main_os.build_ending_message("coexistence"),
+			"结局应回读 2053 核心选择：%s" % choice_case["value"]
+		)
+
+
+func _assert_2044_and_2053_decisions_stack_in_ending() -> void:
+	_main_os.restart_game_for_test()
+	_main_os.get_node("Timer").stop()
+	var event_2044 := load(
+		"res://data/events/event_2044_space_elevator_crisis.tres"
+	) as GameEvent
+	var event_2053 := load(
+		"res://data/events/event_2053_great_flood_accident.tres"
+	) as GameEvent
+	_main_os.apply_event_option_decision(event_2044.options[0], event_2044.event_title)
+	_main_os.apply_event_option_decision(event_2053.options[1], event_2053.event_title)
+
+	_assert_eq(_main_os.get_decision_records().size(), 2, "2044 与 2053 应各自形成独立档案记录")
+	var ending_text: String = _main_os.build_ending_message("coexistence")
+	_assert_true(
+		"2044 年公开扩大的自动化接口" in ending_text,
+		"结局应同时回读 2044 核心选择"
+	)
+	_assert_true(
+		"坚守基础设施的记录" in ending_text,
+		"结局应同时回读 2053 核心选择，不被 2044 覆盖"
+	)
+	# 验证 2053 标签不影响 2058 对 2044 标签的既有回声（回归保护）
+	var event_2058 := load(
+		"res://data/events/event_2058_lunar_fall_crisis.tres"
+	) as GameEvent
+	var display_2058: GameEvent = _main_os.build_display_event(event_2058)
+	_assert_true(
+		"2044 年公开扩大的 550C 接口" in display_2058.event_description,
+		"2053 标签不得抹掉 2058 对 2044 标签的既有回声"
+	)
 
 
 func _assert_true(value: bool, message: String) -> void:

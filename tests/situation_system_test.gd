@@ -19,8 +19,9 @@ func _ready() -> void:
 	_assert_command_intervention_and_outcome()
 	_assert_fixed_seed_export()
 
+	await get_tree().create_timer(0.5).timeout
 	print("[MOSS-SITUATION-SYSTEM] 完成，失败断言：%d" % _failed)
-	await get_tree().create_timer(0.1).timeout
+	await get_tree().process_frame
 	get_tree().quit(_failed)
 
 
