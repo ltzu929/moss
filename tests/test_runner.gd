@@ -367,18 +367,33 @@ func _verify_1080p_layout_contract() -> bool:
 	)
 	ok = (command_container.custom_minimum_size.y <= 40.0) and ok
 
-	var world_map := _main_os.get_node("%WorldMapView") as Control
-	var map_is_primary := world_map.size.x >= 1300.0 and world_map.size.y >= 620.0
-	_assert_true(map_is_primary, "1080P 下世界地图应占据主要观察面积", "ui_layout")
-	ok = map_is_primary and ok
+	var runtime_viewport_size := _main_os.get_viewport_rect().size
+	if _should_verify_runtime_1080p_geometry(runtime_viewport_size):
+		var world_map := _main_os.get_node("%WorldMapView") as Control
+		var map_is_primary := world_map.size.x >= 1300.0 and world_map.size.y >= 620.0
+		_assert_true(map_is_primary, "1080P 下世界地图应占据主要观察面积", "ui_layout")
+		ok = map_is_primary and ok
 
-	var main_layout := _main_os.get_node("MainLayout") as VBoxContainer
-	var layout_bottom := main_layout.position.y + main_layout.size.y
-	var layout_fits_viewport := main_layout.position.y >= 0.0 and layout_bottom <= viewport_height
-	_assert_true(layout_fits_viewport, "1080P 下主布局不应越过视口上下边界", "ui_layout")
-	ok = layout_fits_viewport and ok
+		var main_layout := _main_os.get_node("MainLayout") as VBoxContainer
+		var layout_bottom := main_layout.position.y + main_layout.size.y
+		var layout_fits_viewport := (
+			main_layout.position.y >= 0.0
+			and layout_bottom <= runtime_viewport_size.y
+		)
+		_assert_true(layout_fits_viewport, "1080P 下主布局不应越过视口上下边界", "ui_layout")
+		ok = layout_fits_viewport and ok
+	else:
+		_log(
+			"[INFO] 当前运行视口为 %s，跳过仅适用于真实1080P视口的运行时几何断言"
+			% runtime_viewport_size
+		)
 
 	return ok
+
+
+func _should_verify_runtime_1080p_geometry(viewport_size: Vector2) -> bool:
+	# CI 的无头测试视口可能只有 64x64；项目分辨率与结构约束仍在上方验证。
+	return viewport_size.x >= 1920.0 and viewport_size.y >= 1080.0
 
 
 func _verify_hud_layout_contract() -> bool:
