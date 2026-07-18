@@ -1361,6 +1361,15 @@ func _get_2070_context_lines() -> Array[String]:
 
 func _get_2075_civic_context_lines() -> Array[String]:
 	var lines: Array[String] = []
+	# 2053 核心标签先于中型事件回声，体现民生与工程取舍的长期治理事实。
+	match get_decision_tag("decision.core_2053_population_vs_infrastructure"):
+		"population_first":
+			lines.append("2053 年优先撤离人口的记录保留到终局，点燃木星方案需要回应民生优先的治理承诺。")
+		"infrastructure_first":
+			lines.append("2053 年坚守基础设施的记录延续到终局，最终方案的工程延续逻辑来自更早的取舍。")
+		"sacrifice_perimeter":
+			lines.append("2053 年牺牲外围的记录让终局牺牲顺序不再是临时决定，而是长期治理事实的延伸。")
+
 	match get_event_state("event_state.mid_01_lottery_ordering"):
 		"manual_review":
 			lines.append("普通人仍记得早年的申诉窗口，最终方案需要证明人类声音没有被系统归档。")
@@ -2029,6 +2038,15 @@ func _get_ending_history_lines(result: String) -> Array[String]:
 			lines.append("2044 年保留的人类指挥链贯穿后续授权争议，终局仍能追溯人工决策责任。")
 		"restricted_interface":
 			lines.append("2044 年封闭高危接口换取了清晰责任边界，也让后来的紧急接入承担额外代价。")
+
+	# 2053 核心标签紧随 2044，与更早核心选择组合计算；后写标签不得抹掉前者。
+	match get_decision_tag("decision.core_2053_population_vs_infrastructure"):
+		"population_first":
+			lines.append("2053 年优先撤离人口的记录让终局仍能解释民生优先的治理承诺，%s。" % _get_ending_relation_text(result))
+		"infrastructure_first":
+			lines.append("2053 年坚守基础设施的记录显示文明延续长期依赖工程延续，最终方案承担着人口转移的代价。")
+		"sacrifice_perimeter":
+			lines.append("2053 年牺牲外围的记录让终局牺牲顺序成为长期事实，MOSS 的排序在更早就已成为公开治理。")
 
 	match get_event_state("event_state.mid_07_migration_priority"):
 		"humanitarian":

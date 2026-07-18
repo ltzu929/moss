@@ -12,6 +12,10 @@ order_delta = 15
 hope_delta = -10
 authority_delta = -6
 energy_cost = 50
+decision_tag_key = "decision.core_2053_population_vs_infrastructure"
+decision_tag_value = "population_first"
+decision_record_title = "2053 优先撤离地下城人口"
+decision_record_summary = "大淹没中优先组织人口撤离，基础设施和根服务器承受更大损失，民生优先写入治理记录。"
 metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [sub_resource type="Resource" id="Resource_opt2"]
@@ -20,6 +24,11 @@ button_text = "坚守重建"
 order_delta = -15
 hope_delta = 20
 authority_delta = 5
+energy_cost = 0
+decision_tag_key = "decision.core_2053_population_vs_infrastructure"
+decision_tag_value = "infrastructure_first"
+decision_record_title = "2053 坚守关键基础设施"
+decision_record_summary = "保住根服务器和地下城核心设施，人口承受更高转移代价，工程延续优先于即时撤离。"
 metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [sub_resource type="Resource" id="Resource_opt3"]
@@ -29,6 +38,10 @@ order_delta = 25
 hope_delta = -25
 authority_delta = 12
 energy_cost = 20
+decision_tag_key = "decision.core_2053_population_vs_infrastructure"
+decision_tag_value = "sacrifice_perimeter"
+decision_record_title = "2053 牺牲外围区域"
+decision_record_summary = "放弃外围地下城与人口以保全主干，MOSS 接管排序，牺牲顺序成为公开事实。"
 metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [resource]
