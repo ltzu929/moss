@@ -29,7 +29,7 @@ TEST_SCENES = [
     ("tests/technology_ui_test.tscn", "display"),
     ("tests/situation_ui_test.tscn", "display"),
     ("tests/world_map_view_test.tscn", "headless"),
-    ("tests/test_runner.tscn", "headless"),
+    ("tests/test_runner.tscn", "display"),
 ]
 
 
