@@ -28,8 +28,9 @@ TEST_SCENES = [
     ("tests/technology_ending_test.tscn", "headless"),
     ("tests/technology_ui_test.tscn", "display"),
     ("tests/situation_ui_test.tscn", "display"),
+    ("tests/ui_layout_1080p_test.tscn", "display"),
     ("tests/world_map_view_test.tscn", "headless"),
-    ("tests/test_runner.tscn", "display"),
+    ("tests/test_runner.tscn", "headless"),
 ]
 
 
