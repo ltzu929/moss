@@ -72,7 +72,7 @@ theme_override_constants/separation = 10
 [node name="TopBarContainer" type="HBoxContainer" parent="MainLayout" unique_id=768598594]
 unique_name_in_owner = true
 z_index = 10
-custom_minimum_size = Vector2(0, 64)
+custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 theme_override_constants/separation = 12
 
@@ -101,26 +101,27 @@ vertical_alignment = 1
 
 [node name="DecisionArchiveButton" type="Button" parent="MainLayout/TopBarContainer" unique_id=192180034]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(128, 64)
+custom_minimum_size = Vector2(128, 44)
 layout_mode = 2
 tooltip_text = "查看不可逆核心决策记录"
 text = "决策档案  0"
 
 [node name="TechnologyButton" type="Button" parent="MainLayout/TopBarContainer" unique_id=888888001]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 44)
 layout_mode = 2
 text = "科技协议 1"
 
-[node name="SituationButton" type="Button" parent="MainLayout/TopBarContainer"]
+[node name="SituationButton" type="Button" parent="MainLayout/TopBarContainer" unique_id=35470325]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(112, 64)
+custom_minimum_size = Vector2(112, 44)
 layout_mode = 2
 tooltip_text = "查看持续推进的随机局势"
 text = "局势  0 / 2"
 
-[node name="TimeControlButton" type="Button" parent="MainLayout/TopBarContainer"]
+[node name="TimeControlButton" type="Button" parent="MainLayout/TopBarContainer" unique_id=1304786461]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(80, 64)
+custom_minimum_size = Vector2(80, 44)
 layout_mode = 2
 tooltip_text = "暂停月度推进"
 text = "暂停"
@@ -136,88 +137,6 @@ size_flags_horizontal = 3
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 12
-
-[node name="LeftPanel" type="PanelContainer" parent="MainLayout/ContentRow" unique_id=139479161]
-custom_minimum_size = Vector2(360, 0)
-layout_mode = 2
-size_flags_horizontal = 0
-size_flags_vertical = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
-
-[node name="LeftMargin" type="MarginContainer" parent="MainLayout/ContentRow/LeftPanel" unique_id=169280469]
-layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 12
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 12
-
-[node name="LeftVBox" type="VBoxContainer" parent="MainLayout/ContentRow/LeftPanel/LeftMargin" unique_id=1845070411]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-
-[node name="RegionDetailTitle" type="Label" parent="MainLayout/ContentRow/LeftPanel/LeftMargin/LeftVBox" unique_id=787011878]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.545, 0.867, 0.851, 1)
-text = "区域详情"
-
-[node name="RegionMiniMap" type="PanelContainer" parent="MainLayout/ContentRow/LeftPanel/LeftMargin/LeftVBox" unique_id=604562749]
-unique_name_in_owner = true
-layout_mode = 2
-
-[node name="RegionNameLabel" type="Label" parent="MainLayout/ContentRow/LeftPanel/LeftMargin/LeftVBox" unique_id=48540939]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.722, 0.78, 0.839, 1)
-text = "未选择区域"
-clip_text = true
-
-[node name="RegionDescriptionLabel" type="Label" parent="MainLayout/ContentRow/LeftPanel/LeftMargin/LeftVBox" unique_id=2074453506]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 58)
-custom_maximum_size = Vector2(320, -1)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
-text = "选择底部区域卡片以查看详情。"
-autowrap_mode = 3
-
-[node name="RegionOrderLabel" type="Label" parent="MainLayout/ContentRow/LeftPanel/LeftMargin/LeftVBox" unique_id=307693293]
-unique_name_in_owner = true
-layout_mode = 2
-text = "秩序"
-
-[node name="RegionOrderBar" type="ProgressBar" parent="MainLayout/ContentRow/LeftPanel/LeftMargin/LeftVBox" unique_id=1569169954]
-unique_name_in_owner = true
-layout_mode = 2
-
-[node name="RegionHopeLabel" type="Label" parent="MainLayout/ContentRow/LeftPanel/LeftMargin/LeftVBox" unique_id=1148205546]
-unique_name_in_owner = true
-layout_mode = 2
-text = "希望"
-
-[node name="RegionHopeBar" type="ProgressBar" parent="MainLayout/ContentRow/LeftPanel/LeftMargin/LeftVBox" unique_id=481449475]
-unique_name_in_owner = true
-layout_mode = 2
-
-[node name="RegionAuthorityLabel" type="Label" parent="MainLayout/ContentRow/LeftPanel/LeftMargin/LeftVBox" unique_id=576787291]
-unique_name_in_owner = true
-layout_mode = 2
-text = "控制权"
-
-[node name="RegionAuthorityBar" type="ProgressBar" parent="MainLayout/ContentRow/LeftPanel/LeftMargin/LeftVBox" unique_id=922584391]
-unique_name_in_owner = true
-layout_mode = 2
-
-[node name="RegionRiskLabel" type="Label" parent="MainLayout/ContentRow/LeftPanel/LeftMargin/LeftVBox" unique_id=297267018]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
-text = "状态：待选择"
-clip_text = true
 
 [node name="CenterPanel" type="PanelContainer" parent="MainLayout/ContentRow" unique_id=1167394134]
 layout_mode = 2
@@ -256,104 +175,197 @@ horizontal_alignment = 2
 
 [node name="WorldMapView" type="Control" parent="MainLayout/ContentRow/CenterPanel/CenterMargin/CenterVBox" unique_id=201009618]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 420)
+custom_minimum_size = Vector2(0, 520)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 script = ExtResource("14_worldmap")
 
-[node name="RightPanel" type="VBoxContainer" parent="MainLayout/ContentRow" unique_id=1407363358]
+[node name="ContextPanel" type="PanelContainer" parent="MainLayout/ContentRow" unique_id=139479161]
 custom_minimum_size = Vector2(420, 0)
 layout_mode = 2
-theme_override_constants/separation = 12
+size_flags_horizontal = 0
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
 
-[node name="RegionOrbitalPanel" type="PanelContainer" parent="MainLayout/ContentRow/RightPanel" unique_id=1338734464]
-custom_minimum_size = Vector2(0, 250)
+[node name="ContextMargin" type="MarginContainer" parent="MainLayout/ContentRow/ContextPanel" unique_id=169280469]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="ContextVBox" type="VBoxContainer" parent="MainLayout/ContentRow/ContextPanel/ContextMargin" unique_id=1845070411]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 4
+
+[node name="ContextTitle" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox" unique_id=787011878]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.545, 0.867, 0.851, 1)
+theme_override_font_sizes/font_size = 16
+text = "区域指挥  //  REGION OPS"
+
+[node name="RegionOrbitalPanel" type="PanelContainer" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox" unique_id=1338734464]
+custom_minimum_size = Vector2(0, 132)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
 
-[node name="OrbitalMargin" type="MarginContainer" parent="MainLayout/ContentRow/RightPanel/RegionOrbitalPanel" unique_id=819545895]
+[node name="OrbitalMargin" type="MarginContainer" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/RegionOrbitalPanel" unique_id=819545895]
 layout_mode = 2
 theme_override_constants/margin_left = 8
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 8
 theme_override_constants/margin_bottom = 8
 
-[node name="OrbitalVBox" type="VBoxContainer" parent="MainLayout/ContentRow/RightPanel/RegionOrbitalPanel/OrbitalMargin" unique_id=97993007]
+[node name="OrbitalVBox" type="VBoxContainer" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/RegionOrbitalPanel/OrbitalMargin" unique_id=97993007]
 layout_mode = 2
 
-[node name="OrbitalTitle" type="Label" parent="MainLayout/ContentRow/RightPanel/RegionOrbitalPanel/OrbitalMargin/OrbitalVBox" unique_id=1038345775]
+[node name="OrbitalTitle" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/RegionOrbitalPanel/OrbitalMargin/OrbitalVBox" unique_id=1038345775]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.545, 0.867, 0.851, 1)
 theme_override_font_sizes/font_size = 16
 text = "区域聚焦"
 
-[node name="OrbitalSubtitle" type="Label" parent="MainLayout/ContentRow/RightPanel/RegionOrbitalPanel/OrbitalMargin/OrbitalVBox" unique_id=275244989]
+[node name="OrbitalSubtitle" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/RegionOrbitalPanel/OrbitalMargin/OrbitalVBox" unique_id=275244989]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
 theme_override_font_sizes/font_size = 12
 text = "REGION ORBITAL VIEW"
 
-[node name="RegionOrbitalView" type="Control" parent="MainLayout/ContentRow/RightPanel/RegionOrbitalPanel/OrbitalMargin/OrbitalVBox" unique_id=1304632157]
+[node name="RegionOrbitalView" type="Control" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/RegionOrbitalPanel/OrbitalMargin/OrbitalVBox" unique_id=1304632157]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 190)
+custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 mouse_filter = 2
 script = ExtResource("15_orbital")
 
-[node name="GlobalOverviewPanel" type="PanelContainer" parent="MainLayout/ContentRow/RightPanel" unique_id=1462355212]
+[node name="RegionNameLabel" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox" unique_id=48540939]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.722, 0.78, 0.839, 1)
+text = "未选择区域"
+clip_text = true
+
+[node name="RegionDescriptionLabel" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox" unique_id=2074453506]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 46)
+custom_maximum_size = Vector2(372, -1)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
+text = "选择地图或底部区域条以查看详情。"
+autowrap_mode = 3
+
+[node name="RegionOrderLabel" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox" unique_id=307693293]
+unique_name_in_owner = true
+layout_mode = 2
+text = "秩序"
+
+[node name="RegionOrderBar" type="ProgressBar" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox" unique_id=1569169954]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="RegionHopeLabel" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox" unique_id=1148205546]
+unique_name_in_owner = true
+layout_mode = 2
+text = "希望"
+
+[node name="RegionHopeBar" type="ProgressBar" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox" unique_id=481449475]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="RegionAuthorityLabel" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox" unique_id=576787291]
+unique_name_in_owner = true
+layout_mode = 2
+text = "控制权"
+
+[node name="RegionAuthorityBar" type="ProgressBar" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox" unique_id=922584391]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="RegionRiskLabel" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox" unique_id=297267018]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
+text = "状态：待选择"
+clip_text = true
+
+[node name="SituationSummary" type="HBoxContainer" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox" unique_id=2085716752]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SituationSummaryTitle" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/SituationSummary" unique_id=1915491874]
+layout_mode = 2
+text = "当前局势"
+
+[node name="RegionSituationLabel" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/SituationSummary" unique_id=1441603575]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "选择区域后显示局势"
+horizontal_alignment = 2
+clip_text = true
+
+[node name="GlobalOverviewPanel" type="PanelContainer" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox" unique_id=1462355212]
+custom_minimum_size = Vector2(0, 132)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
 
-[node name="GlobalOverviewMargin" type="MarginContainer" parent="MainLayout/ContentRow/RightPanel/GlobalOverviewPanel" unique_id=834417501]
+[node name="GlobalOverviewMargin" type="MarginContainer" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/GlobalOverviewPanel" unique_id=834417501]
 layout_mode = 2
 theme_override_constants/margin_left = 8
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 8
 theme_override_constants/margin_bottom = 8
 
-[node name="GlobalOverviewVBox" type="VBoxContainer" parent="MainLayout/ContentRow/RightPanel/GlobalOverviewPanel/GlobalOverviewMargin" unique_id=786566749]
+[node name="GlobalOverviewVBox" type="VBoxContainer" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/GlobalOverviewPanel/GlobalOverviewMargin" unique_id=786566749]
 layout_mode = 2
 
-[node name="GlobalOverviewTitle" type="Label" parent="MainLayout/ContentRow/RightPanel/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox" unique_id=1288679932]
+[node name="GlobalOverviewTitle" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox" unique_id=1288679932]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.545, 0.867, 0.851, 1)
 text = "全局信息"
 
-[node name="GlobalPopulationLabel" type="Label" parent="MainLayout/ContentRow/RightPanel/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox" unique_id=1044130409]
+[node name="GlobalPopulationLabel" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox" unique_id=1044130409]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.722, 0.78, 0.839, 1)
 text = "全球人口: --"
 
-[node name="GlobalAuthorityLabel" type="Label" parent="MainLayout/ContentRow/RightPanel/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox" unique_id=862337580]
+[node name="GlobalAuthorityLabel" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox" unique_id=862337580]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.722, 0.78, 0.839, 1)
 text = "平均控制权: --"
 
-[node name="GlobalStabilityLabel" type="Label" parent="MainLayout/ContentRow/RightPanel/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox" unique_id=1978933368]
+[node name="GlobalStabilityLabel" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox" unique_id=1978933368]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
 text = "系统稳定性: --"
 
-[node name="GlobalThreatLabel" type="Label" parent="MainLayout/ContentRow/RightPanel/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox" unique_id=838219989]
+[node name="GlobalThreatLabel" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox" unique_id=838219989]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
 text = "威胁等级: --"
 
-[node name="LogPlaceholder" type="Panel" parent="MainLayout/ContentRow/RightPanel" unique_id=809928747]
-custom_minimum_size = Vector2(220, 0)
+[node name="LogPlaceholder" type="Panel" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox" unique_id=809928747]
+custom_minimum_size = Vector2(0, 120)
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
 
-[node name="LogVBox" type="VBoxContainer" parent="MainLayout/ContentRow/RightPanel/LogPlaceholder" unique_id=1875220548]
+[node name="LogVBox" type="VBoxContainer" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/LogPlaceholder" unique_id=1875220548]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -365,31 +377,59 @@ offset_bottom = -10.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="LogTitle" type="Label" parent="MainLayout/ContentRow/RightPanel/LogPlaceholder/LogVBox" unique_id=1101649824]
+[node name="LogTitle" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/LogPlaceholder/LogVBox" unique_id=1101649824]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.55, 0.866667, 0.85098, 1)
 text = "MOSS LOG"
 
-[node name="LogScrollContainer" type="ScrollContainer" parent="MainLayout/ContentRow/RightPanel/LogPlaceholder/LogVBox" unique_id=2001000001]
+[node name="LogScrollContainer" type="ScrollContainer" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/LogPlaceholder/LogVBox" unique_id=2001000001]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="LogEntryContainer" type="VBoxContainer" parent="MainLayout/ContentRow/RightPanel/LogPlaceholder/LogVBox/LogScrollContainer" unique_id=2001000002]
+[node name="LogEntryContainer" type="VBoxContainer" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/LogPlaceholder/LogVBox/LogScrollContainer" unique_id=2001000002]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="LogCursor" type="Label" parent="MainLayout/ContentRow/RightPanel/LogPlaceholder/LogVBox" unique_id=2001000003]
+[node name="LogCursor" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/LogPlaceholder/LogVBox" unique_id=2001000003]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.55, 0.866667, 0.85098, 1)
 text = "█"
 
+[node name="CommandDock" type="PanelContainer" parent="MainLayout" unique_id=1757861490]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 2
+
+[node name="CommandDockMargin" type="MarginContainer" parent="MainLayout/CommandDock" unique_id=892047756]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 0
+
+[node name="CommandButtonContainer" type="HBoxContainer" parent="MainLayout/CommandDock/CommandDockMargin" unique_id=107053379]
+unique_name_in_owner = true
+z_index = 10
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="CommandContextLabel" type="Label" parent="MainLayout/CommandDock/CommandDockMargin/CommandButtonContainer" unique_id=1038075949]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(320, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "未选择区域  //  请先选择区域"
+vertical_alignment = 1
+
 [node name="SectorInfoContainer" type="GridContainer" parent="MainLayout" unique_id=1437917960]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 160)
+custom_minimum_size = Vector2(0, 94)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
@@ -399,52 +439,45 @@ columns = 7
 
 [node name="SectorInfoAsia" parent="MainLayout/SectorInfoContainer" unique_id=845453540 instance=ExtResource("2_qcklt")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(150, 150)
+custom_minimum_size = Vector2(150, 84)
 size_flags_vertical = 3
 data_card = ExtResource("3_sjuws")
 
 [node name="SectorInfoNa" parent="MainLayout/SectorInfoContainer" unique_id=680731091 instance=ExtResource("2_qcklt")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(150, 150)
+custom_minimum_size = Vector2(150, 84)
 size_flags_vertical = 3
 data_card = ExtResource("4_lwoul")
 
 [node name="SectorInfoGovernment" parent="MainLayout/SectorInfoContainer" unique_id=883468909 instance=ExtResource("2_qcklt")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(150, 150)
+custom_minimum_size = Vector2(150, 84)
 size_flags_vertical = 3
 data_card = ExtResource("5_8e66l")
 
 [node name="SectorInfoAfrica" parent="MainLayout/SectorInfoContainer" unique_id=1001 instance=ExtResource("2_qcklt")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(150, 150)
+custom_minimum_size = Vector2(150, 84)
 size_flags_vertical = 3
 data_card = ExtResource("6_africa")
 
 [node name="SectorInfoRussia" parent="MainLayout/SectorInfoContainer" unique_id=1002 instance=ExtResource("2_qcklt")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(150, 150)
+custom_minimum_size = Vector2(150, 84)
 size_flags_vertical = 3
 data_card = ExtResource("7_russia")
 
 [node name="SectorInfoOceania" parent="MainLayout/SectorInfoContainer" unique_id=1003 instance=ExtResource("2_qcklt")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(150, 150)
+custom_minimum_size = Vector2(150, 84)
 size_flags_vertical = 3
 data_card = ExtResource("8_oceania")
 
 [node name="SectorInfoSouthAmerica" parent="MainLayout/SectorInfoContainer" unique_id=1004 instance=ExtResource("2_qcklt")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(150, 150)
+custom_minimum_size = Vector2(150, 84)
 size_flags_vertical = 3
 data_card = ExtResource("9_southam")
-
-[node name="CommandButtonContainer" type="HBoxContainer" parent="MainLayout" unique_id=107053379]
-unique_name_in_owner = true
-z_index = 10
-custom_minimum_size = Vector2(0, 32)
-layout_mode = 2
-theme_override_constants/separation = 12
 
 [node name="TechnologyScreen" parent="." unique_id=149477755 instance=ExtResource("17_technology_screen")]
 visible = false
@@ -475,8 +508,9 @@ layout_mode = 1
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="SituationPanel" parent="." instance=ExtResource("20_situation_panel")]
+[node name="SituationPanel" parent="." unique_id=308579437 instance=ExtResource("20_situation_panel")]
 unique_name_in_owner = true
+layout_mode = 1
 
 [connection signal="pressed" from="MainLayout/TopBarContainer/DecisionArchiveButton" to="." method="_on_decision_archive_button_pressed"]
 [connection signal="pressed" from="MainLayout/TopBarContainer/TechnologyButton" to="." method="_on_technology_button_pressed"]
