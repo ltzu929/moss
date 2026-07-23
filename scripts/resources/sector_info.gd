@@ -105,7 +105,7 @@ func _create_styles() -> void:
 ## 统一卡片文字与三项状态条的低饱和终端样式
 func _setup_text_and_bars() -> void:
 	title_label.add_theme_color_override("font_color", MOSS_THEME.TEXT_PRIMARY)
-	title_label.add_theme_font_size_override("font_size", 15)
+	title_label.add_theme_font_size_override("font_size", 14)
 
 	var bars: Array[ProgressBar] = [order_bar, hope_bar, authority_bar]
 	var colors: Array[Color] = [
@@ -124,7 +124,7 @@ func _setup_text_and_bars() -> void:
 			MOSS_THEME.progress_fill_style(colors[i])
 		)
 		bar.add_theme_color_override("font_color", MOSS_THEME.TEXT_PRIMARY)
-		bar.add_theme_font_size_override("font_size", 12)
+		bar.add_theme_font_size_override("font_size", 10)
 
 # ============================================================
 # 显示更新

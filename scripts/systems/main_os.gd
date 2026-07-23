@@ -747,6 +747,7 @@ func _refresh_situation_ui(focus_id: String = "") -> void:
 		if focus_id != "":
 			%SituationPanel.open_panel(focus_id)
 	update_situation_button()
+	_update_region_situation_summary_ui()
 	_sync_world_map_states()
 
 
@@ -1627,7 +1628,7 @@ func setup_main_ui_theme() -> void:
 
 	if has_node("%TechnologyButton"):
 		var technology_button := %TechnologyButton as Button
-		technology_button.custom_minimum_size = Vector2(120.0, 40.0)
+		technology_button.custom_minimum_size = Vector2(120.0, 44.0)
 		technology_button.add_theme_color_override(
 			"font_color",
 			MOSS_THEME.TEXT_PRIMARY
@@ -1656,7 +1657,7 @@ func setup_main_ui_theme() -> void:
 
 	if has_node("%DecisionArchiveButton"):
 		var archive_button := %DecisionArchiveButton as Button
-		archive_button.custom_minimum_size = Vector2(128.0, 40.0)
+		archive_button.custom_minimum_size = Vector2(128.0, 44.0)
 		archive_button.add_theme_color_override("font_color", MOSS_THEME.TEXT_PRIMARY)
 		archive_button.add_theme_stylebox_override(
 			"normal",
@@ -1671,18 +1672,95 @@ func setup_main_ui_theme() -> void:
 			MOSS_THEME.button_style(Color(0.016, 0.038, 0.050, 1.0), MOSS_THEME.ACCENT_CYAN)
 		)
 
+	if has_node("%SituationButton"):
+		var situation_button := %SituationButton as Button
+		situation_button.custom_minimum_size = Vector2(112.0, 44.0)
+		situation_button.add_theme_color_override("font_color", MOSS_THEME.TEXT_PRIMARY)
+		situation_button.add_theme_stylebox_override(
+			"normal",
+			MOSS_THEME.button_style(
+				Color(0.023, 0.050, 0.065, 0.94),
+				MOSS_THEME.BORDER
+			)
+		)
+		situation_button.add_theme_stylebox_override(
+			"hover",
+			MOSS_THEME.button_style(
+				Color(0.043, 0.095, 0.112, 0.98),
+				MOSS_THEME.ACCENT_CYAN
+			)
+		)
+		situation_button.add_theme_stylebox_override(
+			"pressed",
+			MOSS_THEME.button_style(
+				Color(0.016, 0.038, 0.050, 1.0),
+				MOSS_THEME.ACCENT_CYAN
+			)
+		)
 
-## 更新左侧区域详情面板
+	if has_node("%TimeControlButton"):
+		var time_button := %TimeControlButton as Button
+		time_button.custom_minimum_size = Vector2(80.0, 44.0)
+		time_button.add_theme_color_override("font_color", MOSS_THEME.ACCENT_CYAN)
+		time_button.add_theme_stylebox_override(
+			"normal",
+			MOSS_THEME.button_style(
+				Color(0.031, 0.072, 0.088, 0.98),
+				MOSS_THEME.BORDER_BRIGHT,
+				2
+			)
+		)
+		time_button.add_theme_stylebox_override(
+			"hover",
+			MOSS_THEME.button_style(
+				Color(0.050, 0.112, 0.126, 1.0),
+				MOSS_THEME.ACCENT_CYAN,
+				2
+			)
+		)
+
+	if has_node("%CommandDock"):
+		var command_dock := %CommandDock as PanelContainer
+		command_dock.add_theme_stylebox_override(
+			"panel",
+			MOSS_THEME.panel_style(
+				Color(0.021, 0.047, 0.064, 0.96),
+				MOSS_THEME.BORDER_BRIGHT
+			)
+		)
+	if has_node("%CommandContextLabel"):
+		%CommandContextLabel.add_theme_color_override(
+			"font_color",
+			MOSS_THEME.TEXT_SECONDARY
+		)
+		%CommandContextLabel.add_theme_font_size_override("font_size", 14)
+	if has_node("%RegionSituationLabel"):
+		%RegionSituationLabel.add_theme_color_override(
+			"font_color",
+			MOSS_THEME.ACCENT_GOLD
+		)
+	var situation_title_path := (
+		"MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/"
+		+ "SituationSummary/SituationSummaryTitle"
+	)
+	if has_node(situation_title_path):
+		var situation_title := get_node(situation_title_path) as Label
+		situation_title.add_theme_color_override("font_color", MOSS_THEME.ACCENT_CYAN)
+
+
+## 更新右侧上下文区域详情和指令坞
 ## 未选择区域时显示空状态，选择区域后显示对应 SectorData
 func update_region_detail_ui() -> void:
 	if selected_sector == null or selected_sector.data_card == null:
 		_set_text_if_exists("%RegionNameLabel", "未选择区域")
-		_set_text_if_exists("%RegionDescriptionLabel", "选择底部区域卡片以查看详情。")
+		_set_text_if_exists("%RegionDescriptionLabel", "选择地图或底部区域条以查看详情。")
 		_set_text_if_exists("%RegionRiskLabel", "状态：待选择")
 		_set_text_if_exists("%GlobalMapSelectedLabel", "全球态势监控中")
+		_set_text_if_exists("%CommandContextLabel", "未选择区域  //  请先选择区域")
 		_set_progress_if_exists("%RegionOrderBar", 0)
 		_set_progress_if_exists("%RegionHopeBar", 0)
 		_set_progress_if_exists("%RegionAuthorityBar", 0)
+		_update_region_situation_summary_ui()
 		_sync_strategic_views()
 		return
 
@@ -1691,10 +1769,44 @@ func update_region_detail_ui() -> void:
 	_set_text_if_exists("%RegionDescriptionLabel", data.description)
 	_set_text_if_exists("%RegionRiskLabel", _get_region_risk_text(data.authority))
 	_set_text_if_exists("%GlobalMapSelectedLabel", "当前监控：" + data.region_name)
+	_set_text_if_exists(
+		"%CommandContextLabel",
+		"当前选区：%s  //  选择指令" % data.region_name
+	)
 	_set_progress_if_exists("%RegionOrderBar", data.order)
 	_set_progress_if_exists("%RegionHopeBar", data.hope)
 	_set_progress_if_exists("%RegionAuthorityBar", data.authority)
+	_update_region_situation_summary_ui()
 	_sync_strategic_views()
+
+
+## 在上下文栏显示当前选区的局势摘要，完整配置仍由局势追踪面板承担。
+func _update_region_situation_summary_ui() -> void:
+	if not has_node("%RegionSituationLabel"):
+		return
+	if selected_sector == null or selected_sector.data_card == null:
+		%RegionSituationLabel.text = "选择区域后显示局势"
+		%RegionSituationLabel.tooltip_text = ""
+		return
+
+	var region_name: String = selected_sector.data_card.region_name
+	var summary := "当前无活跃局势"
+	for snapshot in get_situation_snapshots():
+		if str(snapshot.get("region_name", "")) != region_name:
+			continue
+		var monthly_delta := int(snapshot.get("expected_monthly_delta", 0))
+		var delta_prefix := "+" if monthly_delta > 0 else ""
+		summary = "%s｜%s %d%%｜下月 %s%d" % [
+			str(snapshot.get("title", "未命名局势")),
+			str(snapshot.get("stage_name", "预警")),
+			int(snapshot.get("severity", 0)),
+			delta_prefix,
+			monthly_delta,
+		]
+		break
+
+	%RegionSituationLabel.text = summary
+	%RegionSituationLabel.tooltip_text = summary
 
 
 ## 同步地图状态、地图选区和地球聚焦
@@ -2401,9 +2513,10 @@ func setup_command_buttons() -> void:
 		push_error("找不到CommandButtonContainer")
 		return
 
-	# 清空现有按钮
+	# 只清空动态指令按钮，保留指令坞中的当前选区提示。
 	for child in button_container.get_children():
-		child.queue_free()
+		if child is CommandButton:
+			child.queue_free()
 
 	# 为每个指令创建按钮
 	for cmd in available_commands:

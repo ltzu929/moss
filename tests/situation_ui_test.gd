@@ -29,8 +29,14 @@ func _ready() -> void:
 func _assert_hud_entry() -> void:
 	_assert_true(_main_os.has_node("%SituationButton"), "顶部栏应存在局势入口")
 	_assert_true(_main_os.has_node("%TimeControlButton"), "顶部栏应存在暂停/继续按钮")
+	_assert_true(_main_os.has_node("%RegionSituationLabel"), "上下文栏应存在当前选区局势摘要")
+	_assert_true(_main_os.has_node("%CommandContextLabel"), "指令坞应显示当前选区提示")
 	_assert_true(_panel != null, "主场景应挂载非模态局势面板")
 	_assert_eq((_main_os.get_node("%SituationButton") as Button).text, "局势  0 / 2", "局势入口应显示全局并发上限")
+	_assert_true(
+		"请先选择区域" in (_main_os.get_node("%CommandContextLabel") as Label).text,
+		"未选择区域时指令坞应说明前置操作"
+	)
 
 
 func _assert_situation_details_and_approach() -> void:
@@ -40,6 +46,16 @@ func _assert_situation_details_and_approach() -> void:
 	await get_tree().process_frame
 	_assert_true(not snapshot.is_empty(), "测试局势应能从主场景启动")
 	_assert_true(_panel.visible, "新局势详情应可作为非模态面板打开")
+	_main_os.select_sector(_main_os.get_node("%SectorInfoAsia") as SectorInfo)
+	await get_tree().process_frame
+	_assert_true(
+		"区域电网负荷失衡" in (_main_os.get_node("%RegionSituationLabel") as Label).text,
+		"选中区域后上下文栏应显示该区域的活跃局势"
+	)
+	_assert_true(
+		"当前选区：亚洲" in (_main_os.get_node("%CommandContextLabel") as Label).text,
+		"选中区域后指令坞应同步当前选区"
+	)
 	_assert_eq((_main_os.get_node("%SituationButton") as Button).text, "局势  1 / 2", "顶部入口应同步活跃局势数量")
 	_assert_eq((_panel.get_node("%DetailTitle") as Label).text, "区域电网负荷失衡", "详情页应显示局势标题")
 	_assert_eq((_panel.get_node("%SituationProgress") as ProgressBar).value, 38.0, "严重度进度条应显示当前风险")

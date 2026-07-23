@@ -180,8 +180,11 @@ func _verify_scene_integrity() -> bool:
 		"Timer",
 		"%TopBarContainer",
 		"MainLayout/ContentRow",
+		"MainLayout/ContentRow/ContextPanel",
 		"%SectorInfoContainer",
+		"%CommandDock",
 		"%CommandButtonContainer",
+		"%CommandContextLabel",
 		"%EventPopup",
 		"%TechnologySystem",
 		"%TechnologyScreen",
@@ -195,6 +198,7 @@ func _verify_scene_integrity() -> bool:
 		"%GlobalAuthorityLabel",
 		"%WorldMapView",
 		"%RegionOrbitalView",
+		"%RegionSituationLabel",
 	]
 
 	for path in node_paths:
@@ -322,29 +326,46 @@ func _verify_1080p_layout_contract() -> bool:
 
 	var top_bar: HBoxContainer = _main_os.get_node("%TopBarContainer") as HBoxContainer
 	var header_height := top_bar.custom_minimum_size.y
-	_assert_true(header_height >= 56.0 and header_height <= 72.0, "顶部状态栏高度应适配1080P HUD", "ui_layout")
-	ok = (header_height >= 56.0 and header_height <= 72.0) and ok
+	_assert_true(
+		header_height >= 48.0 and header_height <= 56.0,
+		"顶部状态栏应保持紧凑并适配1080P HUD",
+		"ui_layout"
+	)
+	ok = (header_height >= 48.0 and header_height <= 56.0) and ok
 
-	var left_panel: PanelContainer = (
-		_main_os.get_node("MainLayout/ContentRow/LeftPanel") as PanelContainer
+	var context_panel := (
+		_main_os.get_node("MainLayout/ContentRow/ContextPanel") as PanelContainer
 	)
-	var right_panel: VBoxContainer = (
-		_main_os.get_node("MainLayout/ContentRow/RightPanel") as VBoxContainer
+	_assert_eq(
+		int(context_panel.custom_minimum_size.x),
+		420,
+		"右侧单一上下文栏宽度应为420",
+		"ui_layout"
 	)
-	_assert_eq(int(left_panel.custom_minimum_size.x), 360, "左侧区域详情宽度应为360", "ui_layout")
-	_assert_eq(int(right_panel.custom_minimum_size.x), 420, "右侧信息栏宽度应为420", "ui_layout")
-	ok = (int(left_panel.custom_minimum_size.x) == 360) and ok
-	ok = (int(right_panel.custom_minimum_size.x) == 420) and ok
+	ok = (int(context_panel.custom_minimum_size.x) == 420) and ok
 
 	var sector_container: GridContainer = _main_os.get_node("%SectorInfoContainer") as GridContainer
-	_assert_eq(int(sector_container.custom_minimum_size.y), 160, "底部区域卡片栏高度应为160", "ui_layout")
-	ok = (int(sector_container.custom_minimum_size.y) == 160) and ok
+	_assert_eq(
+		int(sector_container.custom_minimum_size.y),
+		94,
+		"底部区域比较条高度应为94",
+		"ui_layout"
+	)
+	ok = (int(sector_container.custom_minimum_size.y) == 94) and ok
+
+	var command_dock := _main_os.get_node("%CommandDock") as PanelContainer
+	_assert_eq(int(command_dock.custom_minimum_size.y), 54, "指令坞高度应为54", "ui_layout")
+	ok = (int(command_dock.custom_minimum_size.y) == 54) and ok
 
 	var command_container: HBoxContainer = (
 		_main_os.get_node("%CommandButtonContainer") as HBoxContainer
 	)
-	_assert_true(command_container.custom_minimum_size.y <= 36.0, "底部命令栏不应挤压1080P主视图", "ui_layout")
-	ok = (command_container.custom_minimum_size.y <= 36.0) and ok
+	_assert_true(
+		command_container.custom_minimum_size.y <= 40.0,
+		"指令坞内容不应挤压1080P主视图",
+		"ui_layout"
+	)
+	ok = (command_container.custom_minimum_size.y <= 40.0) and ok
 
 	return ok
 
@@ -357,35 +378,36 @@ func _verify_hud_layout_contract() -> bool:
 		return false
 
 	var content_row: HBoxContainer = _main_os.get_node("MainLayout/ContentRow") as HBoxContainer
-	var content_order: Array[String] = ["LeftPanel", "CenterPanel", "RightPanel"]
+	var content_order: Array[String] = ["CenterPanel", "ContextPanel"]
 	ok = _assert_child_order(
 		content_row,
 		content_order,
-		"主内容三栏"
+		"地图优先主内容"
 	) and ok
 
-	if not _main_os.has_node("MainLayout/ContentRow/RightPanel"):
-		_assert_true(false, "缺少右侧信息栏", "ui_layout")
+	if not _main_os.has_node("MainLayout/ContentRow/ContextPanel"):
+		_assert_true(false, "缺少右侧上下文栏", "ui_layout")
 		return false
 
-	var right_panel: VBoxContainer = (
-		_main_os.get_node("MainLayout/ContentRow/RightPanel") as VBoxContainer
+	var context_vbox: VBoxContainer = (
+		_main_os.get_node(
+			"MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox"
+		) as VBoxContainer
 	)
-	var right_panel_order: Array[String] = [
+	var context_panel_order: Array[String] = [
+		"ContextTitle",
 		"RegionOrbitalPanel",
-		"GlobalOverviewPanel",
-		"LogPlaceholder",
 	]
 	ok = _assert_child_order(
-		right_panel,
-		right_panel_order,
-		"右侧信息栏"
+		context_vbox,
+		context_panel_order,
+		"右侧上下文栏"
 	) and ok
 
 	if _main_os.has_node("%TopBarContainer"):
 		var top_bar: HBoxContainer = _main_os.get_node("%TopBarContainer") as HBoxContainer
-		var readable_top_bar := top_bar.custom_minimum_size.y >= 56.0
-		_assert_true(readable_top_bar, "顶部状态栏高度应保持宽松", "ui_layout")
+		var readable_top_bar := top_bar.custom_minimum_size.y >= 48.0
+		_assert_true(readable_top_bar, "顶部状态栏应保持可读", "ui_layout")
 		ok = readable_top_bar and ok
 	else:
 		_assert_true(false, "缺少顶部状态栏", "ui_layout")
@@ -399,15 +421,18 @@ func _verify_hud_layout_contract() -> bool:
 	)
 	ok = not has_moss_status_panel and ok
 
-	if _main_os.has_node("MainLayout/ContentRow/RightPanel/LogPlaceholder"):
+	var log_path := (
+		"MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/LogPlaceholder"
+	)
+	if _main_os.has_node(log_path):
 		var log_panel: Control = _main_os.get_node(
-			"MainLayout/ContentRow/RightPanel/LogPlaceholder"
+			log_path
 		) as Control
 		var log_expands := (
 			log_panel != null
 			and log_panel.size_flags_vertical == Control.SIZE_EXPAND_FILL
 		)
-		_assert_true(log_expands, "MOSS LOG 应填满右栏剩余高度", "ui_layout")
+		_assert_true(log_expands, "MOSS LOG 应填满上下文栏剩余高度", "ui_layout")
 		ok = log_expands and ok
 
 	if _main_os.has_node("%SectorInfoContainer"):
