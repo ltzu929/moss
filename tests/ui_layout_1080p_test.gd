@@ -16,6 +16,7 @@ func _ready() -> void:
 	(main_os.get_node("Timer") as Timer).stop()
 
 	_assert_runtime_geometry(main_os)
+	await _assert_europe_selection_keeps_geometry(main_os)
 
 	main_os.queue_free()
 	print("[MOSS-UI-LAYOUT-1080P] 完成，失败断言：%d" % _failed)
@@ -46,6 +47,31 @@ func _assert_runtime_geometry(main_os: Control) -> void:
 		layout_rect.end.x <= viewport_size.x and layout_rect.end.y <= viewport_size.y,
 		"主布局不应越过视口右下边界，实际为%s" % layout_rect
 	)
+
+
+func _assert_europe_selection_keeps_geometry(main_os: Control) -> void:
+	var content_row := main_os.get_node("MainLayout/ContentRow") as Control
+	var world_map := main_os.get_node("%WorldMapView") as WorldMapView
+	var before_content_rect := content_row.get_global_rect()
+	var before_map_rect := world_map.get_global_rect()
+
+	world_map.region_selected.emit("欧洲")
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	_assert_true(
+		(main_os.get_node("%RegionNameLabel") as Label).text == "欧洲",
+		"点击欧洲后应选中欧洲板块"
+	)
+	_assert_true(
+		content_row.get_global_rect().is_equal_approx(before_content_rect),
+		"点击欧洲前后中央内容区几何应保持不变"
+	)
+	_assert_true(
+		world_map.get_global_rect().is_equal_approx(before_map_rect),
+		"点击欧洲前后世界地图几何应保持不变"
+	)
+	_assert_runtime_geometry(main_os)
 
 
 func _assert_true(value: bool, message: String) -> void:

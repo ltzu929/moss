@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_ndvs4")
 region_name = "欧洲"
-description = "欧洲是合并后的抽象势力板块，汇总治理中枢与高纬度发动机群压力；组织度较高，但长期高压削弱了社会希望。"
+description = "欧洲合并治理中枢与高纬度发动机群，组织度较高，但长期高压削弱了社会希望。"
 order = 70
 hope = 38
 authority = 27
