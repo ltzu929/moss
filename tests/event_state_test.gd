@@ -432,7 +432,7 @@ func _create_named_event(title: String, year: int, description: String) -> GameE
 	event.event_title = title
 	event.event_time = year
 	event.event_month = 1
-	event.event_region = "联合政府"
+	event.event_region = "欧洲"
 	event.event_description = description
 	return event
 

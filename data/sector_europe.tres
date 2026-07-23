@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SectorData" format=3 uid="uid://dthd18iep6jve"]
+
+[ext_resource type="Script" uid="uid://c3mp30tv2pifk" path="res://scripts/resources/sector_data.gd" id="1_ndvs4"]
+
+[resource]
+script = ExtResource("1_ndvs4")
+region_name = "欧洲"
+description = "欧洲是合并后的抽象势力板块，汇总治理中枢与高纬度发动机群压力；组织度较高，但长期高压削弱了社会希望。"
+order = 70
+hope = 38
+authority = 27
+population = 13500000
+metadata/_custom_type_script = "uid://c3mp30tv2pifk"

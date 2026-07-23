@@ -1835,11 +1835,10 @@ func _sync_world_map_states() -> void:
 
 	for snapshot in _situation_system.get_active_snapshots():
 		var region_name := str(snapshot.get("region_name", ""))
-		var map_region := "亚洲" if region_name == "俄罗斯" else region_name
-		if not states.has(map_region):
+		if not states.has(region_name):
 			continue
-		states[map_region]["situation_count"] = (
-			int(states[map_region].get("situation_count", 0)) + 1
+		states[region_name]["situation_count"] = (
+			int(states[region_name].get("situation_count", 0)) + 1
 		)
 
 	if world_map.has_method("set_region_states"):

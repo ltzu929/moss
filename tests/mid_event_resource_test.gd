@@ -5,12 +5,11 @@ extends Node
 const MAIN_SCENE: PackedScene = preload("res://scenes/main_os.tscn")
 const VALID_REGIONS: Array[String] = [
 	"亚洲",
+	"欧洲",
 	"非洲",
-	"俄罗斯",
 	"北美",
 	"南美",
 	"大洋洲",
-	"联合政府",
 ]
 const MID_EVENT_SPECS := {
 	"event_state.mid_01_lottery_ordering": [2045, ["manual_review", "moss_optimized", "security_lockdown"]],

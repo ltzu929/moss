@@ -6,9 +6,8 @@
 [ext_resource type="Resource" uid="uid://bgrmda00hq7ef" path="res://data/events/event_2044_space_elevator_crisis.tres" id="3_b37nj"]
 [ext_resource type="Resource" uid="uid://de5nghry0twj7" path="res://data/sector_asia.tres" id="3_sjuws"]
 [ext_resource type="Resource" uid="uid://c5g8pdsgsa214" path="res://data/sector_na.tres" id="4_lwoul"]
-[ext_resource type="Resource" uid="uid://dthd18iep6jve" path="res://data/sector_ueg.tres" id="5_8e66l"]
+[ext_resource type="Resource" uid="uid://dthd18iep6jve" path="res://data/sector_europe.tres" id="5_8e66l"]
 [ext_resource type="Resource" uid="uid://cfrica001" path="res://data/sector_africa.tres" id="6_africa"]
-[ext_resource type="Resource" uid="uid://crussia001" path="res://data/sector_russia.tres" id="7_russia"]
 [ext_resource type="Resource" uid="uid://coceania001" path="res://data/sector_oceania.tres" id="8_oceania"]
 [ext_resource type="PackedScene" uid="uid://dellv4e6qlqpr" path="res://scenes/allocate_popup.tscn" id="9_a8ufc"]
 [ext_resource type="PackedScene" uid="uid://jls1m2vbj8iu" path="res://scenes/event_popup.tscn" id="9_b37nj"]
@@ -435,7 +434,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 4
 theme_override_constants/h_separation = 8
 theme_override_constants/v_separation = 8
-columns = 7
+columns = 6
 
 [node name="SectorInfoAsia" parent="MainLayout/SectorInfoContainer" unique_id=845453540 instance=ExtResource("2_qcklt")]
 unique_name_in_owner = true
@@ -449,7 +448,7 @@ custom_minimum_size = Vector2(150, 84)
 size_flags_vertical = 3
 data_card = ExtResource("4_lwoul")
 
-[node name="SectorInfoGovernment" parent="MainLayout/SectorInfoContainer" unique_id=883468909 instance=ExtResource("2_qcklt")]
+[node name="SectorInfoEurope" parent="MainLayout/SectorInfoContainer" unique_id=883468909 instance=ExtResource("2_qcklt")]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(150, 84)
 size_flags_vertical = 3
@@ -460,12 +459,6 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(150, 84)
 size_flags_vertical = 3
 data_card = ExtResource("6_africa")
-
-[node name="SectorInfoRussia" parent="MainLayout/SectorInfoContainer" unique_id=1002 instance=ExtResource("2_qcklt")]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(150, 84)
-size_flags_vertical = 3
-data_card = ExtResource("7_russia")
 
 [node name="SectorInfoOceania" parent="MainLayout/SectorInfoContainer" unique_id=1003 instance=ExtResource("2_qcklt")]
 unique_name_in_owner = true

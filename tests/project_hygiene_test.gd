@@ -12,6 +12,8 @@ const OBSOLETE_PATHS: Array[String] = [
 	"res://scenes/moss_status_panel.tscn",
 	"res://scripts/ui/moss_status_panel.gd",
 	"res://scripts/ui/moss_status_panel.gd.uid",
+	"res://data/sector_ueg.tres",
+	"res://data/sector_russia.tres",
 ]
 
 const RETAINED_SCENES: Array[String] = [

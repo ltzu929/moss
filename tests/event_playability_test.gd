@@ -3,6 +3,44 @@ extends Node
 
 const EVENT_DIRECTORY := "res://data/events/"
 const EVENT_POPUP_SCENE: PackedScene = preload("res://scenes/event_popup.tscn")
+const VALID_EVENT_REGIONS: Array[String] = [
+	"北美",
+	"南美",
+	"欧洲",
+	"非洲",
+	"亚洲",
+	"大洋洲",
+]
+const EVENT_DESCRIPTION_CONTRACTS: Dictionary = {
+	"event_2065_ai_isolation_audit.tres": {
+		"required": "联合政府",
+		"forbidden": "欧洲势力",
+	},
+	"event_mid_02_automation_interface_hearing.tres": {
+		"required": "UEG",
+		"forbidden": "欧洲势力",
+	},
+	"event_mid_13_post_audit_interface_restructure.tres": {
+		"required": "UEG",
+		"forbidden": "欧洲势力",
+	},
+	"event_mid_15_propulsion_window_compression_report.tres": {
+		"required": "UEG",
+		"forbidden": "欧洲势力",
+	},
+	"event_mid_16_civilization_backup_ethics_hearing.tres": {
+		"required": "UEG",
+		"forbidden": "欧洲势力",
+	},
+	"event_mid_17_final_authorization_meeting.tres": {
+		"required": "UEG",
+		"forbidden": "欧洲势力",
+	},
+	"event_2070_siberian_engine_overload.tres": {
+		"required": "西伯利亚发动机群",
+		"forbidden": "欧洲负责",
+	},
+}
 
 var _failed: int = 0
 
@@ -28,6 +66,25 @@ func _assert_all_events_have_safe_choices() -> void:
 		event_count += 1
 		_assert_true(not event.event_title.is_empty(), "事件标题不得为空：%s" % file_name)
 		_assert_true(not event.event_region.is_empty(), "事件地区不得为空：%s" % file_name)
+		_assert_true(
+			event.event_region in VALID_EVENT_REGIONS,
+			"事件地区必须对应现有板块：%s -> %s" % [file_name, event.event_region]
+		)
+		if EVENT_DESCRIPTION_CONTRACTS.has(file_name):
+			var contract: Dictionary = EVENT_DESCRIPTION_CONTRACTS[file_name]
+			var required_text := str(contract.get("required", ""))
+			var forbidden_text := str(contract.get("forbidden", ""))
+			_assert_true(
+				required_text in event.event_description,
+				"事件正文应保留世界观主体：%s -> %s" % [file_name, required_text]
+			)
+			_assert_true(
+				forbidden_text not in event.event_description,
+				"事件正文不应把数值归属写成组织身份：%s -> %s" % [
+					file_name,
+					forbidden_text,
+				]
+			)
 		_assert_true(not event.options.is_empty(), "事件至少需要一个方案：%s" % event.event_title)
 		var has_zero_energy_option := false
 		for option in event.options:
@@ -56,7 +113,7 @@ func _assert_runtime_emergency_fallback() -> void:
 	var event := GameEvent.new()
 	event.event_title = "防软锁测试"
 	event.event_time = 2050
-	event.event_region = "联合政府"
+	event.event_region = "欧洲"
 	event.event_description = "所有配置方案都超过当前能源。"
 	event.options = [
 		_create_option("高成本方案", 20),
