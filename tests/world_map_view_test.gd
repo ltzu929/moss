@@ -5,7 +5,8 @@ extends Node
 const MAP_SIZE := Vector2(1603.0, 1004.0)
 const RESIZED_MAP_SIZE := Vector2(1920.0, 1080.0)
 const ASIA_MASK_PATH := "res://assets/ui/world-map/mask_asia.png"
-const TEST_REGIONS: Array[String] = ["北美", "南美", "非洲", "亚洲", "大洋洲"]
+const EUROPE_MASK_PATH := "res://assets/ui/world-map/mask_europe_reference.png"
+const TEST_REGIONS: Array[String] = ["北美", "南美", "欧洲", "非洲", "亚洲", "大洋洲"]
 const SITUATION_PATHS: Array[String] = [
 	"res://data/situations/emergency_communication_congestion.tres",
 	"res://data/situations/regional_power_instability.tres",
@@ -54,7 +55,7 @@ func _ready() -> void:
 
 func _assert_region_names() -> void:
 	var names: Array = _world_map.call("get_region_names")
-	_assert_eq(names.size(), TEST_REGIONS.size(), "get_region_names 应只返回五个可点击区域")
+	_assert_eq(names.size(), TEST_REGIONS.size(), "get_region_names 应只返回六个可点击区域")
 	for region_name in TEST_REGIONS:
 		_assert_true(region_name in names, "应包含可点击区域：%s" % region_name)
 
@@ -67,15 +68,15 @@ func _assert_situation_targets_have_map_warnings() -> void:
 		if data == null:
 			continue
 		for region_name in data.eligible_regions:
-			var map_region := "亚洲" if region_name == "俄罗斯" else region_name
 			_assert_true(
-				map_region in names,
+				region_name in names,
 				"%s 的合法目标 %s 应能映射到地图警示" % [data.title, region_name]
 			)
 
 
 func _assert_clear_asset_names() -> void:
 	_assert_true(FileAccess.file_exists(ASIA_MASK_PATH), "亚洲遮罩应使用清晰文件名 mask_asia.png")
+	_assert_true(FileAccess.file_exists(EUROPE_MASK_PATH), "欧洲遮罩资源应存在")
 
 
 func _assert_masks_loaded() -> void:
@@ -95,6 +96,7 @@ func _assert_editor_preview_contract(world_map_script: GDScript) -> void:
 	for property_name in [
 		"north_america_label_position",
 		"south_america_label_position",
+		"europe_label_position",
 		"africa_label_position",
 		"asia_label_position",
 		"oceania_label_position",
@@ -104,17 +106,17 @@ func _assert_editor_preview_contract(world_map_script: GDScript) -> void:
 	if _world_map.has_method("_load_editor_preview_states"):
 		_world_map.call("_load_editor_preview_states")
 		var states: Dictionary = _world_map.get("_region_states")
-		_assert_eq(states.size(), TEST_REGIONS.size(), "编辑器预览应加载五个区域状态")
+		_assert_eq(states.size(), TEST_REGIONS.size(), "编辑器预览应加载六个区域状态")
 
 
 func _assert_mask_hit_testing() -> void:
 	_assert_region_at(Vector2(860.0, 470.0), "", "透明海洋不应命中区域")
-	_assert_region_at(Vector2(358.0, 159.0), "", "欧洲参考层不应命中区域")
+	_assert_region_at(Vector2(358.0, 159.0), "欧洲", "欧洲代表点应命中欧洲")
 	_assert_region_at(Vector2(734.0, 951.0), "", "南极洲参考层不应命中区域")
 	_assert_region_at(Vector2(260.0, 455.0), "非洲", "非洲代表点应命中非洲")
 	_assert_region_at(Vector2(1195.0, 177.0), "北美", "北美代表点应命中北美")
 	_assert_region_at(Vector2(575.0, 255.0), "亚洲", "亚洲代表点应命中亚洲")
-	_assert_region_at(Vector2(600.0, 150.0), "亚洲", "俄罗斯所在遮罩应返回亚洲")
+	_assert_region_at(Vector2(600.0, 150.0), "亚洲", "北亚代表点应命中亚洲")
 
 
 func _assert_resized_map_hit_testing() -> void:
@@ -128,6 +130,11 @@ func _assert_resized_map_hit_testing() -> void:
 		_world_map.call("_region_at_position", _map_pixel_to_control(Vector2(575.0, 255.0))),
 		"亚洲",
 		"缩放后亚洲代表点仍应命中亚洲"
+	)
+	_assert_eq(
+		_world_map.call("_region_at_position", _map_pixel_to_control(Vector2(358.0, 159.0))),
+		"欧洲",
+		"缩放后欧洲代表点仍应命中欧洲"
 	)
 	_assert_eq(
 		_world_map.call(
@@ -154,6 +161,10 @@ func _assert_selection_signal() -> void:
 	click.position = Vector2(860.0, 470.0)
 	_world_map.call("_gui_input", click)
 	_assert_eq(_selected_region, "", "点击地图海洋或空白处应发出空区域用于取消选中")
+
+	click.position = Vector2(358.0, 159.0)
+	_world_map.call("_gui_input", click)
+	_assert_eq(_selected_region, "欧洲", "点击欧洲遮罩应发出 region_selected('欧洲')")
 
 
 func _assert_main_scene_loads() -> void:
@@ -195,6 +206,14 @@ func _assert_blank_map_click_deselects_main_scene() -> void:
 	)
 
 	var world_map := main_os.get_node("%WorldMapView") as WorldMapView
+	world_map.region_selected.emit("欧洲")
+	await get_tree().process_frame
+	_assert_eq(
+		(main_os.get_node("%RegionNameLabel") as Label).text,
+		"欧洲",
+		"中央地图点击欧洲应选中欧洲板块"
+	)
+
 	world_map.region_selected.emit("")
 	await get_tree().process_frame
 	_assert_eq(

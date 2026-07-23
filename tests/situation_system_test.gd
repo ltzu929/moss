@@ -41,8 +41,12 @@ func _assert_content_contract() -> void:
 		_assert_eq(data.approaches.size(), 3, "%s 应提供三种局势专属方针" % data.title)
 		_assert_true(not data.command_interventions.is_empty(), "%s 应响应现有指令" % data.title)
 		_assert_true(
-			"联合政府" not in data.eligible_regions,
-			"%s 不应生成在地图外目标" % data.title
+			"欧洲" in data.eligible_regions,
+			"%s 应允许生成在欧洲板块" % data.title
+		)
+		_assert_true(
+			"联合政府" not in data.eligible_regions and "俄罗斯" not in data.eligible_regions,
+			"%s 不应保留已删除的旧势力目标" % data.title
 		)
 	_assert_true("regional_power_instability" in ids, "应包含区域电网负荷失衡")
 	_assert_true("emergency_communication_congestion" in ids, "应包含应急通信拥塞")

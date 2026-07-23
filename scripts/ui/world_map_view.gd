@@ -7,11 +7,12 @@ signal region_selected(region_name: String)
 ## MOSS 界面主题工具
 const MOSS_THEME := preload("res://scripts/ui/moss_ui_theme.gd")
 const WORLD_OUTLINE_PATH := "res://assets/ui/world-map/world_outline_gray.png"
-const REGION_ORDER := ["北美", "南美", "非洲", "亚洲", "大洋洲"]
+const REGION_ORDER := ["北美", "南美", "欧洲", "非洲", "亚洲", "大洋洲"]
 const MASK_ALPHA_THRESHOLD := 0.35
 const REGION_TEXTURE_PATHS := {
 	"北美": "res://assets/ui/world-map/mask_north_america.png",
 	"南美": "res://assets/ui/world-map/mask_south_america.png",
+	"欧洲": "res://assets/ui/world-map/mask_europe_reference.png",
 	"非洲": "res://assets/ui/world-map/mask_africa.png",
 	"亚洲": "res://assets/ui/world-map/mask_asia.png",
 	"大洋洲": "res://assets/ui/world-map/mask_oceania.png",
@@ -19,6 +20,7 @@ const REGION_TEXTURE_PATHS := {
 const EDITOR_PREVIEW_SECTOR_PATHS := {
 	"北美": "res://data/sector_na.tres",
 	"南美": "res://data/sector_south_america.tres",
+	"欧洲": "res://data/sector_europe.tres",
 	"非洲": "res://data/sector_africa.tres",
 	"亚洲": "res://data/sector_asia.tres",
 	"大洋洲": "res://data/sector_oceania.tres",
@@ -33,6 +35,11 @@ const EDITOR_PREVIEW_SECTOR_PATHS := {
 @export var south_america_label_position := Vector2(0.90, 0.59):
 	set(value):
 		south_america_label_position = value
+		if is_inside_tree():
+			_sync_label_positions()
+@export var europe_label_position := Vector2(0.22, 0.20):
+	set(value):
+		europe_label_position = value
 		if is_inside_tree():
 			_sync_label_positions()
 @export var africa_label_position := Vector2(0.15, 0.47):
@@ -85,6 +92,7 @@ func _sync_label_positions() -> void:
 	_label_positions = {
 		"北美": north_america_label_position,
 		"南美": south_america_label_position,
+		"欧洲": europe_label_position,
 		"非洲": africa_label_position,
 		"亚洲": asia_label_position,
 		"大洋洲": oceania_label_position,
@@ -114,7 +122,7 @@ func set_region_states(states: Dictionary) -> void:
 
 
 func set_selected_region(region_name: String) -> void:
-	_selected_region = _map_region_name(region_name)
+	_selected_region = region_name
 	queue_redraw()
 
 
@@ -340,9 +348,3 @@ func _region_at_position(local_position: Vector2) -> String:
 
 func _normalized_to_map(point: Vector2, map_rect: Rect2) -> Vector2:
 	return map_rect.position + Vector2(point.x * map_rect.size.x, point.y * map_rect.size.y)
-
-
-func _map_region_name(region_name: String) -> String:
-	if region_name == "俄罗斯":
-		return "亚洲"
-	return region_name

@@ -215,16 +215,15 @@ func _verify_scene_integrity() -> bool:
 	# 检查板块初始控制权
 	if _main_os.has_node("%SectorInfoContainer"):
 		var sectors: Array[Node] = _main_os.get_node("%SectorInfoContainer").get_children()
-		_assert_eq(sectors.size(), 7, "场景中应有7个板块", "scene_integrity")
+		_assert_eq(sectors.size(), 6, "场景中应有6个板块", "scene_integrity")
 
 		var initial_authorities: Dictionary = {
 			"亚洲": 24,
 			"北美": 26,
-			"俄罗斯": 25,
+			"欧洲": 27,
 			"非洲": 18,
 			"南美": 17,
 			"大洋洲": 20,
-			"联合政府": 30,
 		}
 
 		for sector in sectors:
