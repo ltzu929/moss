@@ -116,7 +116,11 @@ func _assert_mask_hit_testing() -> void:
 	_assert_region_at(Vector2(260.0, 455.0), "非洲", "非洲代表点应命中非洲")
 	_assert_region_at(Vector2(1195.0, 177.0), "北美", "北美代表点应命中北美")
 	_assert_region_at(Vector2(575.0, 255.0), "亚洲", "亚洲代表点应命中亚洲")
-	_assert_region_at(Vector2(600.0, 150.0), "亚洲", "北亚代表点应命中亚洲")
+	_assert_region_at(
+		Vector2(600.0, 150.0),
+		"亚洲",
+		"西伯利亚地理位置应按大陆遮罩命中亚洲"
+	)
 
 
 func _assert_resized_map_hit_testing() -> void:
