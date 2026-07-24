@@ -50,6 +50,14 @@ func _assert_content_contract() -> void:
 		_assert_eq(data.approaches.size(), 3, "%s 应提供三种局势专属方针" % data.title)
 		_assert_true(not data.command_interventions.is_empty(), "%s 应响应现有指令" % data.title)
 		_assert_true(not data.eligible_regions.is_empty(), "%s 应配置明确适用地区" % data.title)
+		for approach in data.approaches:
+			_assert_true(
+				data.monthly_growth + approach.monthly_severity_delta < 0,
+				"%s 的“%s”在供给充足时应能自然恢复" % [
+					data.title,
+					approach.display_name,
+				]
+			)
 		_assert_true(
 			"联合政府" not in data.eligible_regions and "俄罗斯" not in data.eligible_regions,
 			"%s 不应保留已删除的旧势力目标" % data.title
@@ -197,6 +205,30 @@ func _assert_node_resolution_and_history() -> void:
 		"分段人工撤离" in str(repeated.get("history_echo", "")),
 		"同地区同类局势再次出现时应显示上次节点选择回声"
 	)
+	var repeated_id := str(repeated.get("instance_id", ""))
+	var repeated_started := system._build_notification(
+		"started",
+		system._active[0],
+		"重复局势开始。",
+		true
+	)
+	_assert_true(
+		"历史回声" in str(repeated_started.get("message", ""))
+		and "分段人工撤离" in str(repeated_started.get("message", "")),
+		"重复局势开始记录应包含上次处置回声"
+	)
+	system.set_approach(repeated_id, "local_survey", 20)
+	var repeated_notifications: Array = []
+	var repeated_result := system.apply_command_intervention("technology_aid", "亚洲", sectors)
+	repeated_notifications.append_array(repeated_result.get("notifications", []))
+	repeated_result = system.apply_command_intervention("technology_aid", "亚洲", sectors)
+	repeated_notifications.append_array(repeated_result.get("notifications", []))
+	var repeated_messages := _notification_messages(repeated_notifications)
+	_assert_true(
+		"历史回声" in "\n".join(repeated_messages)
+		and "分段人工撤离" in "\n".join(repeated_messages),
+		"重复局势结算记录应包含上次处置回声"
+	)
 	_assert_true(
 		not system.export_state().get("history", {}).is_empty(),
 		"局势历史应进入未来存档快照"
@@ -237,6 +269,25 @@ func _assert_conditional_opportunity_contract() -> void:
 	)
 	_assert_eq(str(started.get("stage_name", "")), "收窄", "机会型局势应使用专属阶段文案")
 	_assert_true(bool(started.get("node", {}).get("pending", false)), "机会出现时应立即等待利用方式")
+	var opportunity_id := str(started.get("instance_id", ""))
+	var opportunity_sector := _create_sector("南美")
+	var opportunity_sectors: Array[SectorData] = [opportunity_sector]
+	system.resolve_node(opportunity_id, "local_compact", 0, 0, opportunity_sectors)
+	system._active[0]["severity"] = 97
+	var closed := system.process_month(opportunity_sectors, 0, 0, false, 2056, 7)
+	_assert_true(
+		"协作窗口已经关闭" in "\n".join(
+			_notification_messages(closed.get("notifications", []))
+		),
+		"机会型局势关闭时应使用窗口语义"
+	)
+	var repeated_opportunity := system.start_situation_for_test(
+		"regional_mutual_aid_window", "南美", 2062, 4
+	)
+	_assert_true(
+		"协作窗口关闭" in str(repeated_opportunity.get("history_echo", "")),
+		"机会型历史回声不应描述为处置失控"
+	)
 
 
 func _assert_command_intervention_and_outcome() -> void:
@@ -288,8 +339,15 @@ func _create_sector(region_name: String) -> SectorData:
 
 func _notification_types(notifications: Array) -> Array[String]:
 	var result: Array[String] = []
-	for notification in notifications:
-		result.append(str(notification.get("type", "")))
+	for notification_entry in notifications:
+		result.append(str(notification_entry.get("type", "")))
+	return result
+
+
+func _notification_messages(notifications: Array) -> Array[String]:
+	var result: Array[String] = []
+	for notification_entry in notifications:
+		result.append(str(notification_entry.get("message", "")))
 	return result
 
 

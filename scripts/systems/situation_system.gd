@@ -428,7 +428,6 @@ func _finish_situation(
 	var state: Dictionary = _active[index]
 	var data: SituationData = state["data"]
 	_apply_outcome(state, sectors, success)
-	_record_history(state, success)
 	_repeat_cooldowns[_cooldown_key(data.situation_id, state["region_name"])] = (
 		REPEAT_COOLDOWN_MONTHS
 	)
@@ -438,6 +437,7 @@ func _finish_situation(
 	notifications.append(
 		_build_notification("resolved" if success else "failed", state, message, false)
 	)
+	_record_history(state, success)
 	_active.remove_at(index)
 	_spawn_cooldown_months = maxi(_spawn_cooldown_months, SPAWN_COOLDOWN_MONTHS)
 
@@ -585,6 +585,10 @@ func _build_notification(
 	pause: bool
 ) -> Dictionary:
 	var data: SituationData = state["data"]
+	if type in ["started", "resolved", "failed"]:
+		var history_echo := _build_history_echo(data.situation_id, str(state["region_name"]))
+		if history_echo != "":
+			message += "\n历史回声：" + history_echo
 	return {
 		"type": type,
 		"instance_id": state["instance_id"],
@@ -746,6 +750,7 @@ func _record_history(state: Dictionary, success: bool) -> void:
 		"successes": int(previous.get("successes", 0)) + (1 if success else 0),
 		"failures": int(previous.get("failures", 0)) + (0 if success else 1),
 		"last_success": success,
+		"situation_kind": data.situation_kind,
 		"last_approach_id": state["approach_id"],
 		"last_node_choice_id": state["node_choice_id"],
 		"last_node_choice_name": state["node_choice_name"],
@@ -757,7 +762,12 @@ func _build_history_echo(situation_id: String, region_name: String) -> String:
 	var history: Dictionary = _history.get(key, {})
 	if history.is_empty():
 		return ""
-	var result_text := "成功处理" if bool(history.get("last_success", false)) else "处置失控"
+	var is_opportunity := int(history.get("situation_kind", 0)) == 1
+	var result_text := ""
+	if bool(history.get("last_success", false)):
+		result_text = "成功利用协作窗口" if is_opportunity else "成功处理"
+	else:
+		result_text = "协作窗口关闭" if is_opportunity else "处置失控"
 	var choice_name := str(history.get("last_node_choice_name", ""))
 	if choice_name != "":
 		return "上次在%s选择“%s”，最终%s。" % [region_name, choice_name, result_text]

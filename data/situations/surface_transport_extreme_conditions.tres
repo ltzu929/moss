@@ -10,7 +10,7 @@ script = ExtResource("2_approach")
 approach_id = "weather_hold"
 display_name = "等待安全窗口"
 description = "由地方车队按现场观测暂停高风险路段，人员风险最低但恢复缓慢。"
-monthly_severity_delta = -4
+monthly_severity_delta = -5
 resolution_hope_delta = 2
 resolution_authority_delta = -1
 
