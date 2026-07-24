@@ -1,7 +1,9 @@
-[gd_resource type="Resource" script_class="SituationData" load_steps=6 format=3]
+[gd_resource type="Resource" script_class="SituationData" load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/resources/situation_data.gd" id="1_data"]
 [ext_resource type="Script" path="res://scripts/resources/situation_approach_data.gd" id="2_approach"]
+[ext_resource type="Script" path="res://scripts/resources/situation_node_data.gd" id="3_node"]
+[ext_resource type="Script" path="res://scripts/resources/situation_node_option_data.gd" id="4_option"]
 
 [sub_resource type="Resource" id="Approach_maintenance_teams"]
 script = ExtResource("2_approach")
@@ -33,16 +35,49 @@ monthly_energy_cost = 1
 resolution_hope_delta = -2
 resolution_authority_delta = 4
 
+[sub_resource type="Resource" id="NodeOption_manual_entry"]
+script = ExtResource("4_option")
+option_id = "manual_entry"
+display_name = "组织人工进入故障区"
+description = "由维护队现场确认联动故障，避免扩大自动封锁范围。"
+result_text = "维护队确认了故障源，居民保留了撤离解释，但处置速度有限。"
+severity_delta = -10
+hope_delta = 2
+authority_delta = -1
+
+[sub_resource type="Resource" id="NodeOption_automatic_isolation"]
+script = ExtResource("4_option")
+option_id = "automatic_isolation"
+display_name = "自动隔离维生分区"
+description = "MOSS 立即重写区域参数并封闭异常回路。"
+result_text = "异常回路被快速隔离，居民区恢复稳定，但人工复核被跳过。"
+cpu_cost = 2
+severity_delta = -16
+order_delta = 2
+hope_delta = -2
+authority_delta = 3
+
+[sub_resource type="Resource" id="Node_life_support_fault"]
+script = ExtResource("3_node")
+node_id = "life_support_isolation"
+title = "维生分区隔离决定"
+description = "联动偏差已经进入居民区，需要在人工进入和自动封区之间立即选择。"
+options = Array[ExtResource("4_option")]([SubResource("NodeOption_manual_entry"), SubResource("NodeOption_automatic_isolation")])
+
 [resource]
 script = ExtResource("1_data")
 situation_id = "underground_life_support_fault"
 title = "地下城维生系统异常"
 description = "通风、温控与水循环出现联动偏差，居民区风险正在累积。"
-eligible_regions = Array[String](["亚洲", "北美", "欧洲", "非洲", "大洋洲", "南美"])
+eligible_regions = Array[String](["亚洲", "欧洲", "非洲", "南美"])
+min_year = 2054
 base_weight = 90
+low_order_weight = 10
+low_hope_weight = 10
 initial_severity = 34
 monthly_growth = 3
 failure_order_delta = -12
 failure_hope_delta = -12
 approaches = Array[ExtResource("2_approach")]([SubResource("Approach_maintenance_teams"), SubResource("Approach_supply_reallocation"), SubResource("Approach_automated_trusteeship")])
+situation_node = SubResource("Node_life_support_fault")
 command_interventions = {"energy_convert": 10, "allocate": 10, "takeover": 14, "technology_aid": 18, "global_takeover": 10}

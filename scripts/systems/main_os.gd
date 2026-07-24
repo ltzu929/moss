@@ -644,6 +644,12 @@ func setup_situation_ui() -> void:
 		%SituationPanel.focus_region_requested.connect(
 			_on_situation_focus_region_requested
 		)
+	if not %SituationPanel.node_option_requested.is_connected(
+		_on_situation_node_option_requested
+	):
+		%SituationPanel.node_option_requested.connect(
+			_on_situation_node_option_requested
+		)
 	_refresh_situation_ui()
 
 
@@ -696,6 +702,10 @@ func _on_time_control_button_pressed() -> void:
 func _can_resume_time_from_hud() -> bool:
 	if is_game_over or end_screen_instance != null:
 		return false
+	if _situation_system.has_pending_node():
+		if has_node("%SituationPanel"):
+			%SituationPanel.show_status("请先处理当前局势节点。", true)
+		return false
 	for path in ["%EventPopup", "%AllocatePopup", "%TechnologyScreen", "%DecisionArchivePanel"]:
 		if has_node(path) and get_node(path).visible:
 			return false
@@ -706,9 +716,12 @@ func update_time_control_button() -> void:
 	if not has_node("%TimeControlButton"):
 		return
 	%TimeControlButton.text = "继续" if $Timer.is_stopped() else "暂停"
-	%TimeControlButton.tooltip_text = (
-		"继续月度推进" if $Timer.is_stopped() else "暂停月度推进"
-	)
+	if _situation_system.has_pending_node():
+		%TimeControlButton.tooltip_text = "请先处理当前局势节点"
+	else:
+		%TimeControlButton.tooltip_text = (
+			"继续月度推进" if $Timer.is_stopped() else "暂停月度推进"
+		)
 
 
 func _on_situation_approach_requested(instance_id: String, approach_id: String) -> void:
@@ -730,6 +743,38 @@ func _on_situation_approach_requested(instance_id: String, approach_id: String) 
 		record_action("situation", "局势方针调整", str(result.get("message", "")))
 
 
+func _on_situation_node_option_requested(instance_id: String, option_id: String) -> void:
+	var result := _situation_system.resolve_node(
+		instance_id,
+		option_id,
+		current_cpu,
+		current_energy,
+		_get_sector_data_list()
+	)
+	current_cpu = int(result.get("new_cpu", current_cpu))
+	current_energy = int(result.get("new_energy", current_energy))
+	_handle_situation_notifications(result.get("notifications", []))
+	_refresh_sector_displays()
+	update_global_resource_ui()
+	update_command_buttons()
+	var focus_id := instance_id
+	if bool(result.get("success", false)):
+		for snapshot in get_situation_snapshots():
+			var node: Dictionary = snapshot.get("node", {})
+			if bool(node.get("pending", false)):
+				focus_id = str(snapshot.get("instance_id", instance_id))
+				break
+	_refresh_situation_ui(focus_id)
+	%SituationPanel.show_status(
+		(
+			"当前处置已完成；仍有另一个局势节点等待处理"
+			if focus_id != instance_id
+			else str(result.get("message", ""))
+		),
+		not bool(result.get("success", false))
+	)
+
+
 func _on_situation_focus_region_requested(region_name: String) -> void:
 	var sector := _find_sector_by_region(region_name)
 	if sector != null:
@@ -743,7 +788,7 @@ func _refresh_situation_ui(focus_id: String = "") -> void:
 		int(forecast_resources["energy"])
 	)
 	if has_node("%SituationPanel"):
-		%SituationPanel.set_situations(snapshots)
+		%SituationPanel.set_situations(snapshots, current_cpu, current_energy)
 		if focus_id != "":
 			%SituationPanel.open_panel(focus_id)
 	update_situation_button()
@@ -772,8 +817,8 @@ func _get_next_situation_resource_forecast() -> Dictionary:
 	}
 
 
-func set_situation_seed_for_test(seed: int) -> void:
-	_situation_system.reset(seed)
+func set_situation_seed_for_test(seed_value: int) -> void:
+	_situation_system.reset(seed_value)
 	_refresh_situation_ui()
 
 
@@ -897,7 +942,8 @@ func _process_situations_month() -> void:
 		current_energy,
 		has_decision_tag("decision.core_2044_automation_access"),
 		current_year,
-		current_month
+		current_month,
+		_get_situation_facts()
 	)
 	current_cpu = int(result.get("new_cpu", current_cpu))
 	current_energy = int(result.get("new_energy", current_energy))
@@ -906,22 +952,36 @@ func _process_situations_month() -> void:
 	_refresh_situation_ui()
 
 
+func _get_situation_facts() -> Dictionary:
+	var facts := event_states.duplicate(true)
+	facts["decision.core_2044_automation_access"] = get_decision_tag(
+		"decision.core_2044_automation_access"
+	)
+	for technology_tag in ["human_autonomy_recovery", "human_mutual_aid"]:
+		if %TechnologySystem.has_tag(technology_tag):
+			facts["technology.%s" % technology_tag] = true
+	return facts
+
+
 func _handle_situation_notifications(notifications: Array) -> void:
 	for notification_variant in notifications:
-		var notification: Dictionary = notification_variant
+		var situation_notice: Dictionary = notification_variant
 		var title := "%s｜%s" % [
-			str(notification.get("region_name", "未知地区")),
-			str(notification.get("title", "随机局势")),
+			str(situation_notice.get("region_name", "未知地区")),
+			str(situation_notice.get("title", "随机局势")),
 		]
-		var message := str(notification.get("message", ""))
+		var message := str(situation_notice.get("message", ""))
 		record_action("situation", title, message)
-		_write_development_log("situation_%s" % str(notification.get("type", "updated")), notification)
-		if bool(notification.get("pause", false)):
+		_write_development_log(
+			"situation_%s" % str(situation_notice.get("type", "updated")),
+			situation_notice
+		)
+		if bool(situation_notice.get("pause", false)):
 			$Timer.stop()
 			_manually_paused = false
 			_situation_auto_paused = true
 			if has_node("%SituationPanel"):
-				%SituationPanel.open_panel(str(notification.get("instance_id", "")))
+				%SituationPanel.open_panel(str(situation_notice.get("instance_id", "")))
 	update_time_control_button()
 
 

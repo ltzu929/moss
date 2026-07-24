@@ -147,7 +147,7 @@ func _process(_delta: float) -> void:
 		set_process(false)
 
 
-## 为完整通关选择每项局势的地方方案，并处理新局势/阶段恶化自动暂停。
+## 为完整通关选择每项局势的地方方案、首个节点，并处理自动暂停。
 func _poll_situations() -> void:
 	var snapshots: Array[Dictionary] = _main_os.get_situation_snapshots()
 	for snapshot in snapshots:
@@ -155,6 +155,21 @@ func _poll_situations() -> void:
 		if instance_id not in _seen_situation_ids:
 			_seen_situation_ids.append(instance_id)
 			_log("发现随机局势: %s" % str(snapshot.get("title", "")))
+		var node: Dictionary = snapshot.get("node", {})
+		if bool(node.get("pending", false)):
+			var node_options: Array = node.get("options", [])
+			for option_variant in node_options:
+				var option: Dictionary = option_variant
+				if (
+					_main_os.current_cpu >= int(option.get("cpu_cost", 0))
+					and _main_os.current_energy >= int(option.get("energy_cost", 0))
+				):
+					_main_os._on_situation_node_option_requested(
+						instance_id,
+						str(option.get("option_id", ""))
+					)
+					break
+			continue
 		if str(snapshot.get("approach_id", "")) != "":
 			continue
 		var approaches: Array = snapshot.get("approaches", [])

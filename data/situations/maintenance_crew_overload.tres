@@ -1,0 +1,83 @@
+[gd_resource type="Resource" script_class="SituationData" load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/situation_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://scripts/resources/situation_approach_data.gd" id="2_approach"]
+[ext_resource type="Script" path="res://scripts/resources/situation_node_data.gd" id="3_node"]
+[ext_resource type="Script" path="res://scripts/resources/situation_node_option_data.gd" id="4_option"]
+
+[sub_resource type="Resource" id="Approach_reduce_load"]
+script = ExtResource("2_approach")
+approach_id = "reduce_load"
+display_name = "降低班组负荷"
+description = "推迟非关键检修并增加休整，保留熟练人员的现场判断。"
+monthly_severity_delta = -4
+resolution_hope_delta = 3
+resolution_authority_delta = -1
+
+[sub_resource type="Resource" id="Approach_cross_region_teams"]
+script = ExtResource("2_approach")
+approach_id = "cross_region_teams"
+display_name = "跨区调入专业班组"
+description = "持续投入能源和组织成本，从其他地区调入熟练检修人员。"
+monthly_severity_delta = -7
+monthly_energy_cost = 1
+resolution_order_delta = 2
+resolution_hope_delta = 1
+
+[sub_resource type="Resource" id="Approach_automated_roster"]
+script = ExtResource("2_approach")
+approach_id = "automated_roster"
+display_name = "自动排班与机械替代"
+description = "MOSS 统一筛选人员、重排班次并替换低效率人工环节。"
+monthly_severity_delta = -9
+monthly_cpu_cost = 1
+resolution_hope_delta = -2
+resolution_authority_delta = 4
+
+[sub_resource type="Resource" id="NodeOption_team_veto"]
+script = ExtResource("4_option")
+option_id = "team_veto"
+display_name = "接受班组停机建议"
+description = "让现场负责人暂停一段非关键设备，换取完整休整和人工复核。"
+result_text = "班组获得休整并清理了检修积压，但部分工程进度被主动延后。"
+severity_delta = -11
+hope_delta = 3
+authority_delta = -1
+
+[sub_resource type="Resource" id="NodeOption_performance_reassign"]
+script = ExtResource("4_option")
+option_id = "performance_reassign"
+display_name = "按风险绩效重排岗位"
+description = "由 MOSS 立即替换高风险岗位人员并压缩人工复核环节。"
+result_text = "检修效率迅速恢复，但班组开始把排班系统视为不可申诉的命令。"
+cpu_cost = 2
+severity_delta = -16
+order_delta = 2
+hope_delta = -3
+authority_delta = 4
+
+[sub_resource type="Resource" id="Node_crew_overload"]
+script = ExtResource("3_node")
+node_id = "crew_overload_roster"
+title = "班组停机建议"
+description = "一线负责人认为继续值班将造成事故，工程调度则拒绝失去当前窗口。"
+options = Array[ExtResource("4_option")]([SubResource("NodeOption_team_veto"), SubResource("NodeOption_performance_reassign")])
+
+[resource]
+script = ExtResource("1_data")
+situation_id = "maintenance_crew_overload"
+title = "工程维护班组负荷过高"
+description = "连续值班与检修积压正在消耗熟练班组，误操作风险持续上升。"
+eligible_regions = Array[String](["非洲", "欧洲", "大洋洲", "亚洲"])
+region_descriptions = {"非洲": "太空电梯与地表工程班组连续值班，检修积压开始影响关键设备。", "欧洲": "高纬度发动机维护班组长期超负荷，熟练人员缺口正在扩大。", "大洋洲": "后备恢复设施需要同时支援多个区域，本地维护班组已接近极限。", "亚洲": "人口与工业核心区的维护任务密集叠加，人工复核开始延迟。"}
+min_year = 2049
+base_weight = 100
+low_order_weight = 4
+low_hope_weight = 8
+initial_severity = 36
+monthly_growth = 3
+failure_order_delta = -8
+failure_hope_delta = -11
+approaches = Array[ExtResource("2_approach")]([SubResource("Approach_reduce_load"), SubResource("Approach_cross_region_teams"), SubResource("Approach_automated_roster")])
+situation_node = SubResource("Node_crew_overload")
+command_interventions = {"allocate": 10, "takeover": 14, "technology_aid": 20, "global_takeover": 10}

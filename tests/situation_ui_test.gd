@@ -17,6 +17,7 @@ func _ready() -> void:
 
 	_assert_hud_entry()
 	await _assert_situation_details_and_approach()
+	await _assert_inline_node()
 	_assert_modal_boundary()
 	_assert_responsive_bounds()
 	_assert_time_control()
@@ -125,6 +126,61 @@ func _assert_situation_details_and_approach() -> void:
 	)
 	_assert_eq(_main_os.current_cpu, 9, "一月恢复后应支付 1 算力持续成本")
 	_assert_eq(_main_os.current_energy, 9, "一月恢复后应支付 1 能源持续成本")
+
+
+func _assert_inline_node() -> void:
+	_main_os.current_year = 2049
+	_main_os.current_month = 2
+	_main_os.current_cpu = 0
+	_main_os.current_energy = 0
+	_main_os._on_timer_timeout()
+	await get_tree().process_frame
+	_main_os._on_timer_timeout()
+	await get_tree().process_frame
+	var active: Array[Dictionary] = _main_os.get_situation_snapshots()
+	var node: Dictionary = active[0].get("node", {})
+	_assert_true(bool(node.get("pending", false)), "局势首次进入恶化时应生成待处理节点")
+	_assert_true((_panel.get_node("%NodePanel") as Control).visible, "待处理节点应显示在非模态面板内")
+	_assert_true(
+		not (_panel.get_node("%ApproachScroll") as Control).visible,
+		"处理节点时应暂时收起方针列表"
+	)
+	var node_options := _panel.get_node("%NodeOptionList")
+	_assert_eq(node_options.get_child_count(), 2, "局势节点应显示两个确定性方案")
+	var has_available_fallback := false
+	for child in node_options.get_children():
+		if child is Button and not (child as Button).disabled:
+			has_available_fallback = true
+	_assert_true(has_available_fallback, "资源见底时节点仍应保留可选兜底方案")
+	var timer := _main_os.get_node("Timer") as Timer
+	_assert_true(timer.is_stopped(), "待处理局势节点应保持自动暂停")
+	_main_os._on_time_control_button_pressed()
+	_assert_true(timer.is_stopped(), "节点处理前不应允许恢复时间")
+	_assert_true(
+		"请先处理" in (_main_os.get_node("%TimeControlButton") as Button).tooltip_text,
+		"继续按钮应说明节点前置条件"
+	)
+
+	_main_os.current_energy = 5
+	_main_os._refresh_situation_ui()
+	await get_tree().process_frame
+	node_options = _panel.get_node("%NodeOptionList")
+	if node_options.get_child_count() == 0:
+		_assert_true(false, "刷新资源后节点方案仍应存在")
+		return
+	var first_option := node_options.get_child(0) as Button
+	_assert_true(not first_option.disabled, "资源充足时节点方案应可用")
+	first_option.pressed.emit()
+	await get_tree().process_frame
+	active = _main_os.get_situation_snapshots()
+	_assert_true(
+		not bool(active[0].get("node", {}).get("pending", true)),
+		"选择节点方案后应清除待处理状态"
+	)
+	_assert_true(
+		(_panel.get_node("%ApproachScroll") as Control).visible,
+		"节点处理后应恢复方针列表"
+	)
 
 
 func _assert_responsive_bounds() -> void:

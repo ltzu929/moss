@@ -8,8 +8,14 @@ const ASIA_MASK_PATH := "res://assets/ui/world-map/mask_asia.png"
 const EUROPE_MASK_PATH := "res://assets/ui/world-map/mask_europe_reference.png"
 const TEST_REGIONS: Array[String] = ["北美", "南美", "欧洲", "非洲", "亚洲", "大洋洲"]
 const SITUATION_PATHS: Array[String] = [
+	"res://data/situations/automation_displacement_tension.tres",
+	"res://data/situations/disaster_information_verification.tres",
 	"res://data/situations/emergency_communication_congestion.tres",
+	"res://data/situations/maintenance_crew_overload.tres",
 	"res://data/situations/regional_power_instability.tres",
+	"res://data/situations/regional_mutual_aid_window.tres",
+	"res://data/situations/surface_transport_extreme_conditions.tres",
+	"res://data/situations/underground_geological_stress.tres",
 	"res://data/situations/underground_life_support_fault.tres",
 ]
 
