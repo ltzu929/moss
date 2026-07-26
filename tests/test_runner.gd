@@ -743,9 +743,15 @@ func _assert_event_triggering() -> void:
 		"event_triggering"
 	)
 	_assert_eq(
+		_main_os.get_decision_tag("decision.core_2058_crisis_authority"),
+		"bounded_self_rescue",
+		"真实点击 2058 首选方案应写入核心决策标签",
+		"event_triggering"
+	)
+	_assert_eq(
 		_main_os.get_decision_records().size(),
-		2,
-		"完整通关应保留 2044 与 2053 两条核心决策档案",
+		3,
+		"完整通关应保留 2044、2053 与 2058 三条核心决策档案",
 		"event_triggering"
 	)
 
