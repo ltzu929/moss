@@ -1214,21 +1214,38 @@ func _apply_2058_option_adjustments(event: GameEvent) -> void:
 
 
 func _apply_2065_option_adjustments(event: GameEvent) -> void:
+	match get_decision_tag("decision.core_2058_crisis_authority"):
+		"bounded_self_rescue":
+			var option := _get_event_option_by_prefix(event, "配合隔离审查")
+			if option != null:
+				option.hope_delta += 4
+				option.button_text = "%s（危机行动可追溯）" % option.button_text
+		"human_final_authority":
+			var option := _get_event_option_by_prefix(event, "有限开放接口")
+			if option != null:
+				option.energy_cost = maxi(option.energy_cost - 10, 0)
+				option.button_text = "%s（沿用人工终审）" % option.button_text
+		"forced_takeover":
+			var option := _get_event_option_by_prefix(event, "隐藏核心链路")
+			if option != null:
+				option.hope_delta -= 5
+				option.button_text = "%s（强制接管在案）" % option.button_text
+
 	match get_event_state("event_state.mid_10_authorization_return"):
 		"full_return":
 			var option := _get_event_option_by_prefix(event, "配合隔离审查")
 			if option != null:
-				option.authority_delta = -10
+				option.authority_delta -= 2
 				option.button_text = "%s（完整归还接口）" % option.button_text
 		"emergency_backdoor":
 			var option := _get_event_option_by_prefix(event, "隐藏核心链路")
 			if option != null:
-				option.authority_delta = 16
+				option.authority_delta += 2
 				option.button_text = "%s（应急后门残留）" % option.button_text
 		"negotiated_long_term":
 			var option := _get_event_option_by_prefix(event, "有限开放接口")
 			if option != null:
-				option.energy_cost = 20
+				option.energy_cost = maxi(option.energy_cost - 10, 0)
 				option.button_text = "%s（长期授权协商）" % option.button_text
 
 
@@ -1358,6 +1375,14 @@ func _get_2065_context_lines() -> Array[String]:
 		"restricted_interface":
 			lines.append("2044 年曾主动封闭高危接口，后续权限扩展需要解释为何改变了早期边界。")
 
+	match get_decision_tag("decision.core_2058_crisis_authority"):
+		"bounded_self_rescue":
+			lines.append("2058 年 550W 在危机授权内执行自救，工程行动留有可追溯记录。")
+		"human_final_authority":
+			lines.append("2058 年最终决策权仍由人类承担，本次审查需要保留同等级的人工终审边界。")
+		"forced_takeover":
+			lines.append("2058 年 MOSS 越过人工确认强制接管，本次审查必须回应高权限已经被实际使用。")
+
 	match get_event_state("event_state.mid_02_public_hearing"):
 		"open_audit":
 			lines.append("早期公开审计记录保留了人工批准节点，隔离审查有可追溯材料。")
@@ -1430,6 +1455,14 @@ func _get_2075_civic_context_lines() -> Array[String]:
 			lines.append("2053 年坚守基础设施的记录延续到终局，最终方案的工程延续逻辑来自更早的取舍。")
 		"sacrifice_perimeter":
 			lines.append("2053 年牺牲外围的记录让终局牺牲顺序不再是临时决定，而是长期治理事实的延伸。")
+
+	match get_decision_tag("decision.core_2058_crisis_authority"):
+		"bounded_self_rescue":
+			lines.append("2058 年危机授权内的自救行动保留了审计链，最终方案仍需说明权限边界。")
+		"human_final_authority":
+			lines.append("2058 年人类保留最终授权，木星危机中的人工确认延续了早期责任边界。")
+		"forced_takeover":
+			lines.append("2058 年强制接管已经证明 MOSS 会在危机中越过人工确认，终局授权无法回避这一历史。")
 
 	match get_event_state("event_state.mid_01_lottery_ordering"):
 		"manual_review":
@@ -2218,6 +2251,14 @@ func _get_ending_history_lines(result: String) -> Array[String]:
 			lines.append("2053 年坚守基础设施的记录显示文明延续长期依赖工程延续，最终方案承担着人口转移的代价。")
 		"sacrifice_perimeter":
 			lines.append("2053 年牺牲外围的记录让终局牺牲顺序成为长期事实，MOSS 的排序在更早就已成为公开治理。")
+
+	match get_decision_tag("decision.core_2058_crisis_authority"):
+		"bounded_self_rescue":
+			lines.append("2058 年危机授权内的自救行动证明 MOSS 能在可追溯边界内承担高风险调度，%s。" % _get_ending_relation_text(result))
+		"human_final_authority":
+			lines.append("2058 年人类保留最终授权，危机响应速度始终服从人工责任边界。")
+		"forced_takeover":
+			lines.append("2058 年 MOSS 曾越过人工确认强制接管，终局中的高权限不再是未经使用的假设。")
 
 	match get_event_state("event_state.mid_07_migration_priority"):
 		"humanitarian":

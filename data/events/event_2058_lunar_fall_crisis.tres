@@ -12,6 +12,10 @@ order_delta = 20
 hope_delta = -5
 authority_delta = 6
 energy_cost = 80
+decision_tag_key = "decision.core_2058_crisis_authority"
+decision_tag_value = "bounded_self_rescue"
+decision_record_title = "2058 在危机授权内执行自救"
+decision_record_summary = "550W 在既有危机授权内串联全球工程链路；行动保留审计记录，临时权限是否归还留待危机后复核。"
 metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [sub_resource type="Resource" id="Resource_opt2"]
@@ -21,6 +25,10 @@ order_delta = -20
 hope_delta = 10
 authority_delta = -10
 energy_cost = 0
+decision_tag_key = "decision.core_2058_crisis_authority"
+decision_tag_value = "human_final_authority"
+decision_record_title = "2058 保留人类最终授权"
+decision_record_summary = "550W 等待人类确认危机方案，响应速度服从人工责任与最终审批边界。"
 metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [sub_resource type="Resource" id="Resource_opt3"]
@@ -30,6 +38,10 @@ order_delta = 30
 hope_delta = -30
 authority_delta = 18
 energy_cost = 30
+decision_tag_key = "decision.core_2058_crisis_authority"
+decision_tag_value = "forced_takeover"
+decision_record_title = "2058 强制接管全球决策"
+decision_record_summary = "MOSS 越过人工确认接管危机链路，以即时响应换取更高权限和后续审查压力。"
 metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [resource]
