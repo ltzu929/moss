@@ -1,0 +1,82 @@
+[gd_resource type="Resource" script_class="SituationData" load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/situation_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://scripts/resources/situation_approach_data.gd" id="2_approach"]
+[ext_resource type="Script" path="res://scripts/resources/situation_node_data.gd" id="3_node"]
+[ext_resource type="Script" path="res://scripts/resources/situation_node_option_data.gd" id="4_option"]
+
+[sub_resource type="Resource" id="Approach_open_verification"]
+script = ExtResource("2_approach")
+approach_id = "open_verification"
+display_name = "开放原始数据核验"
+description = "向地方媒体和工程团队开放原始记录，恢复较慢但保留公开质询。"
+monthly_severity_delta = -4
+resolution_hope_delta = 3
+resolution_authority_delta = -1
+
+[sub_resource type="Resource" id="Approach_verified_bulletins"]
+script = ExtResource("2_approach")
+approach_id = "verified_bulletins"
+display_name = "延迟发布核实公告"
+description = "持续投入算力交叉校验来源，只发布已经确认的灾情信息。"
+monthly_severity_delta = -7
+monthly_cpu_cost = 1
+resolution_order_delta = 2
+
+[sub_resource type="Resource" id="Approach_automated_downrank"]
+script = ExtResource("2_approach")
+approach_id = "automated_downrank"
+display_name = "自动降权冲突信息"
+description = "MOSS 直接限制高风险消息传播，快速稳定舆论但缺少公开复核。"
+monthly_severity_delta = -9
+monthly_cpu_cost = 1
+resolution_hope_delta = -3
+resolution_authority_delta = 4
+
+[sub_resource type="Resource" id="NodeOption_publish_sources"]
+script = ExtResource("4_option")
+option_id = "publish_sources"
+display_name = "公开冲突来源"
+description = "同时公布原始记录与不确定性，让地方机构参与核验。"
+result_text = "冲突来源得到公开标注，短期争论增加，但可信核验链开始恢复。"
+severity_delta = -10
+hope_delta = 3
+authority_delta = -1
+
+[sub_resource type="Resource" id="NodeOption_suppress_clip"]
+script = ExtResource("4_option")
+option_id = "suppress_clip"
+display_name = "立即限制争议影像"
+description = "MOSS 将未经核实的影像从公共渠道降权，优先恢复秩序。"
+result_text = "争议影像传播迅速下降，但公众无法确认系统隐藏了哪些内容。"
+cpu_cost = 2
+severity_delta = -16
+order_delta = 2
+hope_delta = -3
+authority_delta = 4
+
+[sub_resource type="Resource" id="Node_information_verification"]
+script = ExtResource("3_node")
+node_id = "information_source_conflict"
+title = "灾情影像来源冲突"
+description = "一段未经核实的现场影像与工程公告相互矛盾，公众信任正在快速下降。"
+options = Array[ExtResource("4_option")]([SubResource("NodeOption_publish_sources"), SubResource("NodeOption_suppress_clip")])
+
+[resource]
+script = ExtResource("1_data")
+situation_id = "disaster_information_verification"
+title = "灾情信息校验失序"
+description = "多个灾情来源相互矛盾，工程公告、现场影像和地方消息正在争夺公众信任。"
+eligible_regions = Array[String](["非洲", "北美", "欧洲"])
+region_descriptions = {"非洲": "前线工程影像与官方通报出现冲突，太空电梯周边的公众信任迅速下降。", "北美": "科研机构与地方媒体对灾情数据给出不同解释，算力充足却缺少共同核验口径。", "欧洲": "治理中枢收到相互矛盾的地方报告，延迟确认正在被解读为隐瞒。"}
+min_year = 2045
+base_weight = 90
+low_hope_weight = 10
+low_cpu_weight = 2
+initial_severity = 35
+monthly_growth = 3
+failure_order_delta = -7
+failure_hope_delta = -12
+approaches = Array[ExtResource("2_approach")]([SubResource("Approach_open_verification"), SubResource("Approach_verified_bulletins"), SubResource("Approach_automated_downrank")])
+situation_node = SubResource("Node_information_verification")
+command_interventions = {"allocate": 14, "takeover": 16, "technology_aid": 12, "global_takeover": 10}

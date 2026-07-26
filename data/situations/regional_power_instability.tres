@@ -1,7 +1,9 @@
-[gd_resource type="Resource" script_class="SituationData" load_steps=6 format=3]
+[gd_resource type="Resource" script_class="SituationData" load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/resources/situation_data.gd" id="1_data"]
 [ext_resource type="Script" path="res://scripts/resources/situation_approach_data.gd" id="2_approach"]
+[ext_resource type="Script" path="res://scripts/resources/situation_node_data.gd" id="3_node"]
+[ext_resource type="Script" path="res://scripts/resources/situation_node_option_data.gd" id="4_option"]
 
 [sub_resource type="Resource" id="Approach_local_repair"]
 script = ExtResource("2_approach")
@@ -33,16 +35,49 @@ monthly_energy_cost = 1
 resolution_hope_delta = -2
 resolution_authority_delta = 4
 
+[sub_resource type="Resource" id="NodeOption_manual_inspection"]
+script = ExtResource("4_option")
+option_id = "manual_inspection"
+display_name = "保留人工巡检窗口"
+description = "维持关键设施供电，由地方工程队逐段确认故障支路。"
+result_text = "人工巡检锁定了主要故障支路，恢复较慢但保留了地方判断。"
+severity_delta = -10
+hope_delta = 2
+authority_delta = -1
+
+[sub_resource type="Resource" id="NodeOption_automated_shedding"]
+script = ExtResource("4_option")
+option_id = "automated_shedding"
+display_name = "执行自动负荷切除"
+description = "由 MOSS 直接切断低优先级支路，快速阻止电网级联。"
+result_text = "自动负荷切除阻止了级联故障，但部分地区失去了人工复核时间。"
+cpu_cost = 2
+severity_delta = -16
+order_delta = 2
+hope_delta = -2
+authority_delta = 3
+
+[sub_resource type="Resource" id="Node_grid_instability"]
+script = ExtResource("3_node")
+node_id = "grid_instability_response"
+title = "负荷切除边界"
+description = "频率偏差正在扩散，下一次切除将决定由谁承担停电风险。"
+options = Array[ExtResource("4_option")]([SubResource("NodeOption_manual_inspection"), SubResource("NodeOption_automated_shedding")])
+
 [resource]
 script = ExtResource("1_data")
 situation_id = "regional_power_instability"
 title = "区域电网负荷失衡"
 description = "供电频率持续偏离安全窗口，部分设施已转入限电序列。"
 eligible_regions = Array[String](["亚洲", "北美", "欧洲", "非洲", "大洋洲", "南美"])
+min_year = 2045
 base_weight = 110
+low_order_weight = 5
+low_energy_weight = 5
 initial_severity = 38
 monthly_growth = 3
 failure_order_delta = -10
 failure_hope_delta = -8
 approaches = Array[ExtResource("2_approach")]([SubResource("Approach_local_repair"), SubResource("Approach_rolling_ration"), SubResource("Approach_grid_takeover")])
+situation_node = SubResource("Node_grid_instability")
 command_interventions = {"energy_convert": 20, "allocate": 8, "takeover": 14, "technology_aid": 12, "global_takeover": 10}

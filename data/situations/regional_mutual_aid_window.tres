@@ -1,0 +1,92 @@
+[gd_resource type="Resource" script_class="SituationData" load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/situation_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://scripts/resources/situation_approach_data.gd" id="2_approach"]
+[ext_resource type="Script" path="res://scripts/resources/situation_node_data.gd" id="3_node"]
+[ext_resource type="Script" path="res://scripts/resources/situation_node_option_data.gd" id="4_option"]
+
+[sub_resource type="Resource" id="Approach_local_coordination"]
+script = ExtResource("2_approach")
+approach_id = "local_coordination"
+display_name = "地方网络自主协作"
+description = "让区域技术团队自行匹配任务，收益较慢但保留协作解释权。"
+monthly_severity_delta = -5
+resolution_hope_delta = 3
+resolution_authority_delta = -1
+
+[sub_resource type="Resource" id="Approach_shared_schedule"]
+script = ExtResource("2_approach")
+approach_id = "shared_schedule"
+display_name = "建立共享检修日程"
+description = "持续投入少量算力维护跨区任务表，在效率和地方自主之间折中。"
+monthly_severity_delta = -7
+monthly_cpu_cost = 1
+resolution_order_delta = 2
+resolution_hope_delta = 1
+
+[sub_resource type="Resource" id="Approach_central_assignment"]
+script = ExtResource("2_approach")
+approach_id = "central_assignment"
+display_name = "MOSS 统一分配支援"
+description = "MOSS 直接按全局收益重排人员和备件，快速兑现窗口但扩大控制。"
+monthly_severity_delta = -10
+monthly_cpu_cost = 1
+resolution_order_delta = 2
+resolution_hope_delta = -1
+resolution_authority_delta = 3
+
+[sub_resource type="Resource" id="NodeOption_local_compact"]
+script = ExtResource("4_option")
+option_id = "local_compact"
+display_name = "确认地方互助协议"
+description = "由参与地区公开确认任务、责任与撤回边界。"
+result_text = "地方互助协议开始运转，协作速度有限，但参与者保留了退出权。"
+severity_delta = -8
+hope_delta = 2
+authority_delta = -1
+
+[sub_resource type="Resource" id="NodeOption_moss_allocation"]
+script = ExtResource("4_option")
+option_id = "moss_allocation"
+display_name = "接入 MOSS 全局调度"
+description = "立即把人员、备件和窗口纳入全局优先级计算。"
+result_text = "支援资源迅速完成匹配，但地方网络不再拥有最终分配权。"
+cpu_cost = 2
+severity_delta = -14
+order_delta = 2
+authority_delta = 3
+
+[sub_resource type="Resource" id="Node_mutual_aid_window"]
+script = ExtResource("3_node")
+node_id = "mutual_aid_operating_boundary"
+title = "互助网络运行边界"
+description = "既有技术网络形成了短暂检修窗口，需要决定由地方协议还是全局模型分配支援。"
+trigger_stage = 0
+options = Array[ExtResource("4_option")]([SubResource("NodeOption_local_compact"), SubResource("NodeOption_moss_allocation")])
+
+[resource]
+script = ExtResource("1_data")
+situation_id = "regional_mutual_aid_window"
+title = "区域互助检修窗口"
+description = "既有技术协作网络出现可用窗口，多个地区可以交换班组、备件和检修时段。"
+eligible_regions = Array[String](["南美", "大洋洲"])
+region_descriptions = {"南美": "资源保障网络腾出了跨区检修能力，可以支援其他地区或优先修复本地设施。", "大洋洲": "后备恢复区形成了可共享的班组与检修时段，地方网络正在请求协调。"}
+min_year = 2052
+base_weight = 55
+situation_kind = 1
+required_any_facts = {"event_state.mid_05_dispatch_pilot": ["public_model", "committee_only"], "event_state.mid_11_education_shift": ["autonomous_training"], "technology.human_autonomy_recovery": [true], "technology.human_mutual_aid": [true]}
+minimum_region_order = 45
+minimum_region_hope = 45
+high_order_weight = 6
+high_hope_weight = 8
+initial_severity = 42
+monthly_growth = 3
+stage_names = Array[String](["开放", "收窄", "即将关闭"])
+progress_label = "窗口流失度"
+success_order_delta = 2
+success_hope_delta = 3
+failure_order_delta = 0
+failure_hope_delta = 0
+approaches = Array[ExtResource("2_approach")]([SubResource("Approach_local_coordination"), SubResource("Approach_shared_schedule"), SubResource("Approach_central_assignment")])
+situation_node = SubResource("Node_mutual_aid_window")
+command_interventions = {"allocate": 8, "technology_aid": 18, "global_takeover": 8}

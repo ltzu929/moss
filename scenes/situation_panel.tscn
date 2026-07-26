@@ -115,6 +115,13 @@ layout_mode = 2
 text = "局势说明"
 autowrap_mode = 3
 
+[node name="HistoryLabel" type="Label" parent="SituationWindow/WindowMargin/MainVBox/DetailVBox"]
+unique_name_in_owner = true
+custom_maximum_size = Vector2(444, -1)
+layout_mode = 2
+text = "上次处置回声"
+autowrap_mode = 3
+
 [node name="CurrentApproachLabel" type="Label" parent="SituationWindow/WindowMargin/MainVBox/DetailVBox"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -124,6 +131,40 @@ text = "当前方针：尚未选择"
 unique_name_in_owner = true
 layout_mode = 2
 text = "方针可调整"
+
+[node name="NodePanel" type="PanelContainer" parent="SituationWindow/WindowMargin/MainVBox/DetailVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="NodeMargin" type="MarginContainer" parent="SituationWindow/WindowMargin/MainVBox/DetailVBox/NodePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="NodeVBox" type="VBoxContainer" parent="SituationWindow/WindowMargin/MainVBox/DetailVBox/NodePanel/NodeMargin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="NodeTitle" type="Label" parent="SituationWindow/WindowMargin/MainVBox/DetailVBox/NodePanel/NodeMargin/NodeVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "待处理节点"
+
+[node name="NodeDescription" type="Label" parent="SituationWindow/WindowMargin/MainVBox/DetailVBox/NodePanel/NodeMargin/NodeVBox"]
+unique_name_in_owner = true
+custom_maximum_size = Vector2(420, -1)
+layout_mode = 2
+text = "节点说明"
+autowrap_mode = 3
+
+[node name="NodeOptionList" type="VBoxContainer" parent="SituationWindow/WindowMargin/MainVBox/DetailVBox/NodePanel/NodeMargin/NodeVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 6
 
 [node name="ApproachScroll" type="ScrollContainer" parent="SituationWindow/WindowMargin/MainVBox/DetailVBox"]
 unique_name_in_owner = true

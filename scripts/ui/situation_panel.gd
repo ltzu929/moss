@@ -3,12 +3,15 @@ class_name SituationPanel
 extends Control
 
 signal approach_requested(instance_id: String, approach_id: String)
+signal node_option_requested(instance_id: String, option_id: String)
 signal focus_region_requested(region_name: String)
 
 const MOSS_THEME := preload("res://scripts/ui/moss_ui_theme.gd")
 
 var _snapshots: Array[Dictionary] = []
 var _selected_id: String = ""
+var _current_cpu: int = 0
+var _current_energy: int = 0
 
 
 func _ready() -> void:
@@ -56,8 +59,14 @@ func _update_window_bounds() -> void:
 	%SituationWindow.offset_bottom = window_rect.end.y
 
 
-func set_situations(snapshots: Array[Dictionary]) -> void:
+func set_situations(
+	snapshots: Array[Dictionary],
+	current_cpu: int = 0,
+	current_energy: int = 0
+) -> void:
 	_snapshots = snapshots.duplicate(true)
+	_current_cpu = current_cpu
+	_current_energy = current_energy
 	%SituationCount.text = "%d / %d" % [_snapshots.size(), SituationSystem.MAX_ACTIVE]
 	_rebuild_entries()
 	if _snapshots.is_empty():
@@ -135,6 +144,10 @@ func _render_selected() -> void:
 		int(snapshot.get("started_month", 1)),
 	]
 	%SituationProgress.value = int(snapshot.get("severity", 0))
+	%SituationProgress.tooltip_text = "%s：%d / 100" % [
+		str(snapshot.get("progress_label", "严重度")),
+		int(snapshot.get("severity", 0)),
+	]
 	var monthly_delta := int(snapshot.get("expected_monthly_delta", 0))
 	var trend_prefix := "+" if monthly_delta > 0 else ""
 	var funding_required := bool(snapshot.get("funding_required", false))
@@ -151,6 +164,9 @@ func _render_selected() -> void:
 			monthly_delta,
 		]
 	%DescriptionLabel.text = str(snapshot.get("description", ""))
+	var history_echo := str(snapshot.get("history_echo", ""))
+	%HistoryLabel.text = history_echo
+	%HistoryLabel.visible = history_echo != ""
 	var funding_text := ""
 	if funding_required and funding_known:
 		funding_text = "｜供给：充足" if is_funded else "｜供给：不足"
@@ -167,7 +183,15 @@ func _render_selected() -> void:
 		else "方针可调整；切换消耗 5 算力"
 	)
 	%StatusLabel.text = ""
-	_rebuild_approaches(snapshot)
+	var node: Dictionary = snapshot.get("node", {})
+	if bool(node.get("pending", false)):
+		%ApproachScroll.hide()
+		%NodePanel.show()
+		_rebuild_node(snapshot, node)
+	else:
+		%NodePanel.hide()
+		%ApproachScroll.show()
+		_rebuild_approaches(snapshot)
 
 
 func _rebuild_approaches(snapshot: Dictionary) -> void:
@@ -214,6 +238,48 @@ func _rebuild_approaches(snapshot: Dictionary) -> void:
 		%ApproachList.add_child(button)
 
 
+func _rebuild_node(snapshot: Dictionary, node: Dictionary) -> void:
+	%NodeTitle.text = str(node.get("title", "待处理节点"))
+	%NodeDescription.text = str(node.get("description", ""))
+	for child in %NodeOptionList.get_children():
+		child.queue_free()
+
+	var options: Array = node.get("options", [])
+	for option_variant in options:
+		var option: Dictionary = option_variant
+		var button := Button.new()
+		var cpu_cost := int(option.get("cpu_cost", 0))
+		var energy_cost := int(option.get("energy_cost", 0))
+		var costs: Array[String] = []
+		if cpu_cost > 0:
+			costs.append("算力 %d" % cpu_cost)
+		if energy_cost > 0:
+			costs.append("能源 %d" % energy_cost)
+		if costs.is_empty():
+			costs.append("无立即资源消耗")
+		button.text = "%s｜%s｜局势 %+d\n%s" % [
+			str(option.get("display_name", "未命名方案")),
+			"，".join(costs),
+			int(option.get("severity_delta", 0)),
+			str(option.get("description", "")),
+		]
+		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		button.disabled = _current_cpu < cpu_cost or _current_energy < energy_cost
+		button.tooltip_text = (
+			"资源不足，无法执行该方案"
+			if button.disabled
+			else str(option.get("result_text", "执行该处置方案"))
+		)
+		button.pressed.connect(
+			_on_node_option_pressed.bind(
+				str(snapshot.get("instance_id", "")),
+				str(option.get("option_id", ""))
+			)
+		)
+		%NodeOptionList.add_child(button)
+
+
 func _on_entry_pressed(instance_id: String) -> void:
 	_selected_id = instance_id
 	_render_selected()
@@ -221,6 +287,10 @@ func _on_entry_pressed(instance_id: String) -> void:
 
 func _on_approach_pressed(instance_id: String, approach_id: String) -> void:
 	approach_requested.emit(instance_id, approach_id)
+
+
+func _on_node_option_pressed(instance_id: String, option_id: String) -> void:
+	node_option_requested.emit(instance_id, option_id)
 
 
 func _on_focus_region_pressed() -> void:
