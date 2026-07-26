@@ -455,16 +455,22 @@ func _assert_2058_and_2059_decisions_stack_in_2065() -> void:
 			"value": "full_return",
 			"adjusted_option": 0,
 			"option_reason": "完整归还接口",
+			"expected_audit_authority": -10,
+			"expected_hidden_authority": 14,
 		},
 		{
 			"value": "emergency_backdoor",
 			"adjusted_option": 2,
 			"option_reason": "应急后门残留",
+			"expected_audit_authority": -8,
+			"expected_hidden_authority": 16,
 		},
 		{
 			"value": "negotiated_long_term",
 			"adjusted_option": 1,
 			"option_reason": "长期授权协商",
+			"expected_audit_authority": -8,
+			"expected_hidden_authority": 14,
 		},
 	]
 
@@ -512,6 +518,16 @@ func _assert_2058_and_2059_decisions_stack_in_2065() -> void:
 				display_2065.options[2].hope_delta,
 				expected_hidden_hope,
 				"2058 强制接管应独立增加 2065 隐藏链路的信任代价"
+			)
+			_assert_eq(
+				display_2065.options[0].authority_delta,
+				int(return_case["expected_audit_authority"]),
+				"2059 完整归还应调整 2065 隔离审查的权限变化"
+			)
+			_assert_eq(
+				display_2065.options[2].authority_delta,
+				int(return_case["expected_hidden_authority"]),
+				"2059 应急后门应调整 2065 隐藏链路的权限变化"
 			)
 			var choice_adjusted: EventOption = display_2065.options[
 				int(choice_case["adjusted_option"])
