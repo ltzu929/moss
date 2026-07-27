@@ -1,10 +1,9 @@
 ## 月制时间系统测试
 ## 验证月份推进、非一月事件、年度结算和终局顺序
-extends Node
+extends "res://tests/support/moss_test_case.gd"
 
 const MAIN_SCENE: PackedScene = preload("res://scenes/main_os.tscn")
 
-var _failed: int = 0
 var _main_os: Control
 var _event_popup: Control
 
@@ -121,18 +120,3 @@ func _create_option() -> EventOption:
 	var option := EventOption.new()
 	option.button_text = "确认"
 	return option
-
-
-func _assert_true(value: bool, message: String) -> void:
-	if value:
-		print("[ OK ] " + message)
-		return
-	_failed += 1
-	push_error("[FAIL] " + message)
-
-
-func _assert_eq(actual: Variant, expected: Variant, message: String) -> void:
-	_assert_true(
-		actual == expected,
-		"%s（期望=%s，实际=%s）" % [message, str(expected), str(actual)]
-	)

@@ -1,10 +1,9 @@
 ## 核心决策历史纵向切片测试
-extends Node
+extends "res://tests/support/moss_test_case.gd"
 
 const MAIN_SCENE: PackedScene = preload("res://scenes/main_os.tscn")
 const DECISION_HISTORY_SCRIPT := preload("res://scripts/systems/decision_history.gd")
 
-var _failed: int = 0
 var _main_os: Control
 
 
@@ -597,19 +596,4 @@ func _assert_2044_2053_and_2058_decisions_stack_in_ending() -> void:
 	_assert_true(
 		"2044 年公开扩大的 550C 接口" in display_2058.event_description,
 		"2053 标签不得抹掉 2058 对 2044 标签的既有回声"
-	)
-
-
-func _assert_true(value: bool, message: String) -> void:
-	if value:
-		print("[ OK ] " + message)
-		return
-	_failed += 1
-	push_error("[FAIL] " + message)
-
-
-func _assert_eq(actual: Variant, expected: Variant, message: String) -> void:
-	_assert_true(
-		actual == expected,
-		"%s（期望=%s，实际=%s）" % [message, str(expected), str(actual)]
 	)

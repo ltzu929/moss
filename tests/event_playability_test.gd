@@ -1,5 +1,5 @@
 ## 事件可玩性与防软锁测试
-extends Node
+extends "res://tests/support/moss_test_case.gd"
 
 const EVENT_DIRECTORY := "res://data/events/"
 const EVENT_POPUP_SCENE: PackedScene = preload("res://scenes/event_popup.tscn")
@@ -42,7 +42,6 @@ const EVENT_DESCRIPTION_CONTRACTS: Dictionary = {
 	},
 }
 
-var _failed: int = 0
 
 
 func _ready() -> void:
@@ -136,18 +135,3 @@ func _create_option(text: String, energy_cost: int) -> EventOption:
 	option.button_text = text
 	option.energy_cost = energy_cost
 	return option
-
-
-func _assert_true(value: bool, message: String) -> void:
-	if value:
-		print("[ OK ] " + message)
-		return
-	_failed += 1
-	push_error("[FAIL] " + message)
-
-
-func _assert_eq(actual: Variant, expected: Variant, message: String) -> void:
-	_assert_true(
-		actual == expected,
-		"%s（期望=%s，实际=%s）" % [message, str(expected), str(actual)]
-	)

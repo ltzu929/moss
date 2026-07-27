@@ -1,9 +1,8 @@
 ## 运行态 Resource 隔离测试
-extends Node
+extends "res://tests/support/moss_test_case.gd"
 
 const MAIN_SCENE: PackedScene = preload("res://scenes/main_os.tscn")
 
-var _failed: int = 0
 
 
 func _ready() -> void:
@@ -37,18 +36,3 @@ func _ready() -> void:
 	print("[MOSS-RESOURCE-ISOLATION] 完成，失败断言：%d" % _failed)
 	await get_tree().create_timer(0.2).timeout
 	get_tree().quit(_failed)
-
-
-func _assert_true(value: bool, message: String) -> void:
-	if value:
-		print("[ OK ] " + message)
-		return
-	_failed += 1
-	push_error("[FAIL] " + message)
-
-
-func _assert_eq(actual: Variant, expected: Variant, message: String) -> void:
-	_assert_true(
-		actual == expected,
-		"%s（期望=%s，实际=%s）" % [message, str(expected), str(actual)]
-	)

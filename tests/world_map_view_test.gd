@@ -1,6 +1,6 @@
 ## 世界地图遮罩回归测试
 ## 验证 WorldMapView 的公共接口、遮罩加载和像素级点击区域。
-extends Node
+extends "res://tests/support/moss_test_case.gd"
 
 const MAP_SIZE := Vector2(1603.0, 1004.0)
 const RESIZED_MAP_SIZE := Vector2(1920.0, 1080.0)
@@ -19,7 +19,6 @@ const SITUATION_PATHS: Array[String] = [
 	"res://data/situations/underground_life_support_fault.tres",
 ]
 
-var _failed: int = 0
 var _world_map: Control
 var _selected_region: String = ""
 
@@ -247,15 +246,3 @@ func _map_pixel_to_control(pixel: Vector2) -> Vector2:
 
 func _assert_region_at(position: Vector2, expected: String, message: String) -> void:
 	_assert_eq(_world_map.call("_region_at_position", position), expected, message)
-
-
-func _assert_eq(actual: Variant, expected: Variant, message: String) -> void:
-	if actual == expected:
-		print("[ OK ] " + message)
-		return
-	_failed += 1
-	push_error("[FAIL] %s（期望=%s，实际=%s）" % [message, str(expected), str(actual)])
-
-
-func _assert_true(value: bool, message: String) -> void:
-	_assert_eq(value, true, message)

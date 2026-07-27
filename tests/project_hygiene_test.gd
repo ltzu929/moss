@@ -1,6 +1,6 @@
 ## 项目卫生测试
 ## 验证废弃文件不会回归，并确认 scenes 目录中的场景均可加载
-extends Node
+extends "res://tests/support/moss_test_case.gd"
 
 # ============================================================
 # 常量
@@ -22,7 +22,6 @@ const SCENE_DIRECTORY: String = "res://scenes/"
 # 测试状态
 # ============================================================
 
-var _failed: int = 0
 
 # ============================================================
 # 测试入口
@@ -59,15 +58,3 @@ func _collect_scene_paths(directory_path: String) -> Array[String]:
 			_collect_scene_paths(directory_path + directory_name + "/")
 		)
 	return scene_paths
-
-# ============================================================
-# 断言辅助方法
-# ============================================================
-
-## 断言条件为 true，失败时累计退出码并输出错误
-func _assert_true(value: bool, message: String) -> void:
-	if value:
-		print("[ OK ] " + message)
-		return
-	_failed += 1
-	push_error("[FAIL] " + message)

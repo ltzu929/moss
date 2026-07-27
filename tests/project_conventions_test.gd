@@ -1,6 +1,6 @@
 ## 项目约定测试
 ## 验证低误伤的代码和 Godot 工程约定。
-extends Node
+extends "res://tests/support/moss_test_case.gd"
 
 # ============================================================
 # 常量
@@ -37,12 +37,15 @@ const FORBIDDEN_PROCESS_PATTERNS: Array[String] = [
 
 const FORBIDDEN_EMIT_SIGNAL := "emit_" + "signal("
 const FORBIDDEN_CHAINED_GET_PARENT := "get_parent()" + ".get_parent()"
+const SHARED_TEST_BASE := 'extends "res://tests/support/moss_test_case.gd"'
+const LOCAL_FAILED_DECLARATION := "var _failed" + ": int"
+const LOCAL_ASSERT_TRUE := "func _assert_" + "true("
+const LOCAL_ASSERT_EQ := "func _assert_" + "eq("
 
 # ============================================================
 # 测试状态
 # ============================================================
 
-var _failed: int = 0
 var _function_regex := RegEx.new()
 
 # ============================================================
@@ -59,6 +62,7 @@ func _ready() -> void:
 	_assert_no_chained_get_parent()
 	_assert_process_has_no_blocking_work()
 	_assert_autowrap_labels_have_maximum_width()
+	_assert_independent_tests_use_shared_base()
 
 	print("[MOSS-CONVENTIONS] 完成，失败断言：%d" % _failed)
 	await get_tree().create_timer(0.2).timeout
@@ -145,6 +149,26 @@ func _assert_autowrap_labels_have_maximum_width() -> void:
 				_get_vector2_x(block, "custom_maximum_size") > 0.0,
 				"自动换行 Label 必须配置最大宽度：%s [%s" % [path, header]
 			)
+
+
+## 独立测试必须复用统一失败计数和基础断言，避免夹具再次分叉
+func _assert_independent_tests_use_shared_base() -> void:
+	for path in _collect_files("res://tests", "gd"):
+		if not path.ends_with("_test.gd"):
+			continue
+		var source := _read_text(path)
+		_assert_true(
+			SHARED_TEST_BASE in source,
+			"独立测试应继承共享测试基类：%s" % path
+		)
+		_assert_true(
+			not LOCAL_FAILED_DECLARATION in source,
+			"独立测试不得重复声明失败计数：%s" % path
+		)
+		_assert_true(
+			not LOCAL_ASSERT_TRUE in source and not LOCAL_ASSERT_EQ in source,
+			"独立测试不得重复实现基础断言：%s" % path
+		)
 
 # ============================================================
 # 文件辅助方法
@@ -300,15 +324,3 @@ func _is_snake_case(value: String) -> bool:
 		if not (is_lower or is_digit or is_underscore):
 			return false
 	return not value.begins_with("_") and not value.ends_with("_") and not "__" in value
-
-# ============================================================
-# 断言辅助方法
-# ============================================================
-
-## 断言条件为 true，失败时累计退出码并输出错误
-func _assert_true(value: bool, message: String) -> void:
-	if value:
-		print("[ OK ] " + message)
-		return
-	_failed += 1
-	push_error("[FAIL] " + message)
