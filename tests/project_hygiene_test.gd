@@ -1,5 +1,5 @@
 ## 项目卫生测试
-## 验证废弃文件不会回归，并确认保留场景仍可加载
+## 验证废弃文件不会回归，并确认 scenes 目录中的场景均可加载
 extends Node
 
 # ============================================================
@@ -16,18 +16,7 @@ const OBSOLETE_PATHS: Array[String] = [
 	"res://data/sector_russia.tres",
 ]
 
-const RETAINED_SCENES: Array[String] = [
-	"res://scenes/allocate_popup.tscn",
-	"res://scenes/command_button.tscn",
-	"res://scenes/decision_archive_panel.tscn",
-	"res://scenes/event_popup.tscn",
-	"res://scenes/game_over.tscn",
-	"res://scenes/main_os.tscn",
-	"res://scenes/sector_info.tscn",
-	"res://scenes/technology_node_card.tscn",
-	"res://scenes/technology_screen.tscn",
-	"res://scenes/year_progress.tscn",
-]
+const SCENE_DIRECTORY: String = "res://scenes/"
 
 # ============================================================
 # 测试状态
@@ -47,9 +36,17 @@ func _ready() -> void:
 			"废弃路径不应存在：%s" % path
 		)
 
-	for scene_path in RETAINED_SCENES:
+	var scene_files := DirAccess.get_files_at(SCENE_DIRECTORY)
+	scene_files.sort()
+	var scene_count := 0
+	for file_name in scene_files:
+		if not file_name.ends_with(".tscn"):
+			continue
+		scene_count += 1
+		var scene_path := SCENE_DIRECTORY + file_name
 		var scene := load(scene_path) as PackedScene
 		_assert_true(scene != null, "场景应可加载：%s" % scene_path)
+	_assert_true(scene_count > 0, "scenes 目录应至少包含一个场景")
 
 	print("[MOSS-HYGIENE] 完成，失败断言：%d" % _failed)
 	await get_tree().create_timer(0.2).timeout
