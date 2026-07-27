@@ -54,6 +54,24 @@ func _ready() -> void:
 
 
 func _assert_sector_contracts(main_os: Control) -> void:
+	var sector_container := main_os.get_node_or_null("%SectorInfoContainer") as GridContainer
+	_assert_true(sector_container != null, "主场景应装配区域卡片容器")
+	if sector_container == null:
+		return
+
+	var expected_node_names: Array[String] = []
+	for node_name in SECTOR_SPECS:
+		expected_node_names.append(str(node_name))
+	expected_node_names.sort()
+
+	var actual_node_names: Array[String] = []
+	for child in sector_container.get_children():
+		_assert_true(child is SectorInfo, "区域容器子节点必须全部为 SectorInfo：%s" % child.name)
+		actual_node_names.append(str(child.name))
+	actual_node_names.sort()
+	_assert_eq(sector_container.get_child_count(), 6, "区域容器应恰好装配六张区域卡")
+	_assert_eq(actual_node_names, expected_node_names, "区域容器子节点集合应与资源契约完全一致")
+
 	var actual_names: Array[String] = []
 	for node_name in SECTOR_SPECS:
 		var spec: Array = SECTOR_SPECS[node_name]
@@ -76,6 +94,10 @@ func _assert_sector_contracts(main_os: Control) -> void:
 		_assert_true(sector_info != null, "主场景应装配区域节点：%%%s" % node_name)
 		if sector_info == null:
 			continue
+		_assert_true(
+			sector_info.get_parent() == sector_container,
+			"%s 必须直接装配在 %%SectorInfoContainer 下" % node_name
+		)
 		_assert_true(sector_info.data_card != template, "%s 运行态不得复用 .tres 模板" % expected_name)
 		_assert_sector_values_equal(
 			sector_info.data_card,

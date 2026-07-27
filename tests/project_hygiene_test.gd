@@ -36,21 +36,29 @@ func _ready() -> void:
 			"废弃路径不应存在：%s" % path
 		)
 
-	var scene_files := DirAccess.get_files_at(SCENE_DIRECTORY)
-	scene_files.sort()
-	var scene_count := 0
-	for file_name in scene_files:
-		if not file_name.ends_with(".tscn"):
-			continue
-		scene_count += 1
-		var scene_path := SCENE_DIRECTORY + file_name
+	var scene_paths := _collect_scene_paths(SCENE_DIRECTORY)
+	scene_paths.sort()
+	for scene_path in scene_paths:
 		var scene := load(scene_path) as PackedScene
 		_assert_true(scene != null, "场景应可加载：%s" % scene_path)
-	_assert_true(scene_count > 0, "scenes 目录应至少包含一个场景")
+	_assert_true(not scene_paths.is_empty(), "scenes 目录应至少包含一个场景")
 
 	print("[MOSS-HYGIENE] 完成，失败断言：%d" % _failed)
 	await get_tree().create_timer(0.2).timeout
 	get_tree().quit(_failed)
+
+
+## 递归收集目录及所有子目录中的场景路径
+func _collect_scene_paths(directory_path: String) -> Array[String]:
+	var scene_paths: Array[String] = []
+	for file_name in DirAccess.get_files_at(directory_path):
+		if file_name.ends_with(".tscn"):
+			scene_paths.append(directory_path + file_name)
+	for directory_name in DirAccess.get_directories_at(directory_path):
+		scene_paths.append_array(
+			_collect_scene_paths(directory_path + directory_name + "/")
+		)
+	return scene_paths
 
 # ============================================================
 # 断言辅助方法
