@@ -3,6 +3,7 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 from tools import run_godot_tests
 
@@ -119,6 +120,21 @@ class LogGateTests(unittest.TestCase):
 
 
 class CommandAndReportTests(unittest.TestCase):
+    def test_linux_display_mode_forces_supported_xvfb_renderer(self) -> None:
+        with (
+            mock.patch.object(
+                run_godot_tests.platform,
+                "system",
+                return_value="Linux",
+            ),
+            mock.patch.dict(run_godot_tests.os.environ, {"DISPLAY": ":99"}),
+        ):
+            arguments = run_godot_tests.test_args_for_mode("display")
+
+        self.assertIsNotNone(arguments)
+        self.assertIn("--rendering-method", arguments)
+        self.assertIn("gl_compatibility", arguments)
+
     def test_silent_command_is_terminated_on_timeout(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             result = run_godot_tests.run_command(

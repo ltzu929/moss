@@ -385,6 +385,8 @@ def test_args_for_mode(mode: str) -> list[str] | None:
         return [
             "--display-driver",
             "x11",
+            "--rendering-method",
+            "gl_compatibility",
             "--audio-driver",
             "Dummy",
             "--resolution",
