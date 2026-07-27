@@ -37,8 +37,7 @@ const FORBIDDEN_PROCESS_PATTERNS: Array[String] = [
 
 const FORBIDDEN_EMIT_SIGNAL := "emit_" + "signal("
 const FORBIDDEN_CHAINED_GET_PARENT := "get_parent()" + ".get_parent()"
-const SHARED_TEST_BASE := 'extends "res://tests/support/moss_test_case.gd"'
-const LOCAL_FAILED_DECLARATION := "var _failed" + ": int"
+const SHARED_TEST_BASE_PATH := "res://tests/support/moss_test_case.gd"
 const LOCAL_ASSERT_TRUE := "func _assert_" + "true("
 const LOCAL_ASSERT_EQ := "func _assert_" + "eq("
 
@@ -47,6 +46,7 @@ const LOCAL_ASSERT_EQ := "func _assert_" + "eq("
 # ============================================================
 
 var _function_regex := RegEx.new()
+var _failed_declaration_regex := RegEx.new()
 
 # ============================================================
 # 测试入口
@@ -55,6 +55,7 @@ var _function_regex := RegEx.new()
 ## 执行项目约定扫描
 func _ready() -> void:
 	_function_regex.compile("^\\s*func\\s+[^\\(]+\\([^\\)]*\\)\\s*(?:->|$)")
+	_failed_declaration_regex.compile("^\\s*var\\s+_failed(?:\\s|:|=|$)")
 
 	_assert_file_names()
 	_assert_no_legacy_signal_emit()
@@ -62,6 +63,7 @@ func _ready() -> void:
 	_assert_no_chained_get_parent()
 	_assert_process_has_no_blocking_work()
 	_assert_autowrap_labels_have_maximum_width()
+	_assert_test_fixture_patterns()
 	_assert_independent_tests_use_shared_base()
 
 	print("[MOSS-CONVENTIONS] 完成，失败断言：%d" % _failed)
@@ -151,18 +153,42 @@ func _assert_autowrap_labels_have_maximum_width() -> void:
 			)
 
 
+## 基础夹具检测模式应覆盖常见声明，并忽略注释文本
+func _assert_test_fixture_patterns() -> void:
+	_assert_true(
+		_source_declares_failed("var _failed := 0"),
+		"失败计数检查应识别推断类型声明"
+	)
+	_assert_true(
+		_source_declares_failed("var _failed: int = 0"),
+		"失败计数检查应识别显式类型声明"
+	)
+	_assert_true(
+		not _source_declares_failed("# var _failed := 0"),
+		"失败计数检查不应把注释当作本地声明"
+	)
+
+
 ## 独立测试必须复用统一失败计数和基础断言，避免夹具再次分叉
 func _assert_independent_tests_use_shared_base() -> void:
 	for path in _collect_files("res://tests", "gd"):
 		if not path.ends_with("_test.gd"):
 			continue
+		var test_script := load(path) as GDScript
+		_assert_true(test_script != null, "独立测试脚本应能加载：%s" % path)
+		if test_script == null:
+			continue
+
+		var base_script := test_script.get_base_script()
+		var base_path := base_script.resource_path if base_script != null else ""
+		_assert_true(
+			base_path == SHARED_TEST_BASE_PATH,
+			"独立测试应真实继承共享测试基类：%s" % path
+		)
+
 		var source := _read_text(path)
 		_assert_true(
-			SHARED_TEST_BASE in source,
-			"独立测试应继承共享测试基类：%s" % path
-		)
-		_assert_true(
-			not LOCAL_FAILED_DECLARATION in source,
+			not _source_declares_failed(source),
 			"独立测试不得重复声明失败计数：%s" % path
 		)
 		_assert_true(
@@ -217,6 +243,14 @@ func _source_has_pattern(path: String, pattern: String) -> bool:
 		if source_line.strip_edges().begins_with("#"):
 			continue
 		if pattern in source_line:
+			return true
+	return false
+
+
+## 判断脚本是否声明了本地 _failed，覆盖推断类型、显式类型和无初始值写法
+func _source_declares_failed(source: String) -> bool:
+	for line in source.split("\n"):
+		if _failed_declaration_regex.search(String(line)) != null:
 			return true
 	return false
 
