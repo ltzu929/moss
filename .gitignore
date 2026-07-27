@@ -1,5 +1,8 @@
 # Godot 4+ specific ignores
 .godot/
+/test-results/
+__pycache__/
+*.py[cod]
 # External Godot AI MCP plugin; provision locally and do not vendor updates
 /addons/godot_ai/
 /android/

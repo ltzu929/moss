@@ -339,6 +339,7 @@ func _assert_command_button_uses_external_availability() -> void:
 
 	_assert_true(button.disabled, "按钮应使用外部传入的不可用状态")
 	_assert_eq(button.tooltip_text, "算力不足（需要30）", "按钮提示应来自指令系统")
+	button.free()
 
 # ============================================================
 # 测试辅助方法
