@@ -1,6 +1,6 @@
 ## 科技系统单元测试
 ## 验证节点图、协议点、阶段推进、激活约束、标签、快照和重置
-extends Node
+extends "res://tests/support/moss_test_case.gd"
 
 # ============================================================
 # 常量
@@ -10,13 +10,6 @@ extends Node
 const TECHNOLOGY_SYSTEM_SCRIPT := preload(
 	"res://scripts/systems/technology_system.gd"
 )
-
-# ============================================================
-# 测试状态
-# ============================================================
-
-## 失败断言数量，同时作为进程退出码
-var _failed: int = 0
 
 # ============================================================
 # 测试入口
@@ -85,27 +78,6 @@ func _ready() -> void:
 	print("[MOSS-TECH-SYSTEM] 完成，失败断言：%d" % _failed)
 	await get_tree().create_timer(0.2).timeout
 	get_tree().quit(_failed)
-
-# ============================================================
-# 断言辅助方法
-# ============================================================
-
-## 断言条件为 true，失败时累计退出码并输出错误
-func _assert_true(value: bool, message: String) -> void:
-	if value:
-		print("[ OK ] " + message)
-		return
-	_failed += 1
-	push_error("[FAIL] " + message)
-
-
-## 断言实际值与期望值相等
-func _assert_eq(actual: Variant, expected: Variant, message: String) -> void:
-	_assert_true(
-		actual == expected,
-		"%s（期望=%s，实际=%s）" % [message, str(expected), str(actual)]
-	)
-
 
 ## 校验三条路线均采用2个550C、3个550W、2个MOSS的固定布局
 func _assert_route_stage_layout(system: TechnologySystem) -> void:

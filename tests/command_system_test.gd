@@ -1,6 +1,6 @@
 ## 指令领域系统测试
 ## 验证指令查找、科技配置、冷却、执行结算和指令效果
-extends Node
+extends "res://tests/support/moss_test_case.gd"
 
 # ============================================================
 # 常量
@@ -16,7 +16,6 @@ const COMMAND_BUTTON_SCRIPT := preload("res://scripts/ui/command_button.gd")
 # 测试状态
 # ============================================================
 
-var _failed: int = 0
 var _system: CommandSystem
 var _technology: TechnologySystem
 
@@ -399,20 +398,3 @@ func _create_sector(order: int, hope: int, authority: int) -> SectorData:
 	sector.hope = hope
 	sector.authority = authority
 	return sector
-
-
-## 断言条件为 true，失败时累计退出码并输出错误
-func _assert_true(value: bool, message: String) -> void:
-	if value:
-		print("[ OK ] " + message)
-		return
-	_failed += 1
-	push_error("[FAIL] " + message)
-
-
-## 断言实际值与期望值相等
-func _assert_eq(actual: Variant, expected: Variant, message: String) -> void:
-	_assert_true(
-		actual == expected,
-		"%s（期望=%s，实际=%s）" % [message, str(expected), str(actual)]
-	)

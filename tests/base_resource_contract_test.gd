@@ -1,6 +1,6 @@
 ## 基础资源与主场景装配契约
 ## 验证六个区域和两条基础指令使用真实 .tres，并以独立运行态装配进主场景
-extends Node
+extends "res://tests/support/moss_test_case.gd"
 
 const MAIN_SCENE: PackedScene = preload("res://scenes/main_os.tscn")
 const SECTOR_SPECS: Dictionary = {
@@ -36,7 +36,6 @@ const COMMAND_SPECS: Dictionary = {
 	},
 }
 
-var _failed: int = 0
 
 
 func _ready() -> void:
@@ -191,19 +190,4 @@ func _assert_between(actual: int, minimum: int, maximum: int, message: String) -
 	_assert_true(
 		actual >= minimum and actual <= maximum,
 		"%s（范围=%d..%d，实际=%d）" % [message, minimum, maximum, actual]
-	)
-
-
-func _assert_true(value: bool, message: String) -> void:
-	if value:
-		print("[ OK ] " + message)
-		return
-	_failed += 1
-	push_error("[FAIL] " + message)
-
-
-func _assert_eq(actual: Variant, expected: Variant, message: String) -> void:
-	_assert_true(
-		actual == expected,
-		"%s（期望=%s，实际=%s）" % [message, str(expected), str(actual)]
 	)

@@ -1,9 +1,8 @@
 ## 随机局势 HUD 测试：主界面入口、非模态详情、方针回写和双分辨率边界。
-extends Node
+extends "res://tests/support/moss_test_case.gd"
 
 const MAIN_SCENE: PackedScene = preload("res://scenes/main_os.tscn")
 
-var _failed: int = 0
 var _main_os: Control
 var _panel: SituationPanel
 
@@ -208,15 +207,3 @@ func _assert_time_control() -> void:
 	_main_os._on_time_control_button_pressed()
 	_assert_true(timer.is_stopped(), "暂停按钮应停止月度推进")
 	_assert_eq((_main_os.get_node("%TimeControlButton") as Button).text, "继续", "暂停后按钮应提示继续")
-
-
-func _assert_true(value: bool, message: String) -> void:
-	if value:
-		print("[ OK ] " + message)
-		return
-	_failed += 1
-	push_error("[FAIL] " + message)
-
-
-func _assert_eq(actual: Variant, expected: Variant, message: String) -> void:
-	_assert_true(actual == expected, "%s（期望=%s，实际=%s）" % [message, str(expected), str(actual)])

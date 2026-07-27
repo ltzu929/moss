@@ -1,6 +1,6 @@
 ## 中型事件资源测试
 ## 验证 17 个中型事件资源可加载，并写入内容规范定义的 event_state 值
-extends Node
+extends "res://tests/support/moss_test_case.gd"
 
 const MAIN_SCENE: PackedScene = preload("res://scenes/main_os.tscn")
 const VALID_REGIONS: Array[String] = [
@@ -31,7 +31,6 @@ const MID_EVENT_SPECS := {
 	"event_state.mid_17_final_authorization": [2074, ["limited_final", "negotiated_trusteeship", "strategic_trusteeship"]],
 }
 
-var _failed: int = 0
 var _main_os: Control
 
 
@@ -88,18 +87,3 @@ func _collect_mid_events() -> Dictionary:
 			continue
 		mid_events[state_key] = event
 	return mid_events
-
-
-func _assert_true(value: bool, message: String) -> void:
-	if value:
-		print("[ OK ] " + message)
-		return
-	_failed += 1
-	push_error("[FAIL] " + message)
-
-
-func _assert_eq(actual: Variant, expected: Variant, message: String) -> void:
-	_assert_true(
-		actual == expected,
-		"%s（期望=%s，实际=%s）" % [message, str(expected), str(actual)]
-	)

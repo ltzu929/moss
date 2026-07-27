@@ -1,11 +1,10 @@
 ## 1920×1080 主界面运行时布局回归测试。
 ## 必须通过 display 模式运行，确保容器完成真实窗口尺寸下的布局计算。
-extends Node
+extends "res://tests/support/moss_test_case.gd"
 
 const MAIN_SCENE: PackedScene = preload("res://scenes/main_os.tscn")
 const EXPECTED_VIEWPORT_SIZE := Vector2(1920.0, 1080.0)
 
-var _failed: int = 0
 
 
 func _ready() -> void:
@@ -72,11 +71,3 @@ func _assert_europe_selection_keeps_geometry(main_os: Control) -> void:
 		"点击欧洲前后世界地图几何应保持不变"
 	)
 	_assert_runtime_geometry(main_os)
-
-
-func _assert_true(value: bool, message: String) -> void:
-	if value:
-		print("[ OK ] " + message)
-		return
-	_failed += 1
-	push_error("[FAIL] " + message)

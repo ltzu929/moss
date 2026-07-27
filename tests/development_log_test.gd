@@ -1,6 +1,6 @@
 ## 开发诊断日志测试
 ## 验证开发期崩溃诊断日志独立于游戏内旧日志 UI，并能落盘为 JSONL。
-extends Node
+extends "res://tests/support/moss_test_case.gd"
 
 # ============================================================
 # 常量
@@ -15,7 +15,6 @@ const DEFAULT_LOG_PATH: String = "user://moss_development_diagnostics.jsonl"
 # 测试状态
 # ============================================================
 
-var _failed: int = 0
 
 # ============================================================
 # 测试入口
@@ -127,24 +126,3 @@ func _find_entry(entries: Array[Dictionary], event_name: String) -> Dictionary:
 		if entry.get("event", "") == event_name:
 			return entry
 	return {}
-
-# ============================================================
-# 断言辅助方法
-# ============================================================
-
-## 断言条件为 true，失败时累计退出码并输出错误
-func _assert_true(value: bool, message: String) -> void:
-	if value:
-		print("[ OK ] " + message)
-		return
-	_failed += 1
-	push_error("[FAIL] " + message)
-
-
-## 断言两个值相等
-func _assert_eq(actual: Variant, expected: Variant, message: String) -> void:
-	if actual == expected:
-		print("[ OK ] " + message)
-		return
-	_failed += 1
-	push_error("[FAIL] %s (期望=%s, 实际=%s)" % [message, str(expected), str(actual)])

@@ -1,5 +1,5 @@
 ## 随机局势领域测试：资源、并发、方针、持续成本、指令干预与固定种子。
-extends Node
+extends "res://tests/support/moss_test_case.gd"
 
 const SITUATION_PATHS: Array[String] = [
 	"res://data/situations/automation_displacement_tension.tres",
@@ -13,7 +13,6 @@ const SITUATION_PATHS: Array[String] = [
 	"res://data/situations/underground_life_support_fault.tres",
 ]
 
-var _failed: int = 0
 var _templates: Array[SituationData] = []
 
 
@@ -349,15 +348,3 @@ func _notification_messages(notifications: Array) -> Array[String]:
 	for notification_entry in notifications:
 		result.append(str(notification_entry.get("message", "")))
 	return result
-
-
-func _assert_true(value: bool, message: String) -> void:
-	if value:
-		print("[ OK ] " + message)
-		return
-	_failed += 1
-	push_error("[FAIL] " + message)
-
-
-func _assert_eq(actual: Variant, expected: Variant, message: String) -> void:
-	_assert_true(actual == expected, "%s（期望=%s，实际=%s）" % [message, str(expected), str(actual)])

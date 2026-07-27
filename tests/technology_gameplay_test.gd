@@ -1,13 +1,11 @@
 ## 科技玩法集成测试
 ## 验证科技节点对指令、资源、事件减损、年度恢复和重开的影响
-extends Node
+extends "res://tests/support/moss_test_case.gd"
 
 # ============================================================
 # 测试状态
 # ============================================================
 
-## 失败断言数量，同时作为进程退出码
-var _failed: int = 0
 ## 被测主场景实例
 var _main_os: Control
 
@@ -241,20 +239,3 @@ func _activate_nodes(technology: TechnologySystem, node_ids: Array[String]) -> v
 			)
 			research_year_index += 1
 		_assert_true(technology.activate(node_id), "应激活测试节点 %s" % node_id)
-
-
-## 断言条件为 true，失败时累计退出码并输出错误
-func _assert_true(value: bool, message: String) -> void:
-	if value:
-		print("[ OK ] " + message)
-		return
-	_failed += 1
-	push_error("[FAIL] " + message)
-
-
-## 断言实际值与期望值相等
-func _assert_eq(actual: Variant, expected: Variant, message: String) -> void:
-	_assert_true(
-		actual == expected,
-		"%s（期望=%s，实际=%s）" % [message, str(expected), str(actual)]
-	)
