@@ -1,5 +1,5 @@
 ## 项目卫生测试
-## 验证废弃文件不会回归，并确认保留场景仍可加载
+## 验证废弃文件不会回归，并确认 scenes 目录中的场景均可加载
 extends Node
 
 # ============================================================
@@ -16,18 +16,7 @@ const OBSOLETE_PATHS: Array[String] = [
 	"res://data/sector_russia.tres",
 ]
 
-const RETAINED_SCENES: Array[String] = [
-	"res://scenes/allocate_popup.tscn",
-	"res://scenes/command_button.tscn",
-	"res://scenes/decision_archive_panel.tscn",
-	"res://scenes/event_popup.tscn",
-	"res://scenes/game_over.tscn",
-	"res://scenes/main_os.tscn",
-	"res://scenes/sector_info.tscn",
-	"res://scenes/technology_node_card.tscn",
-	"res://scenes/technology_screen.tscn",
-	"res://scenes/year_progress.tscn",
-]
+const SCENE_DIRECTORY: String = "res://scenes/"
 
 # ============================================================
 # 测试状态
@@ -47,13 +36,29 @@ func _ready() -> void:
 			"废弃路径不应存在：%s" % path
 		)
 
-	for scene_path in RETAINED_SCENES:
+	var scene_paths := _collect_scene_paths(SCENE_DIRECTORY)
+	scene_paths.sort()
+	for scene_path in scene_paths:
 		var scene := load(scene_path) as PackedScene
 		_assert_true(scene != null, "场景应可加载：%s" % scene_path)
+	_assert_true(not scene_paths.is_empty(), "scenes 目录应至少包含一个场景")
 
 	print("[MOSS-HYGIENE] 完成，失败断言：%d" % _failed)
 	await get_tree().create_timer(0.2).timeout
 	get_tree().quit(_failed)
+
+
+## 递归收集目录及所有子目录中的场景路径
+func _collect_scene_paths(directory_path: String) -> Array[String]:
+	var scene_paths: Array[String] = []
+	for file_name in DirAccess.get_files_at(directory_path):
+		if file_name.ends_with(".tscn"):
+			scene_paths.append(directory_path + file_name)
+	for directory_name in DirAccess.get_directories_at(directory_path):
+		scene_paths.append_array(
+			_collect_scene_paths(directory_path + directory_name + "/")
+		)
+	return scene_paths
 
 # ============================================================
 # 断言辅助方法
