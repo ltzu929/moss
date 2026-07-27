@@ -174,6 +174,8 @@ KNOWN_GODOT_AI_ERROR_FRAGMENTS = (
     "Failed loading resource: res://addons/godot_ai/runtime/game_helper.gd",
     "Failed to create an autoload, can't load from UID or path: "
     "res://addons/godot_ai/runtime/game_helper.gd",
+    "Failed to instantiate an autoload, can't load from path: "
+    "res://addons/godot_ai/runtime/game_helper.gd",
 )
 
 
@@ -410,7 +412,10 @@ def evaluate_scene_result(
         for marker in spec.required_markers
         if marker not in command_result.output
     ]
-    unexpected_errors = find_unexpected_errors(command_result.output)
+    unexpected_errors = find_unexpected_errors(
+        command_result.output,
+        allow_missing_godot_ai=True,
+    )
     failure_reasons: list[str] = []
     if command_result.timed_out:
         failure_reasons.append("timeout")

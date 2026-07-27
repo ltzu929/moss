@@ -92,6 +92,31 @@ class LogGateTests(unittest.TestCase):
         self.assertEqual(result.status, "failed")
         self.assertIn("missing_terminal_marker", result.failure_reasons)
 
+    def test_scene_allows_only_registered_missing_godot_ai_errors(self) -> None:
+        spec = run_godot_tests.TestSpec(
+            "tests/example.tscn",
+            "domain",
+            "headless",
+            ("[MOSS-EXAMPLE] 完成，失败断言：0",),
+        )
+        command_result = run_godot_tests.CommandResult(
+            exit_code=0,
+            output=(
+                "ERROR: Failed to instantiate an autoload, can't load from "
+                "path: res://addons/godot_ai/runtime/game_helper.gd.\n"
+                "[MOSS-EXAMPLE] 完成，失败断言：0\n"
+            ),
+            duration_seconds=0.1,
+        )
+
+        result = run_godot_tests.evaluate_scene_result(
+            spec,
+            command_result,
+        )
+
+        self.assertEqual(result.status, "passed")
+        self.assertEqual(result.unexpected_errors, [])
+
 
 class CommandAndReportTests(unittest.TestCase):
     def test_silent_command_is_terminated_on_timeout(self) -> None:
