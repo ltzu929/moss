@@ -9,9 +9,31 @@ permissions:
   contents: read
 
 jobs:
-  godot-tests:
+  runner-unit:
+    name: runner-unit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Test Python runner
+        run: python -m unittest tools.tests.test_run_godot_tests -v
+
+  test-suites:
+    name: suite-${{ matrix.suite }}
+    needs: runner-unit
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        suite:
+          - contracts
+          - domain
+          - ui
+          - playthrough
 
     steps:
       - name: Checkout
@@ -27,5 +49,46 @@ jobs:
       - name: Show Godot version
         run: godot --version
 
-      - name: Run Godot tests
-        run: xvfb-run -a -s "-screen 0 1920x1080x24" python tools/run_godot_tests.py
+      - name: Run headless-backed suite
+        if: matrix.suite != 'ui'
+        run: >-
+          python tools/run_godot_tests.py
+          --suite "${{ matrix.suite }}"
+          --report-json "test-results/${{ matrix.suite }}.json"
+
+      - name: Run display-backed suite
+        if: matrix.suite == 'ui'
+        run: >-
+          xvfb-run -a -s "-screen 0 1920x1080x24"
+          python tools/run_godot_tests.py
+          --suite "${{ matrix.suite }}"
+          --report-json "test-results/${{ matrix.suite }}.json"
+
+      - name: Upload suite report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: godot-test-report-${{ matrix.suite }}
+          path: test-results/${{ matrix.suite }}.json
+          if-no-files-found: warn
+          retention-days: 14
+
+  godot-tests:
+    name: godot-tests
+    if: always()
+    needs:
+      - runner-unit
+      - test-suites
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Require every test layer
+        env:
+          RUNNER_UNIT_RESULT: ${{ needs.runner-unit.result }}
+          TEST_SUITES_RESULT: ${{ needs.test-suites.result }}
+        run: |
+          echo "runner-unit: ${RUNNER_UNIT_RESULT}"
+          echo "test-suites: ${TEST_SUITES_RESULT}"
+          test "${RUNNER_UNIT_RESULT}" = "success"
+          test "${TEST_SUITES_RESULT}" = "success"

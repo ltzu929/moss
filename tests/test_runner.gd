@@ -10,8 +10,8 @@ extends Control
 ## 测试用Timer间隔（秒）- 加速游戏时间
 const TEST_TIMER_INTERVAL: float = 0.05
 
-## 测试超时时长（毫秒）
-const MAX_TEST_DURATION_MSEC: int = 60000
+## 测试超时时长（毫秒）；兼容编辑器 MCP 验证路径的额外开销
+const MAX_TEST_DURATION_MSEC: int = 180000
 
 # ============================================================
 # 测试状态
@@ -120,7 +120,7 @@ func _process(_delta: float) -> void:
 		Time.get_ticks_msec() - _test_started_msec > MAX_TEST_DURATION_MSEC
 		and not _game_ended
 	):
-		_log("[ERROR] 测试超时！游戏未在 60 秒内结束")
+		_log("[ERROR] 测试超时！游戏未在 180 秒内结束")
 		_game_ended = true
 		_run_all_assertions()
 		_finish_test()
