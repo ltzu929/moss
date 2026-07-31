@@ -21,3 +21,8 @@ extends Resource
 @export_enum("一般事件", "重大事件", "高危事件") var event_level: String = "重大事件"
 ## 玩家可选择的事件方案
 @export var options: Array[EventOption] = []
+@export_group("分支触发")
+## 仅当对应核心决策已写入时触发；空键表示固定事件
+@export var required_decision_tag_key: String = ""
+## 分支要求的核心决策值；空值表示只要求标签存在
+@export var required_decision_tag_value: String = ""

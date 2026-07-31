@@ -7,11 +7,109 @@ extends Control
 # 常量定义
 # ============================================================
 
+@export_enum("mixed", "managed", "human_autonomy")
+var route_id: String = "mixed"
+
 ## 测试用Timer间隔（秒）- 加速游戏时间
 const TEST_TIMER_INTERVAL: float = 0.05
 
-## 测试超时时长（毫秒）；兼容编辑器 MCP 验证路径的额外开销
-const MAX_TEST_DURATION_MSEC: int = 180000
+## 单路线必须早于外层测试运行器的 90 秒超时结束
+const MAX_TEST_DURATION_MSEC: int = 80000
+
+const ROUTE_CONFIGS: Dictionary = {
+	"mixed": {
+		"expected_ending": "coexistence",
+		"mid_choice": 1,
+		"final_choice": 1,
+		"branch_choice": 1,
+		"situation_approach": 1,
+		"situation_node_choice": 0,
+		"command_id": "technology_aid",
+		"command_start_year": 2064,
+		"minimum_command_count": 3,
+		"technology_nodes": [
+			"managed_decision",
+			"core_hot_redundancy",
+			"managed_infrastructure",
+			"managed_global_network",
+			"human_open_interface",
+			"human_public_decision",
+			"core_load_migration",
+			"human_mutual_aid",
+		],
+		"core_choices": {
+			"太空电梯危机": "human_command",
+			"大淹没事故": "infrastructure_first",
+			"月球坠落危机": "human_final_authority",
+			"AI隔离审查": "limited_disclosure",
+			"西伯利亚发动机群过载": "redundant_array",
+		},
+		"history_fragments": ["只披露有限接口", "备用阵列"],
+	},
+	"managed": {
+		"expected_ending": "managed",
+		"mid_choice": 2,
+		"final_choice": 2,
+		"branch_choice": 2,
+		"situation_approach": 2,
+		"situation_node_choice": 1,
+		"command_id": "global_takeover",
+		"command_start_year": 2056,
+		"minimum_command_count": 4,
+		"technology_nodes": [
+			"managed_decision",
+			"managed_behavior_prediction",
+			"managed_infrastructure",
+			"managed_global_network",
+			"managed_authority_audit",
+			"core_hot_redundancy",
+			"managed_irreplaceable_protocol",
+			"core_energy_mapping",
+		],
+		"core_choices": {
+			"太空电梯危机": "public_counterstrike",
+			"大淹没事故": "sacrifice_perimeter",
+			"月球坠落危机": "forced_takeover",
+			"AI隔离审查": "hidden_core_chain",
+			"西伯利亚发动机群过载": "forced_overclock",
+		},
+		"history_fragments": [
+			"隐藏核心链路",
+			"强制超频",
+			"外围补偿申诉",
+			"审计轨迹",
+		],
+	},
+	"human_autonomy": {
+		"expected_ending": "human_autonomy",
+		"mid_choice": 0,
+		"final_choice": 0,
+		"branch_choice": 0,
+		"situation_approach": 0,
+		"situation_node_choice": 0,
+		"command_id": "technology_aid",
+		"command_start_year": 2060,
+		"minimum_command_count": 4,
+		"technology_nodes": [
+			"human_open_interface",
+			"human_public_decision",
+			"human_autonomy_network",
+			"human_emergency_training",
+			"human_mutual_aid",
+			"core_hot_redundancy",
+			"human_civilization_self_sustain",
+			"core_energy_mapping",
+		],
+		"core_choices": {
+			"太空电梯危机": "human_command",
+			"大淹没事故": "population_first",
+			"月球坠落危机": "human_final_authority",
+			"AI隔离审查": "full_compliance",
+			"西伯利亚发动机群过载": "personnel_first_shutdown",
+		},
+		"history_fragments": ["完整接受隔离审查", "分段停机优先保护工程人员"],
+	},
+}
 
 # ============================================================
 # 测试状态
@@ -45,11 +143,8 @@ var _game_message: String = ""
 var _last_tracked_year: int = 2044
 var _last_tracked_month: int = 1
 
-## 事件触发日志 {"YYYY.MM": {year, month, event_title}}
+## 事件触发日志 {"YYYY.MM:title": {year, month, event_title, selected_index}}
 var _event_log: Dictionary = {}
-
-## 自动选择的事件选项索引
-var _auto_choice: int = 0
 
 ## 测试启动时间戳
 var _test_started_msec: int = 0
@@ -61,6 +156,10 @@ var _assertions_done: bool = false
 var _event_popup_responding: bool = false
 var _alloc_popup_responding: bool = false
 var _seen_situation_ids: Array[String] = []
+var _route_config: Dictionary = {}
+var _technology_plan_index: int = 0
+var _technology_blocked_node: String = ""
+var _route_command_count: int = 0
 
 # ============================================================
 # 生命周期函数
@@ -68,7 +167,13 @@ var _seen_situation_ids: Array[String] = []
 
 func _ready() -> void:
 	_test_started_msec = Time.get_ticks_msec()
-	_log("=== MOSS模拟器 自动化播放测试启动 ===")
+	_route_config = ROUTE_CONFIGS.get(route_id, {})
+	if _route_config.is_empty():
+		_log("[FATAL] 未知代表性路线: %s" % route_id)
+		_failed += 1
+		_finish_test()
+		return
+	_log("=== MOSS模拟器 代表性路线测试启动：%s ===" % route_id)
 	_log("")
 
 	# 加载并实例化主场景
@@ -98,6 +203,7 @@ func _ready() -> void:
 
 	# 记录初始状态
 	_record_initial_state()
+	_drive_route_technology()
 
 	# 设置自动响应器
 	_setup_auto_responders()
@@ -108,7 +214,7 @@ func _ready() -> void:
 	# 启动加速Timer
 	timer.start()
 
-	_log("测试环境就绪，Timer间隔: %.3fs" % TEST_TIMER_INTERVAL)
+	_log("测试环境就绪，路线=%s，Timer间隔: %.3fs" % [route_id, TEST_TIMER_INTERVAL])
 	_log("---")
 
 	set_process(true)
@@ -120,7 +226,7 @@ func _process(_delta: float) -> void:
 		Time.get_ticks_msec() - _test_started_msec > MAX_TEST_DURATION_MSEC
 		and not _game_ended
 	):
-		_log("[ERROR] 测试超时！游戏未在 180 秒内结束")
+		_log("[ERROR] 测试超时！路线未在 80 秒内结束")
 		_game_ended = true
 		_run_all_assertions()
 		_finish_test()
@@ -133,6 +239,8 @@ func _process(_delta: float) -> void:
 	# 轮询弹窗自动响应
 	_poll_popups()
 	_poll_situations()
+	_drive_route_technology()
+	_drive_route_command()
 
 	# 跟踪日期变化
 	var current_year: int = _main_os.current_year
@@ -147,6 +255,105 @@ func _process(_delta: float) -> void:
 		set_process(false)
 
 
+## 按路线逐点激活真实科技节点；协议点仍只来自生产时间循环。
+func _drive_route_technology() -> void:
+	if _main_os == null or _game_ended or _is_route_modal_active():
+		return
+	var technology := _main_os.get_node("%TechnologySystem") as TechnologySystem
+	var technology_nodes: Array = _route_config.get("technology_nodes", [])
+	if _technology_plan_index >= technology_nodes.size():
+		return
+	if technology.get_available_points() <= 0:
+		return
+
+	var node_id := str(technology_nodes[_technology_plan_index])
+	if not technology.can_activate(node_id):
+		if _technology_blocked_node != node_id:
+			_technology_blocked_node = node_id
+			_assert_true(
+				false,
+				"路线科技节点应在协议点到账时可激活：%s" % node_id,
+				"route_technology"
+			)
+		return
+
+	var activated := technology.activate(node_id)
+	_assert_true(activated, "路线应通过真实接口激活科技：%s" % node_id, "route_technology")
+	if activated:
+		_technology_plan_index += 1
+		_technology_blocked_node = ""
+		_log("  [TECH] 路线 %s 激活 %s" % [route_id, node_id])
+
+
+## 在无模态窗口时执行路线解锁的真实指令，依靠生产冷却控制频率。
+func _drive_route_command() -> void:
+	if _main_os == null or _game_ended or _is_route_modal_active():
+		return
+	if _main_os.current_year < int(_route_config.get("command_start_year", 9999)):
+		return
+
+	var command_id := str(_route_config.get("command_id", ""))
+	if command_id.is_empty():
+		return
+	var command := _main_os._get_command_by_id(command_id) as CommandData
+	if command == null:
+		return
+
+	if _main_os.command_requires_selected_sector(command):
+		var target := _find_route_command_target(command)
+		if target == null:
+			return
+		_main_os.select_sector(target)
+
+	if not _main_os.is_command_available(command):
+		return
+	if not _main_os.execute_command(command):
+		_assert_true(false, "已判定可用的路线指令应成功结算：%s" % command_id, "route_command")
+		return
+
+	if _main_os.command_requires_selected_sector(command):
+		_main_os.apply_command_effect(command)
+	else:
+		_main_os.apply_special_command_effect(command)
+	_main_os.update_command_buttons()
+	_route_command_count += 1
+	_log(
+		"  [COMMAND] 路线 %s 第%d次执行 %s"
+		% [route_id, _route_command_count, command_id]
+	)
+
+
+func _find_route_command_target(command: CommandData) -> SectorInfo:
+	var technology := _main_os.get_node("%TechnologySystem") as TechnologySystem
+	var allow_zero_authority := technology.has_tag("human_core")
+	var best_target: SectorInfo = null
+	var best_social_score := 1000000
+	for sector_node in _main_os.get_node("%SectorInfoContainer").get_children():
+		var sector := sector_node as SectorInfo
+		if sector == null or sector.data_card == null:
+			continue
+		var projected_authority := sector.data_card.authority + command.authority_delta
+		if not allow_zero_authority and projected_authority < 5:
+			continue
+		var social_score := sector.data_card.order + sector.data_card.hope
+		if social_score < best_social_score:
+			best_target = sector
+			best_social_score = social_score
+	return best_target
+
+
+func _is_route_modal_active() -> bool:
+	if _event_popup_responding or _alloc_popup_responding:
+		return true
+	if bool(_main_os.get("_situation_auto_paused")):
+		return true
+	for node_path in ["%EventPopup", "%AllocatePopup"]:
+		var modal := _main_os.get_node(node_path) as Control
+		if modal != null and modal.visible:
+			return true
+	return false
+
+
 ## 为完整通关选择每项局势的地方方案、首个节点，并处理自动暂停。
 func _poll_situations() -> void:
 	var snapshots: Array[Dictionary] = _main_os.get_situation_snapshots()
@@ -158,7 +365,18 @@ func _poll_situations() -> void:
 		var node: Dictionary = snapshot.get("node", {})
 		if bool(node.get("pending", false)):
 			var node_options: Array = node.get("options", [])
-			for option_variant in node_options:
+			var preferred_node_index := mini(
+				int(_route_config.get("situation_node_choice", 0)),
+				node_options.size() - 1
+			)
+			var ordered_node_indices: Array[int] = []
+			if preferred_node_index >= 0:
+				ordered_node_indices.append(preferred_node_index)
+			for index in range(node_options.size()):
+				if index != preferred_node_index:
+					ordered_node_indices.append(index)
+			for index in ordered_node_indices:
+				var option_variant: Variant = node_options[index]
 				var option: Dictionary = option_variant
 				if (
 					_main_os.current_cpu >= int(option.get("cpu_cost", 0))
@@ -175,9 +393,13 @@ func _poll_situations() -> void:
 		var approaches: Array = snapshot.get("approaches", [])
 		if approaches.is_empty():
 			continue
+		var approach_index := mini(
+			int(_route_config.get("situation_approach", 0)),
+			approaches.size() - 1
+		)
 		_main_os._on_situation_approach_requested(
 			instance_id,
-			str(approaches[0].get("approach_id", ""))
+			str(approaches[approach_index].get("approach_id", ""))
 		)
 
 	if bool(_main_os.get("_situation_auto_paused")):
@@ -556,18 +778,33 @@ func _respond_to_event_popup(event_popup: PanelContainer) -> void:
 	if event_popup.has_node("%EventTitle"):
 		title = event_popup.get_node("%EventTitle").text
 	var date_key := "%04d.%02d" % [year, month]
-	_event_log[date_key] = {
+	var event_key := "%s:%s" % [date_key, title]
+	var desired_index := _get_route_event_choice_index(title, year, month)
+	_event_log[event_key] = {
 		"year": year,
 		"month": month,
 		"event_title": title,
+		"desired_index": desired_index,
 	}
 	var option_list := event_popup.get_node("%OptionList") as VBoxContainer
 	var option_buttons: Array[Node] = option_list.get_children()
 	var selected_index := -1
-	if _auto_choice < option_buttons.size():
-		var preferred_button := option_buttons[_auto_choice] as Button
+	if desired_index >= 0 and desired_index < option_buttons.size():
+		var preferred_button := option_buttons[desired_index] as Button
 		if preferred_button != null and not preferred_button.disabled:
-			selected_index = _auto_choice
+			selected_index = desired_index
+		else:
+			_assert_true(
+				false,
+				"路线目标方案必须真实可点击：%s / 选项%d" % [title, desired_index],
+				"route_event_choice"
+			)
+	else:
+		_assert_true(
+			false,
+			"应能从稳定事件契约定位路线方案：%s" % title,
+			"route_event_choice"
+		)
 	if selected_index == -1:
 		for index in range(option_buttons.size()):
 			var candidate := option_buttons[index] as Button
@@ -586,8 +823,38 @@ func _respond_to_event_popup(event_popup: PanelContainer) -> void:
 		event_popup.hide()
 	else:
 		_log("  [EVENT] 日期=%s 自动点击选项 %d (%s)" % [date_key, selected_index, title])
+		_event_log[event_key]["selected_index"] = selected_index
 		(option_buttons[selected_index] as Button).pressed.emit()
 	_event_popup_responding = false
+
+
+func _get_route_event_choice_index(title: String, year: int, month: int) -> int:
+	var core_choices: Dictionary = _route_config.get("core_choices", {})
+	if core_choices.has(title):
+		var expected_value := str(core_choices[title])
+		var source_event := _find_source_event(title, year, month)
+		if source_event == null:
+			return -1
+		for index in range(source_event.options.size()):
+			if source_event.options[index].decision_tag_value == expected_value:
+				return index
+		return -1
+	if title == "木星引力危机":
+		return int(_route_config.get("final_choice", 0))
+	if title in ["外围地下城补偿申诉", "隐藏链路异常回执"]:
+		return int(_route_config.get("branch_choice", 0))
+	return int(_route_config.get("mid_choice", 0))
+
+
+func _find_source_event(title: String, year: int, month: int) -> GameEvent:
+	for event in _main_os.all_events:
+		if (
+			event.event_title == title
+			and event.event_time == year
+			and event.event_month == month
+		):
+			return event
+	return null
 
 
 func _respond_to_alloc_popup(alloc_popup: AllocatePopup) -> void:
@@ -627,7 +894,9 @@ func _on_game_ended(result: String, message: String) -> void:
 	_log("游戏结束! 结果: %s" % result)
 	_log("消息: %s" % message)
 
-	# 延迟运行断言，确保所有处理完成
+	# 2075 选项会在同一协程中触发结局；等待弹窗响应器完整收尾。
+	while _event_popup_responding or _alloc_popup_responding:
+		await get_tree().process_frame
 	await get_tree().process_frame
 	_run_all_assertions()
 	_finish_test()
@@ -711,6 +980,12 @@ func _assert_game_completion() -> void:
 			"游戏结果应是有效类型: %s" % _game_result,
 			"game_completion"
 		)
+		_assert_eq(
+			_game_result,
+			str(_route_config.get("expected_ending", "")),
+			"代表性路线应抵达约定结局",
+			"game_completion"
+		)
 
 
 func _assert_initial_state() -> void:
@@ -724,36 +999,94 @@ func _assert_event_triggering() -> void:
 	_log("[断言组] 事件触发")
 	_log("  事件日志: %s" % str(_event_log))
 
-	var expected_years: Array[int] = [2044, 2053, 2058, 2065, 2070, 2075]
-	for year in expected_years:
-		var key := "%04d.01" % year
-		var triggered: bool = (key in _event_log)
-		_assert_true(triggered, "日期%s应有事件触发" % key, "event_triggering")
-
-	_assert_eq(
-		_main_os.get_decision_tag("decision.core_2044_automation_access"),
-		"public_counterstrike",
-		"真实点击 2044 首选方案应写入核心决策标签",
-		"event_triggering"
-	)
-	_assert_eq(
-		_main_os.get_decision_tag("decision.core_2053_population_vs_infrastructure"),
-		"population_first",
-		"真实点击 2053 首选方案应写入核心决策标签",
-		"event_triggering"
-	)
-	_assert_eq(
-		_main_os.get_decision_tag("decision.core_2058_crisis_authority"),
-		"bounded_self_rescue",
-		"真实点击 2058 首选方案应写入核心决策标签",
-		"event_triggering"
-	)
+	var core_event_contracts: Dictionary = {
+		"太空电梯危机": {
+			"year": 2044,
+			"key": "decision.core_2044_automation_access",
+		},
+		"大淹没事故": {
+			"year": 2053,
+			"key": "decision.core_2053_population_vs_infrastructure",
+		},
+		"月球坠落危机": {
+			"year": 2058,
+			"key": "decision.core_2058_crisis_authority",
+		},
+		"AI隔离审查": {
+			"year": 2065,
+			"key": "decision.core_2065_audit_posture",
+		},
+		"西伯利亚发动机群过载": {
+			"year": 2070,
+			"key": "decision.core_2070_engine_protection",
+		},
+		"木星引力危机": {
+			"year": 2075,
+			"key": "",
+		},
+	}
+	var expected_core_choices: Dictionary = _route_config.get("core_choices", {})
+	for title_variant in core_event_contracts:
+		var title := str(title_variant)
+		var contract: Dictionary = core_event_contracts[title]
+		_assert_true(
+			_event_was_logged(int(contract["year"]), 1, title),
+			"%s 应通过真实时间循环触发" % title,
+			"event_triggering"
+		)
+		var decision_key := str(contract["key"])
+		if decision_key.is_empty():
+			continue
+		_assert_eq(
+			_main_os.get_decision_tag(decision_key),
+			str(expected_core_choices[title]),
+			"%s 应写入路线约定核心标签" % title,
+			"event_triggering"
+		)
 	_assert_eq(
 		_main_os.get_decision_records().size(),
-		3,
-		"完整通关应保留 2044、2053 与 2058 三条核心决策档案",
+		5,
+		"完整通关应保留五条不可逆核心决策档案",
 		"event_triggering"
 	)
+
+	var expects_branches := route_id == "managed"
+	for branch_title in ["外围地下城补偿申诉", "隐藏链路异常回执"]:
+		_assert_eq(
+			_event_was_logged(
+				2054 if branch_title == "外围地下城补偿申诉" else 2066,
+				6,
+				branch_title
+			),
+			expects_branches,
+			"条件分支触发应与核心路线一致：%s" % branch_title,
+			"event_triggering"
+		)
+	if expects_branches:
+		_assert_eq(
+			_main_os.get_event_state("event_state.branch_01_perimeter_compensation"),
+			"moss_archive",
+			"托管路线应真实结算外围补偿分支",
+			"event_triggering"
+		)
+		_assert_eq(
+			_main_os.get_event_state("event_state.branch_02_hidden_chain_receipt"),
+			"audit_trail_rewrite",
+			"托管路线应真实结算隐藏链路回执分支",
+			"event_triggering"
+		)
+
+	var expected_event_count := 25 if expects_branches else 23
+	_assert_eq(
+		_event_log.size(),
+		expected_event_count,
+		"路线应处理全部固定事件及应触发的条件分支",
+		"event_triggering"
+	)
+
+
+func _event_was_logged(year: int, month: int, title: String) -> bool:
+	return "%04d.%02d:%s" % [year, month, title] in _event_log
 
 
 func _assert_situation_progress() -> void:
@@ -765,7 +1098,7 @@ func _assert_situation_progress() -> void:
 	)
 
 
-## 验证科技节点加载、年度协议点累计和无操作时的激活状态
+## 验证完整路线只使用生产年份发放的8个协议点。
 func _assert_technology_progress() -> void:
 	_log("[断言组] 科技研究")
 	var technology: TechnologySystem = _main_os.get_node("%TechnologySystem")
@@ -777,14 +1110,26 @@ func _assert_technology_progress() -> void:
 	)
 	_assert_eq(
 		technology.get_available_points(),
-		8,
-		"2075年前应累计8个协议点",
+		0,
+		"路线应使用整局8个协议点",
 		"technology"
 	)
 	_assert_eq(
-		technology.get_active_node_ids().size(),
-		0,
-		"自动通关未操作科技树时不应自动激活节点",
+		technology.get_active_node_ids(),
+		_route_config.get("technology_nodes", []),
+		"路线应按约定顺序激活8个真实科技节点",
+		"technology"
+	)
+	_assert_eq(
+		technology.get_stage(),
+		TechNodeData.Stage.MOSS,
+		"六个节点后应进入MOSS阶段并允许终端节点",
+		"technology"
+	)
+	_assert_gte(
+		_route_command_count,
+		int(_route_config.get("minimum_command_count", 0)),
+		"路线应多次执行科技解锁的真实指令",
 		"technology"
 	)
 
@@ -824,6 +1169,29 @@ func _assert_final_state() -> void:
 			"结局应与四类判定规则一致",
 			"final_state"
 		)
+		match route_id:
+			"managed":
+				_assert_true(avg_auth >= 50, "托管路线平均控制权应达到50", "final_state")
+			"human_autonomy":
+				_assert_true(avg_auth < 25, "人类自主路线平均控制权应低于25", "final_state")
+				_assert_true(
+					avg_order >= 50 and avg_hope >= 50,
+					"人类自主路线平均秩序与希望应至少为50",
+					"final_state"
+				)
+			"mixed":
+				_assert_true(
+					avg_auth > 0 and avg_order >= 40 and avg_hope >= 40,
+					"混合路线应维持正控制权及基本社会稳定",
+					"final_state"
+				)
+		for fragment_variant in _route_config.get("history_fragments", []):
+			var fragment := str(fragment_variant)
+			_assert_true(
+				fragment in _game_message,
+				"结局说明应回读路线历史：%s" % fragment,
+				"final_state"
+			)
 
 
 func _assert_game_logic() -> void:
@@ -924,7 +1292,7 @@ func _log(msg: String) -> void:
 func _finish_test() -> void:
 	_log("")
 	_log("==========================================")
-	_log("  MOSS模拟器 自动化播放测试报告")
+	_log("  MOSS模拟器 代表性路线测试报告：%s" % route_id)
 	_log("==========================================")
 
 	var total: int = _passed + _failed
@@ -971,6 +1339,7 @@ func _finish_test() -> void:
 
 	_log("")
 	_log("=== 测试结束 ===")
+	print("[MOSS-ROUTE:%s] 完成，失败断言：%d" % [route_id, _failed])
 
 	# 退出游戏
 	get_tree().quit(_failed)

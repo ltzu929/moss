@@ -12,6 +12,10 @@ order_delta = -15
 hope_delta = 8
 authority_delta = -6
 energy_cost = 0
+decision_tag_key = "decision.core_2070_engine_protection"
+decision_tag_value = "personnel_first_shutdown"
+decision_record_title = "2070 分段停机保护人员"
+decision_record_summary = "MOSS 接受推进损失并按人工安全阈值停机，工程人员撤离优先于即时推力。"
 metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [sub_resource type="Resource" id="Resource_opt2"]
@@ -21,6 +25,10 @@ order_delta = 12
 hope_delta = -4
 authority_delta = 4
 energy_cost = 35
+decision_tag_key = "decision.core_2070_engine_protection"
+decision_tag_value = "redundant_array"
+decision_record_title = "2070 启用备用阵列"
+decision_record_summary = "MOSS 用冗余设备和额外能源维持推进，在人员安全与工程连续性之间保留缓冲。"
 metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [sub_resource type="Resource" id="Resource_opt3"]
@@ -30,6 +38,10 @@ order_delta = 26
 hope_delta = -22
 authority_delta = 16
 energy_cost = 20
+decision_tag_key = "decision.core_2070_engine_protection"
+decision_tag_value = "forced_overclock"
+decision_record_title = "2070 强制超频点火"
+decision_record_summary = "MOSS 越过设备与人员安全余量维持推力，效率优先成为终局前最后一次公开选择。"
 metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [resource]

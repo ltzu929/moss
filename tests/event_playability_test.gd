@@ -55,6 +55,7 @@ func _ready() -> void:
 func _assert_all_events_have_safe_choices() -> void:
 	var trigger_keys: Dictionary = {}
 	var event_count := 0
+	var branch_event_count := 0
 	for file_name in DirAccess.get_files_at(EVENT_DIRECTORY):
 		if not file_name.ends_with(".tres"):
 			continue
@@ -85,6 +86,17 @@ func _assert_all_events_have_safe_choices() -> void:
 				]
 			)
 		_assert_true(not event.options.is_empty(), "事件至少需要一个方案：%s" % event.event_title)
+		if event.required_decision_tag_key.is_empty():
+			_assert_true(
+				event.required_decision_tag_value.is_empty(),
+				"固定事件不得孤立声明分支触发值：%s" % event.event_title
+			)
+		else:
+			branch_event_count += 1
+			_assert_true(
+				not event.required_decision_tag_value.is_empty(),
+				"条件分支必须声明精确核心触发值：%s" % event.event_title
+			)
 		var has_zero_energy_option := false
 		for option in event.options:
 			_assert_true(not option.button_text.is_empty(), "事件方案文本不得为空：%s" % event.event_title)
@@ -102,7 +114,8 @@ func _assert_all_events_have_safe_choices() -> void:
 		]
 		_assert_true(not trigger_keys.has(trigger_key), "事件触发键不得重复：%s" % trigger_key)
 		trigger_keys[trigger_key] = true
-	_assert_true(event_count >= 23, "应覆盖全部现有事件资源")
+	_assert_true(event_count >= 25, "应覆盖全部现有事件资源")
+	_assert_eq(branch_event_count, 2, "首个可玩版应注册两个受核心选择控制的短分支")
 
 
 func _assert_runtime_emergency_fallback() -> void:

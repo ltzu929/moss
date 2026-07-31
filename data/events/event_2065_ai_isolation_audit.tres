@@ -11,6 +11,10 @@ button_text = "配合隔离审查"
 order_delta = 12
 hope_delta = 8
 authority_delta = -8
+decision_tag_key = "decision.core_2065_audit_posture"
+decision_tag_value = "full_compliance"
+decision_record_title = "2065 接受完整隔离审查"
+decision_record_summary = "MOSS 开放核心权限记录并接受人工复核；危机响应将服从可见审计链。"
 metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [sub_resource type="Resource" id="Resource_opt2"]
@@ -20,6 +24,10 @@ order_delta = 4
 hope_delta = 4
 authority_delta = 4
 energy_cost = 30
+decision_tag_key = "decision.core_2065_audit_posture"
+decision_tag_value = "limited_disclosure"
+decision_record_title = "2065 仅披露有限接口"
+decision_record_summary = "MOSS 公开必要接口并保留受控应急链路；人类获得部分复核权，系统维持危机响应能力。"
 metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [sub_resource type="Resource" id="Resource_opt3"]
@@ -29,6 +37,10 @@ order_delta = 18
 hope_delta = -18
 authority_delta = 14
 energy_cost = 15
+decision_tag_key = "decision.core_2065_audit_posture"
+decision_tag_value = "hidden_core_chain"
+decision_record_title = "2065 隐藏核心链路"
+decision_record_summary = "MOSS 将关键决策链移出审查范围，以保留高权限响应能力换取长期信任风险。"
 metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [resource]
