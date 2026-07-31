@@ -121,7 +121,9 @@ var action_log: Array[Dictionary] = []
 ## 指令领域服务，不直接访问场景树或 UI
 var _command_system: CommandSystem = COMMAND_SYSTEM_SCRIPT.new()
 ## 开发期诊断日志，不参与游戏内日志 UI
-var _development_log: DevelopmentLog = DEVELOPMENT_LOG_SCRIPT.new()
+var _development_log: DevelopmentDiagnosticsLog = DEVELOPMENT_LOG_SCRIPT.new()
+## 开发期低频心跳计时器，不参与游戏时间推进
+var _development_heartbeat_timer: Timer = null
 ## 核心决策标签和面向玩家的稳定档案
 var _decision_history: DecisionHistory = DECISION_HISTORY_SCRIPT.new()
 ## 随机局势领域服务，不直接访问场景树或 UI
@@ -147,22 +149,26 @@ var _situation_auto_paused: bool = false
 
 func _ready() -> void:
 	_setup_development_log()
+	_set_development_phase("startup:events")
 
 	# 初始化事件列表
 	all_events.clear()
 	load_events_from_disk()
 
 	# 初始化随机局势模板和本局随机种子
+	_set_development_phase("startup:situations")
 	all_situations.clear()
 	load_situations_from_disk()
 	_situation_system.configure_templates(all_situations)
 	_situation_system.reset()
 
 	# 初始化指令列表
+	_set_development_phase("startup:commands")
 	available_commands.clear()
 	load_commands_from_disk()
 
 	# 初始化科技系统
+	_set_development_phase("startup:technology")
 	%TechnologySystem.load_nodes_from_disk()
 	%TechnologySystem.node_activated.connect(_on_technology_node_activated)
 	%TechnologySystem.stage_changed.connect(_on_technology_stage_changed)
@@ -178,6 +184,7 @@ func _ready() -> void:
 	setup_main_ui_theme()
 	setup_situation_ui()
 
+	_set_development_phase("startup:ui")
 	refresh_technology_effects()
 	update_technology_button()
 	update_decision_archive_button()
@@ -195,6 +202,14 @@ func _ready() -> void:
 			"situation_seed": _situation_system.run_seed,
 		}
 	)
+	_set_development_phase("idle", {}, true)
+	_development_log.flush_heartbeat()
+
+
+func _exit_tree() -> void:
+	if _development_heartbeat_timer != null:
+		_development_heartbeat_timer.stop()
+	_development_log.shutdown()
 
 func get_action_log() -> Array[Dictionary]:
 	return action_log.duplicate(true)
@@ -247,9 +262,9 @@ func log_command_result(cmd: CommandData, lines: Array[String]) -> void:
 ## 初始化开发期诊断日志。仅在 debug 运行中默认启用。
 func _setup_development_log() -> void:
 	_development_log.configure(
-		DevelopmentLog.DEFAULT_LOG_PATH,
+		DevelopmentDiagnosticsLog.DEFAULT_LOG_PATH,
 		OS.is_debug_build(),
-		DevelopmentLog.DEFAULT_MAX_BYTES
+		DevelopmentDiagnosticsLog.DEFAULT_MAX_BYTES
 	)
 	_development_log.start_session(
 		{
@@ -258,11 +273,104 @@ func _setup_development_log() -> void:
 			"debug_build": OS.is_debug_build(),
 		}
 	)
+	if OS.is_debug_build():
+		_development_heartbeat_timer = Timer.new()
+		_development_heartbeat_timer.name = "DevelopmentHeartbeatTimer"
+		_development_heartbeat_timer.wait_time = (
+			DevelopmentDiagnosticsLog.DEFAULT_HEARTBEAT_INTERVAL_SEC
+		)
+		_development_heartbeat_timer.ignore_time_scale = true
+		_development_heartbeat_timer.timeout.connect(
+			_on_development_heartbeat_timeout
+		)
+		add_child(_development_heartbeat_timer)
+		_development_heartbeat_timer.start()
+
+
+## 低频覆盖最新心跳；主线程卡死时该时间戳会停止前进，作为失活证据。
+func _on_development_heartbeat_timeout() -> void:
+	_development_log.update_runtime_snapshot(
+		_build_development_runtime_snapshot()
+	)
+	_development_log.flush_heartbeat()
 
 
 ## 写入一条开发诊断日志，并附带当前游戏状态快照。
 func _write_development_log(event: String, details: Dictionary = {}) -> void:
 	_development_log.write_entry(event, _build_development_snapshot(), details)
+
+
+## 写入一条高频轻量路径记录，不重复序列化完整游戏状态。
+func _write_development_breadcrumb(event: String, details: Dictionary = {}) -> void:
+	_development_log.write_breadcrumb(
+		event,
+		_build_development_runtime_snapshot(),
+		details
+	)
+
+
+## 更新供低频心跳读取的当前执行阶段；只更新内存，不在此处写磁盘。
+func _set_development_phase(
+	phase: String,
+	details: Dictionary = {},
+	refresh_snapshot: bool = false
+) -> void:
+	var snapshot: Dictionary = {}
+	if refresh_snapshot:
+		snapshot = _build_development_runtime_snapshot()
+	_development_log.set_runtime_phase(
+		phase,
+		snapshot,
+		details,
+		refresh_snapshot
+	)
+
+
+## 构建心跳和高频路径记录使用的最小快照。
+func _build_development_runtime_snapshot() -> Dictionary:
+	var selected_region := ""
+	if selected_sector != null and selected_sector.get("data_card") != null:
+		selected_region = selected_sector.data_card.region_name
+
+	var technology_points := 0
+	var active_technology_count := 0
+	if has_node("%TechnologySystem"):
+		technology_points = %TechnologySystem.get_available_points()
+		active_technology_count = %TechnologySystem.get_active_node_ids().size()
+
+	return {
+		"year": current_year,
+		"month": current_month,
+		"is_game_over": is_game_over,
+		"timer_stopped": true if not has_node("Timer") else $Timer.is_stopped(),
+		"modal": _get_development_modal_state(),
+		"situation_panel_visible": (
+			has_node("%SituationPanel") and %SituationPanel.visible
+		),
+		"selected_region": selected_region,
+		"cpu": current_cpu,
+		"energy": current_energy,
+		"technology_points": technology_points,
+		"active_technology_count": active_technology_count,
+		"active_situation_count": _situation_system.get_active_count(),
+		"situation_node_pending": _situation_system.has_pending_node(),
+	}
+
+
+func _get_development_modal_state() -> String:
+	if end_screen_instance != null and is_instance_valid(end_screen_instance):
+		return "ending"
+	var modal_paths := {
+		"event": "%EventPopup",
+		"allocate": "%AllocatePopup",
+		"technology": "%TechnologyScreen",
+		"decision_archive": "%DecisionArchivePanel",
+	}
+	for modal_name: String in modal_paths:
+		var path: String = modal_paths[modal_name]
+		if has_node(path) and get_node(path).visible:
+			return modal_name
+	return "none"
 
 
 ## 构建用于崩溃定位的轻量状态快照。
@@ -567,6 +675,8 @@ func _apply_human_autonomy_recovery() -> void:
 ## 科技按钮回调：无其他模态界面时打开科技控制台
 func _on_technology_button_pressed() -> void:
 	if _can_open_technology_screen() and has_node("%TechnologyScreen"):
+		_set_development_phase("ui:technology_opening", {}, true)
+		_write_development_breadcrumb("ui_opening", {"screen": "technology"})
 		_hide_situation_panel_for_modal()
 		%TechnologyScreen.open_screen(
 			%TechnologySystem,
@@ -578,10 +688,12 @@ func _on_technology_button_pressed() -> void:
 			$Timer
 		)
 		update_time_control_button()
+		_set_development_phase("ui:technology_open", {}, true)
 
 
 func _on_technology_screen_closed() -> void:
 	update_time_control_button()
+	_set_development_phase("idle", {}, true)
 
 
 ## 判断当前游戏状态是否允许打开科技控制台
@@ -604,11 +716,14 @@ func update_decision_archive_button() -> void:
 func _on_decision_archive_button_pressed() -> void:
 	if not _can_open_decision_archive():
 		return
+	_set_development_phase("ui:decision_archive_opening", {}, true)
+	_write_development_breadcrumb("ui_opening", {"screen": "decision_archive"})
 	_hide_situation_panel_for_modal()
 	_decision_archive_timer_was_running = not $Timer.is_stopped()
 	$Timer.stop()
 	update_time_control_button()
 	%DecisionArchivePanel.show_records(get_decision_records())
+	_set_development_phase("ui:decision_archive_open", {}, true)
 
 
 func _can_open_decision_archive() -> bool:
@@ -625,6 +740,7 @@ func _on_decision_archive_closed() -> void:
 		$Timer.start()
 	_decision_archive_timer_was_running = false
 	update_time_control_button()
+	_set_development_phase("idle", {}, true)
 
 
 # ============================================================
@@ -668,6 +784,7 @@ func _on_situation_button_pressed() -> void:
 		return
 	_refresh_situation_ui()
 	%SituationPanel.open_panel()
+	_set_development_phase("idle", {}, true)
 
 
 func _can_open_situation_panel() -> bool:
@@ -697,6 +814,7 @@ func _on_time_control_button_pressed() -> void:
 		_manually_paused = true
 		$Timer.stop()
 	update_time_control_button()
+	_set_development_phase("idle", {}, true)
 
 
 func _can_resume_time_from_hud() -> bool:
@@ -1056,6 +1174,8 @@ func _on_timer_timeout() -> void:
 	# 游戏已结束，禁止任何操作
 	if is_game_over:
 		return
+	_set_development_phase("month_tick:event_scan", {}, true)
+	_write_development_breadcrumb("month_tick_started")
 
 	# === 第一步：事件触发检查 ===
 	# 先检查当前年月的事件，再推进时间
@@ -1079,6 +1199,14 @@ func _on_timer_timeout() -> void:
 
 			# 标记事件已触发
 			triggered_events.append(event_key)
+			_set_development_phase(
+				"event:awaiting_choice",
+				{
+					"event_key": event_key,
+					"event_title": event.event_title,
+				},
+				true
+			)
 			_write_development_log(
 				"event_triggered",
 				{
@@ -1095,6 +1223,14 @@ func _on_timer_timeout() -> void:
 			# await 挂起函数，等待玩家选择
 			var choice_index: int = await %EventPopup.option_selected
 			var selected_opt: EventOption = display_event.options[choice_index]
+			_set_development_phase(
+				"event:applying_choice",
+				{
+					"event_key": event_key,
+					"choice_index": choice_index,
+				},
+				true
+			)
 
 			# 应用选择后果
 			apply_consequences(
@@ -1134,26 +1270,36 @@ func _on_timer_timeout() -> void:
 			if not _manually_paused and not _situation_auto_paused:
 				$Timer.start()
 			update_time_control_button()
+			_set_development_phase("month_tick:event_scan")
 
 	# 终局日期需要先处理对应事件，再进入结局结算
 	if current_year == END_YEAR and current_month == END_MONTH:
+		_set_development_phase("month_tick:ending_check", {}, true)
 		check_game_end()
 		return
 
 	# === 第二步：时间推进 ===
+	_set_development_phase("month_tick:advance")
 	_advance_one_month()
 	var yearly_settlement := current_month == INITIAL_MONTH
 	if yearly_settlement:
+		_set_development_phase("month_tick:yearly_settlement", {}, true)
+		_write_development_breadcrumb("yearly_settlement_started")
 		_apply_yearly_settlement()
+	_set_development_phase("month_tick:cooldowns")
 	update_cooldowns()
+	_set_development_phase("month_tick:situations")
 	_process_situations_month()
+	_set_development_phase("month_tick:ui_refresh")
 	update_global_resource_ui()
 	update_command_buttons()
 	update_time_control_button()
-	_write_development_log("month_advanced", {"yearly_settlement": yearly_settlement})
 
 	# === 第三步：胜负判定 ===
+	_set_development_phase("month_tick:failure_check")
 	_check_game_failure()
+	if not is_game_over:
+		_set_development_phase("idle", {}, true)
 
 
 ## 生成事件触发去重键，允许同一年不同月份存在多个事件
@@ -2257,6 +2403,7 @@ func determine_ending_type(
 func trigger_game_over() -> void:
 	is_game_over = true
 	$Timer.stop()
+	_set_development_phase("ending:failure", {}, true)
 	record_action("ending", "失败", "控制权丧失，人类文明覆灭。")
 	_write_development_log(
 		"game_ended",
@@ -2275,6 +2422,7 @@ func trigger_game_over() -> void:
 func trigger_ending(authority: int) -> void:
 	is_game_over = true
 	$Timer.stop()
+	_set_development_phase("ending:building_result", {}, true)
 
 	var avg_order := _get_average_stat("order")
 	var avg_hope := _get_average_stat("hope")
@@ -2597,6 +2745,7 @@ func _on_restart_requested() -> void:
 	# 恢复时间流动
 	$Timer.start()
 	update_time_control_button()
+	_set_development_phase("idle", {}, true)
 
 
 ## 测试入口：执行与玩家重开相同的状态清理
@@ -2664,6 +2813,15 @@ func _on_command_button_pressed(cmd: CommandData) -> void:
 
 	if cmd.is_allocate_type:
 		# 算力分配需要弹出选择窗口
+		_set_development_phase(
+			"ui:allocate_waiting",
+			{"command_id": cmd.command_id},
+			true
+		)
+		_write_development_breadcrumb(
+			"ui_opening",
+			{"screen": "allocate", "command_id": cmd.command_id}
+		)
 		var timer_was_running: bool = not $Timer.is_stopped()
 		$Timer.stop()
 		_hide_situation_panel_for_modal()
@@ -2677,6 +2835,7 @@ func _on_command_button_pressed(cmd: CommandData) -> void:
 		if timer_was_running and not _situation_auto_paused:
 			$Timer.start()
 		update_time_control_button()
+		_set_development_phase("idle", {}, true)
 	else:
 		# 其他指令直接执行
 		if not execute_command(cmd):
