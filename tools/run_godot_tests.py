@@ -123,6 +123,12 @@ TEST_SPECS = [
         ("[MOSS-EVENT-STATE] 完成，失败断言：0",),
     ),
     TestSpec(
+        "tests/branch_event_test.tscn",
+        "domain",
+        "headless",
+        ("[MOSS-BRANCH-EVENTS] 完成，失败断言：0",),
+    ),
+    TestSpec(
         "tests/decision_history_test.tscn",
         "ui",
         "display",
@@ -168,7 +174,22 @@ TEST_SPECS = [
         "tests/test_runner.tscn",
         "playthrough",
         "headless",
-        ("[MOSS-TEST] 失败: 0", "[MOSS-TEST] === 测试结束 ==="),
+        (
+            "[MOSS-ROUTE:mixed] 完成，失败断言：0",
+            "[MOSS-TEST] === 测试结束 ===",
+        ),
+    ),
+    TestSpec(
+        "tests/test_runner_managed.tscn",
+        "playthrough",
+        "headless",
+        ("[MOSS-ROUTE:managed] 完成，失败断言：0",),
+    ),
+    TestSpec(
+        "tests/test_runner_human_autonomy.tscn",
+        "playthrough",
+        "headless",
+        ("[MOSS-ROUTE:human_autonomy] 完成，失败断言：0",),
     ),
 ]
 

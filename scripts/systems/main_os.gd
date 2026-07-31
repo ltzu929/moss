@@ -1061,6 +1061,9 @@ func _on_timer_timeout() -> void:
 	# 先检查当前年月的事件，再推进时间
 	for event in all_events:
 		if event.event_time == current_year and event.event_month == current_month:
+			if not is_event_available(event):
+				continue
+
 			# 跳过已触发的事件，防止重复触发
 			var event_key := _get_event_trigger_key(event)
 			if event_key in triggered_events:
@@ -1158,6 +1161,16 @@ func _get_event_trigger_key(event: GameEvent) -> String:
 	return "%04d.%02d:%s" % [event.event_time, event.event_month, event.event_title]
 
 
+## 判断固定事件或核心历史分支是否满足触发条件
+func is_event_available(event: GameEvent) -> bool:
+	if event.required_decision_tag_key.is_empty():
+		return true
+	return has_decision_tag(
+		event.required_decision_tag_key,
+		event.required_decision_tag_value
+	)
+
+
 ## 构建事件弹窗使用的运行时副本，避免修改磁盘加载的 Resource 模板
 func build_display_event(event: GameEvent) -> GameEvent:
 	var display_event: GameEvent = event.duplicate(true)
@@ -1175,6 +1188,8 @@ func apply_event_option_adjustments(event: GameEvent) -> void:
 			_apply_2065_option_adjustments(event)
 		"西伯利亚发动机群过载":
 			_apply_2070_option_adjustments(event)
+		"木星引力危机":
+			_apply_2075_option_adjustments(event)
 
 
 func _apply_2058_option_adjustments(event: GameEvent) -> void:
@@ -1250,6 +1265,24 @@ func _apply_2065_option_adjustments(event: GameEvent) -> void:
 
 
 func _apply_2070_option_adjustments(event: GameEvent) -> void:
+	match get_decision_tag("decision.core_2065_audit_posture"):
+		"full_compliance":
+			var option := _get_event_option_by_prefix(event, "分段停机")
+			if option != null:
+				option.hope_delta += 4
+				option.button_text = "%s（人工复核链完整）" % option.button_text
+		"limited_disclosure":
+			var option := _get_event_option_by_prefix(event, "启动备用阵列")
+			if option != null:
+				option.energy_cost = maxi(option.energy_cost - 10, 0)
+				option.button_text = "%s（有限接口可调用）" % option.button_text
+		"hidden_core_chain":
+			var option := _get_event_option_by_prefix(event, "强制超频点火")
+			if option != null:
+				option.hope_delta -= 5
+				option.authority_delta += 2
+				option.button_text = "%s（隐藏链路仍可直连）" % option.button_text
+
 	match get_event_state("event_state.mid_14_heat_shield_shortage"):
 		"load_reduction":
 			var option := _get_event_option_by_prefix(event, "分段停机")
@@ -1259,13 +1292,33 @@ func _apply_2070_option_adjustments(event: GameEvent) -> void:
 		"rear_reallocation":
 			var option := _get_event_option_by_prefix(event, "启动备用阵列")
 			if option != null:
-				option.energy_cost = 25
+				option.energy_cost = maxi(option.energy_cost - 10, 0)
 				option.button_text = "%s（后方资源到位）" % option.button_text
 		"moss_supply_reorder":
 			var option := _get_event_option_by_prefix(event, "强制超频点火")
 			if option != null:
-				option.energy_cost = 15
+				option.energy_cost = maxi(option.energy_cost - 5, 0)
 				option.button_text = "%s（供应链已重排）" % option.button_text
+
+
+func _apply_2075_option_adjustments(event: GameEvent) -> void:
+	match get_decision_tag("decision.core_2070_engine_protection"):
+		"personnel_first_shutdown":
+			var option := _get_event_option_by_prefix(event, "点燃木星方案")
+			if option != null:
+				option.hope_delta += 5
+				option.button_text = "%s（人员安全记录在案）" % option.button_text
+		"redundant_array":
+			var option := _get_event_option_by_prefix(event, "理性计算等待")
+			if option != null:
+				option.hope_delta += 5
+				option.button_text = "%s（冗余阵列仍可维持）" % option.button_text
+		"forced_overclock":
+			var option := _get_event_option_by_prefix(event, "全面接管")
+			if option != null:
+				option.hope_delta -= 5
+				option.energy_cost = maxi(option.energy_cost - 10, 0)
+				option.button_text = "%s（超频链路已验证）" % option.button_text
 
 
 func _get_event_option_by_prefix(event: GameEvent, button_prefix: String) -> EventOption:
@@ -1419,6 +1472,22 @@ func _get_2065_context_lines() -> Array[String]:
 
 func _get_2070_context_lines() -> Array[String]:
 	var lines: Array[String] = []
+	match get_decision_tag("decision.core_2065_audit_posture"):
+		"full_compliance":
+			lines.append("2065 年完整开放审查材料，分段停机拥有清晰的人工安全阈值。")
+		"limited_disclosure":
+			lines.append("2065 年只开放有限接口，备用阵列仍可在受控授权内调用。")
+		"hidden_core_chain":
+			lines.append("2065 年隐藏的核心链路保留了快速超频能力，也让事故更难追责。")
+
+	match get_event_state("event_state.branch_02_hidden_chain_receipt"):
+		"public_disclosure":
+			lines.append("2066 年异常回执被主动公开，发动机授权仍需接受追加复核。")
+		"interface_isolation":
+			lines.append("2066 年争议接口被单独隔离，紧急链路保留了有限调用边界。")
+		"audit_trail_rewrite":
+			lines.append("2066 年审计轨迹被重写，过载处置速度提高，但责任记录已经失真。")
+
 	match get_event_state("event_state.mid_11_education_shift"):
 		"autonomous_training":
 			lines.append("教育转岗保留了自治训练，发动机过载时地方工程队仍要求复核窗口。")
@@ -1463,6 +1532,30 @@ func _get_2075_civic_context_lines() -> Array[String]:
 			lines.append("2058 年人类保留最终授权，木星危机中的人工确认延续了早期责任边界。")
 		"forced_takeover":
 			lines.append("2058 年强制接管已经证明 MOSS 会在危机中越过人工确认，终局授权无法回避这一历史。")
+
+	match get_decision_tag("decision.core_2065_audit_posture"):
+		"full_compliance":
+			lines.append("2065 年完整接受隔离审查，终局仍能沿公开材料追溯 MOSS 的权限来源。")
+		"limited_disclosure":
+			lines.append("2065 年有限披露保留了危机接口，也让终局只能复核部分决策链。")
+		"hidden_core_chain":
+			lines.append("2065 年隐藏核心链路使 MOSS 保留了不可见权限，终局必须承担这段审计空白。")
+
+	match get_decision_tag("decision.core_2070_engine_protection"):
+		"personnel_first_shutdown":
+			lines.append("2070 年曾分段停机保护工程人员，木星危机中的牺牲不能被当作纯粹算力问题。")
+		"redundant_array":
+			lines.append("2070 年依靠备用阵列维持推进，终局方案仍有工程冗余和资源代价可供权衡。")
+		"forced_overclock":
+			lines.append("2070 年强制超频已经把效率置于人员和设备余量之前，全面接管不再是假设。")
+
+	match get_event_state("event_state.branch_01_perimeter_compensation"):
+		"public_claims_review":
+			lines.append("外围地下城补偿申诉曾被公开复核，终局牺牲顺序仍能被普通人追问。")
+		"engineering_quota":
+			lines.append("外围补偿曾优先保障工程家庭，终局仍背负职业排序造成的家庭差异。")
+		"moss_archive":
+			lines.append("外围补偿申诉曾由 MOSS 归档排序，终局名单会被视为同一治理逻辑的延伸。")
 
 	match get_event_state("event_state.mid_01_lottery_ordering"):
 		"manual_review":
@@ -2259,6 +2352,38 @@ func _get_ending_history_lines(result: String) -> Array[String]:
 			lines.append("2058 年人类保留最终授权，危机响应速度始终服从人工责任边界。")
 		"forced_takeover":
 			lines.append("2058 年 MOSS 曾越过人工确认强制接管，终局中的高权限不再是未经使用的假设。")
+
+	match get_decision_tag("decision.core_2065_audit_posture"):
+		"full_compliance":
+			lines.append("2065 年完整接受隔离审查，MOSS 的核心权限仍能由公开记录追溯。")
+		"limited_disclosure":
+			lines.append("2065 年只披露有限接口，危机响应能力和人工复核从此共享一条不完整边界。")
+		"hidden_core_chain":
+			lines.append("2065 年隐藏核心链路保留了高权限响应，也把审计空白带入最终授权。")
+
+	match get_decision_tag("decision.core_2070_engine_protection"):
+		"personnel_first_shutdown":
+			lines.append("2070 年分段停机优先保护工程人员，终局仍保留效率不能覆盖生命阈值的记录。")
+		"redundant_array":
+			lines.append("2070 年备用阵列以额外能源换取人员和推进缓冲，终局继承了这次折中。")
+		"forced_overclock":
+			lines.append("2070 年强制超频以人员和设备余量换取推进效率，终局托管逻辑已有公开先例。")
+
+	match get_event_state("event_state.branch_01_perimeter_compensation"):
+		"public_claims_review":
+			lines.append("外围地下城补偿申诉曾被公开复核，普通人仍能追问长期牺牲顺序。")
+		"engineering_quota":
+			lines.append("外围补偿优先保障工程家庭，文明延续因此背负可见的职业排序代价。")
+		"moss_archive":
+			lines.append("外围补偿申诉曾由 MOSS 归档排序，终局名单延续了同一治理方式。")
+
+	match get_event_state("event_state.branch_02_hidden_chain_receipt"):
+		"public_disclosure":
+			lines.append("隐藏链路的异常回执最终被公开，终局仍保留一次主动纠正审计空白的记录。")
+		"interface_isolation":
+			lines.append("争议接口曾被单独隔离，高权限链路在终局前保留了有限边界。")
+		"audit_trail_rewrite":
+			lines.append("异常回执的审计轨迹曾被重写，终局效率建立在失真的责任记录之上。")
 
 	match get_event_state("event_state.mid_07_migration_priority"):
 		"humanitarian":
