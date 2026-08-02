@@ -149,26 +149,26 @@ var _situation_auto_paused: bool = false
 
 func _ready() -> void:
 	_setup_development_log()
-	_set_development_phase("startup:events")
+	_persist_development_phase("startup:events")
 
 	# 初始化事件列表
 	all_events.clear()
 	load_events_from_disk()
 
 	# 初始化随机局势模板和本局随机种子
-	_set_development_phase("startup:situations")
+	_persist_development_phase("startup:situations")
 	all_situations.clear()
 	load_situations_from_disk()
 	_situation_system.configure_templates(all_situations)
 	_situation_system.reset()
 
 	# 初始化指令列表
-	_set_development_phase("startup:commands")
+	_persist_development_phase("startup:commands")
 	available_commands.clear()
 	load_commands_from_disk()
 
 	# 初始化科技系统
-	_set_development_phase("startup:technology")
+	_persist_development_phase("startup:technology")
 	%TechnologySystem.load_nodes_from_disk()
 	%TechnologySystem.node_activated.connect(_on_technology_node_activated)
 	%TechnologySystem.stage_changed.connect(_on_technology_stage_changed)
@@ -184,7 +184,7 @@ func _ready() -> void:
 	setup_main_ui_theme()
 	setup_situation_ui()
 
-	_set_development_phase("startup:ui")
+	_persist_development_phase("startup:ui")
 	refresh_technology_effects()
 	update_technology_button()
 	update_decision_archive_button()
@@ -300,11 +300,16 @@ func _write_development_log(event: String, details: Dictionary = {}) -> void:
 	_development_log.write_entry(event, _build_development_snapshot(), details)
 
 
-## 写入一条高频轻量路径记录，不重复序列化完整游戏状态。
-func _write_development_breadcrumb(event: String, details: Dictionary = {}) -> void:
+## 同步写入关键阶段；即使主线程在下一次心跳前停止，JSONL 仍保留精确位置。
+func _persist_development_phase(
+	phase: String,
+	details: Dictionary = {}
+) -> void:
+	var snapshot := _build_development_runtime_snapshot()
+	_development_log.set_runtime_phase(phase, snapshot, details)
 	_development_log.write_breadcrumb(
-		event,
-		_build_development_runtime_snapshot(),
+		"phase_entered",
+		snapshot,
 		details
 	)
 
@@ -675,8 +680,10 @@ func _apply_human_autonomy_recovery() -> void:
 ## 科技按钮回调：无其他模态界面时打开科技控制台
 func _on_technology_button_pressed() -> void:
 	if _can_open_technology_screen() and has_node("%TechnologyScreen"):
-		_set_development_phase("ui:technology_opening", {}, true)
-		_write_development_breadcrumb("ui_opening", {"screen": "technology"})
+		_persist_development_phase(
+			"ui:technology_opening",
+			{"screen": "technology"}
+		)
 		_hide_situation_panel_for_modal()
 		%TechnologyScreen.open_screen(
 			%TechnologySystem,
@@ -716,8 +723,10 @@ func update_decision_archive_button() -> void:
 func _on_decision_archive_button_pressed() -> void:
 	if not _can_open_decision_archive():
 		return
-	_set_development_phase("ui:decision_archive_opening", {}, true)
-	_write_development_breadcrumb("ui_opening", {"screen": "decision_archive"})
+	_persist_development_phase(
+		"ui:decision_archive_opening",
+		{"screen": "decision_archive"}
+	)
 	_hide_situation_panel_for_modal()
 	_decision_archive_timer_was_running = not $Timer.is_stopped()
 	$Timer.stop()
@@ -1174,8 +1183,7 @@ func _on_timer_timeout() -> void:
 	# 游戏已结束，禁止任何操作
 	if is_game_over:
 		return
-	_set_development_phase("month_tick:event_scan", {}, true)
-	_write_development_breadcrumb("month_tick_started")
+	_persist_development_phase("month_tick:event_scan")
 
 	# === 第一步：事件触发检查 ===
 	# 先检查当前年月的事件，再推进时间
@@ -1223,13 +1231,12 @@ func _on_timer_timeout() -> void:
 			# await 挂起函数，等待玩家选择
 			var choice_index: int = await %EventPopup.option_selected
 			var selected_opt: EventOption = display_event.options[choice_index]
-			_set_development_phase(
+			_persist_development_phase(
 				"event:applying_choice",
 				{
 					"event_key": event_key,
 					"choice_index": choice_index,
-				},
-				true
+				}
 			)
 
 			# 应用选择后果
@@ -1274,29 +1281,28 @@ func _on_timer_timeout() -> void:
 
 	# 终局日期需要先处理对应事件，再进入结局结算
 	if current_year == END_YEAR and current_month == END_MONTH:
-		_set_development_phase("month_tick:ending_check", {}, true)
+		_persist_development_phase("month_tick:ending_check")
 		check_game_end()
 		return
 
 	# === 第二步：时间推进 ===
-	_set_development_phase("month_tick:advance")
+	_persist_development_phase("month_tick:advance")
 	_advance_one_month()
 	var yearly_settlement := current_month == INITIAL_MONTH
 	if yearly_settlement:
-		_set_development_phase("month_tick:yearly_settlement", {}, true)
-		_write_development_breadcrumb("yearly_settlement_started")
+		_persist_development_phase("month_tick:yearly_settlement")
 		_apply_yearly_settlement()
-	_set_development_phase("month_tick:cooldowns")
+	_persist_development_phase("month_tick:cooldowns")
 	update_cooldowns()
-	_set_development_phase("month_tick:situations")
+	_persist_development_phase("month_tick:situations")
 	_process_situations_month()
-	_set_development_phase("month_tick:ui_refresh")
+	_persist_development_phase("month_tick:ui_refresh")
 	update_global_resource_ui()
 	update_command_buttons()
 	update_time_control_button()
 
 	# === 第三步：胜负判定 ===
-	_set_development_phase("month_tick:failure_check")
+	_persist_development_phase("month_tick:failure_check")
 	_check_game_failure()
 	if not is_game_over:
 		_set_development_phase("idle", {}, true)
@@ -2403,7 +2409,7 @@ func determine_ending_type(
 func trigger_game_over() -> void:
 	is_game_over = true
 	$Timer.stop()
-	_set_development_phase("ending:failure", {}, true)
+	_persist_development_phase("ending:failure")
 	record_action("ending", "失败", "控制权丧失，人类文明覆灭。")
 	_write_development_log(
 		"game_ended",
@@ -2422,7 +2428,7 @@ func trigger_game_over() -> void:
 func trigger_ending(authority: int) -> void:
 	is_game_over = true
 	$Timer.stop()
-	_set_development_phase("ending:building_result", {}, true)
+	_persist_development_phase("ending:building_result")
 
 	var avg_order := _get_average_stat("order")
 	var avg_hope := _get_average_stat("hope")
@@ -2813,13 +2819,8 @@ func _on_command_button_pressed(cmd: CommandData) -> void:
 
 	if cmd.is_allocate_type:
 		# 算力分配需要弹出选择窗口
-		_set_development_phase(
+		_persist_development_phase(
 			"ui:allocate_waiting",
-			{"command_id": cmd.command_id},
-			true
-		)
-		_write_development_breadcrumb(
-			"ui_opening",
 			{"screen": "allocate", "command_id": cmd.command_id}
 		)
 		var timer_was_running: bool = not $Timer.is_stopped()

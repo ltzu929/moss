@@ -10,6 +10,8 @@ const LOGGER_SCRIPT_PATH: String = "res://scripts/systems/development_log.gd"
 const MAIN_SCENE_PATH: String = "res://scenes/main_os.tscn"
 const UNIT_LOG_PATH: String = "user://moss_development_log_unit_test.jsonl"
 const UNIT_HEARTBEAT_PATH: String = "user://moss_development_log_unit_heartbeat.json"
+const REPLACE_FAILURE_LOG_PATH: String = "user://moss_heartbeat_replace_failure.jsonl"
+const REPLACE_FAILURE_HEARTBEAT_PATH: String = "user://moss_heartbeat_replace_failure.json"
 const ROTATION_LOG_PATH: String = "user://moss_development_log_rotation_test.jsonl"
 const DEFAULT_LOG_PATH: String = "user://moss_development_diagnostics.jsonl"
 const DEFAULT_HEARTBEAT_PATH: String = "user://moss_runtime_heartbeat.json"
@@ -17,6 +19,26 @@ const DEFAULT_HEARTBEAT_PATH: String = "user://moss_runtime_heartbeat.json"
 # ============================================================
 # 测试状态
 # ============================================================
+
+class ReplaceFailingDevelopmentLog:
+	extends DevelopmentDiagnosticsLog
+
+	var fail_next_replace: bool = false
+
+	func _replace_heartbeat_file(
+		temporary_absolute_path: String,
+		heartbeat_absolute_path: String
+	) -> Error:
+		if fail_next_replace:
+			fail_next_replace = false
+			return ERR_CANT_CREATE
+		return super._replace_heartbeat_file(
+			temporary_absolute_path,
+			heartbeat_absolute_path
+		)
+
+	func _report_heartbeat_replace_failure() -> void:
+		pass
 
 
 # ============================================================
@@ -27,12 +49,20 @@ const DEFAULT_HEARTBEAT_PATH: String = "user://moss_runtime_heartbeat.json"
 func _ready() -> void:
 	_delete_user_file(UNIT_LOG_PATH)
 	_delete_user_file(UNIT_HEARTBEAT_PATH)
+	_delete_user_file(UNIT_HEARTBEAT_PATH + DevelopmentDiagnosticsLog.HEARTBEAT_TEMP_SUFFIX)
+	_delete_user_file(REPLACE_FAILURE_LOG_PATH)
+	_delete_user_file(REPLACE_FAILURE_HEARTBEAT_PATH)
+	_delete_user_file(
+		REPLACE_FAILURE_HEARTBEAT_PATH
+		+ DevelopmentDiagnosticsLog.HEARTBEAT_TEMP_SUFFIX
+	)
 	_delete_user_file(ROTATION_LOG_PATH)
 	_delete_user_file(ROTATION_LOG_PATH + ".1")
 	_delete_user_file(DEFAULT_LOG_PATH)
 	_delete_user_file(DEFAULT_HEARTBEAT_PATH)
 
 	_assert_development_log_writes_jsonl_and_heartbeat()
+	_assert_failed_heartbeat_replace_preserves_previous_record()
 	_assert_log_rotates_while_running()
 	await _assert_main_scene_writes_startup_snapshot()
 
@@ -106,6 +136,44 @@ func _assert_development_log_writes_jsonl_and_heartbeat() -> void:
 	)
 
 
+## 心跳替换失败时，正式文件必须保留上一份完整且可解析的记录。
+func _assert_failed_heartbeat_replace_preserves_previous_record() -> void:
+	var logger := ReplaceFailingDevelopmentLog.new()
+	logger.configure(
+		REPLACE_FAILURE_LOG_PATH,
+		true,
+		1024 * 1024,
+		REPLACE_FAILURE_HEARTBEAT_PATH
+	)
+	logger.start_session({"mode": "replace_failure_test"})
+	logger.set_runtime_phase("unit:stable", {"year": 2044, "month": 1})
+	_assert_true(logger.flush_heartbeat(), "首次心跳替换应成功")
+	var stable_heartbeat := _read_json_object(REPLACE_FAILURE_HEARTBEAT_PATH)
+
+	logger.set_runtime_phase("unit:replacement_failed", {"year": 2044, "month": 2})
+	logger.fail_next_replace = true
+	_assert_true(not logger.flush_heartbeat(), "模拟替换失败时应返回 false")
+	var preserved_heartbeat := _read_json_object(REPLACE_FAILURE_HEARTBEAT_PATH)
+	_assert_eq(
+		preserved_heartbeat.get("phase", ""),
+		stable_heartbeat.get("phase", ""),
+		"替换失败后应保留上一份有效心跳"
+	)
+	_assert_eq(
+		preserved_heartbeat.get("snapshot", {}).get("month", 0),
+		1,
+		"替换失败后不应截断或污染上一份快照"
+	)
+	_assert_true(
+		not FileAccess.file_exists(
+			REPLACE_FAILURE_HEARTBEAT_PATH
+			+ DevelopmentDiagnosticsLog.HEARTBEAT_TEMP_SUFFIX
+		),
+		"替换失败后应清理临时心跳文件"
+	)
+	logger.shutdown()
+
+
 ## 日志达到上限时应在同一会话内轮转，而不是等到下次启动
 func _assert_log_rotates_while_running() -> void:
 	var logger_script := load(LOGGER_SCRIPT_PATH)
@@ -145,6 +213,17 @@ func _assert_main_scene_writes_startup_snapshot() -> void:
 	await get_tree().process_frame
 
 	var entries := _read_json_entries(DEFAULT_LOG_PATH)
+	for phase in [
+		"startup:events",
+		"startup:situations",
+		"startup:commands",
+		"startup:technology",
+		"startup:ui",
+	]:
+		_assert_true(
+			not _find_phase_entry(entries, phase).is_empty(),
+			"主场景应在 Timer 首次执行前同步写入阶段：%s" % phase
+		)
 	var ready_entry := _find_entry(entries, "game_ready")
 	_assert_true(not ready_entry.is_empty(), "主场景启动应写入 game_ready 开发诊断日志")
 	if not ready_entry.is_empty():
@@ -165,6 +244,30 @@ func _assert_main_scene_writes_startup_snapshot() -> void:
 		main_os.has_node("DevelopmentHeartbeatTimer"),
 		"主场景应创建独立于游戏时间的低频心跳 Timer"
 	)
+	var heartbeat_timer := main_os.get_node("DevelopmentHeartbeatTimer") as Timer
+	heartbeat_timer.stop()
+	main_os._persist_development_phase(
+		"month_tick:ui_refresh",
+		{"reason": "timer_not_run"}
+	)
+	var phase_entries := _read_json_entries(DEFAULT_LOG_PATH)
+	var persisted_phase := _find_phase_entry(phase_entries, "month_tick:ui_refresh")
+	_assert_true(
+		not persisted_phase.is_empty(),
+		"关键阶段设置后、Timer 执行前应已同步写入 JSONL"
+	)
+	_assert_eq(
+		persisted_phase.get("details", {}).get("reason", ""),
+		"timer_not_run",
+		"同步阶段记录应保留诊断详情"
+	)
+	var heartbeat_before_timer := _read_json_object(DEFAULT_HEARTBEAT_PATH)
+	_assert_eq(
+		heartbeat_before_timer.get("phase", ""),
+		"idle",
+		"停止 Timer 后，阶段同步落盘不应伪造一次心跳"
+	)
+	main_os._set_development_phase("idle", {}, true)
 	main_os.current_month = 2
 	main_os._on_development_heartbeat_timeout()
 	var refreshed_heartbeat := _read_json_object(DEFAULT_HEARTBEAT_PATH)
@@ -242,5 +345,15 @@ func _get_file_length(path: String) -> int:
 func _find_entry(entries: Array[Dictionary], event_name: String) -> Dictionary:
 	for entry in entries:
 		if entry.get("event", "") == event_name:
+			return entry
+	return {}
+
+
+## 查找指定运行阶段的同步路径记录。
+func _find_phase_entry(entries: Array[Dictionary], phase: String) -> Dictionary:
+	for entry in entries:
+		if entry.get("kind", "") != "breadcrumb":
+			continue
+		if entry.get("phase", "") == phase:
 			return entry
 	return {}

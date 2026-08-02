@@ -12,6 +12,7 @@ const DEFAULT_HEARTBEAT_PATH: String = "user://moss_runtime_heartbeat.json"
 const DEFAULT_MAX_BYTES: int = 512 * 1024
 const DEFAULT_HEARTBEAT_INTERVAL_SEC: float = 2.0
 const FORMAT_VERSION: int = 2
+const HEARTBEAT_TEMP_SUFFIX: String = ".tmp"
 
 # ============================================================
 # 成员变量
@@ -97,7 +98,7 @@ func update_runtime_snapshot(snapshot: Dictionary) -> void:
 	_runtime_snapshot = snapshot.duplicate(true)
 
 
-## 立即把当前阶段写入心跳文件，供卡死后读取。
+## 立即把当前阶段写入临时文件，再原子替换正式心跳，供卡死后读取。
 func flush_heartbeat() -> bool:
 	if not _enabled or _heartbeat_path.is_empty() or _session_id.is_empty():
 		return false
@@ -112,11 +113,28 @@ func flush_heartbeat() -> bool:
 		"snapshot": _runtime_snapshot.duplicate(true),
 		"details": _runtime_details.duplicate(true),
 	}
-	var file := FileAccess.open(_heartbeat_path, FileAccess.WRITE)
+	var temporary_path := _heartbeat_path + HEARTBEAT_TEMP_SUFFIX
+	var file := FileAccess.open(temporary_path, FileAccess.WRITE)
 	if file == null:
 		return false
-	file.store_line(JSON.stringify(heartbeat))
+	var stored := file.store_line(JSON.stringify(heartbeat))
+	file.flush()
+	var write_error := file.get_error()
 	file.close()
+	if not stored or write_error != OK:
+		_remove_heartbeat_temporary_file(temporary_path)
+		return false
+
+	var temporary_absolute_path := ProjectSettings.globalize_path(temporary_path)
+	var heartbeat_absolute_path := ProjectSettings.globalize_path(_heartbeat_path)
+	var replace_error := _replace_heartbeat_file(
+		temporary_absolute_path,
+		heartbeat_absolute_path
+	)
+	if replace_error != OK:
+		_remove_heartbeat_temporary_file(temporary_path)
+		_report_heartbeat_replace_failure()
+		return false
 	return true
 
 
@@ -140,6 +158,27 @@ func get_heartbeat_path() -> String:
 # ============================================================
 # JSONL 文件写入
 # ============================================================
+
+## 通过同目录重命名替换正式心跳；失败时旧文件保持不变。
+func _replace_heartbeat_file(
+	temporary_absolute_path: String,
+	heartbeat_absolute_path: String
+) -> Error:
+	return DirAccess.rename_absolute(
+		temporary_absolute_path,
+		heartbeat_absolute_path
+	)
+
+
+func _remove_heartbeat_temporary_file(temporary_path: String) -> void:
+	if not FileAccess.file_exists(temporary_path):
+		return
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(temporary_path))
+
+
+func _report_heartbeat_replace_failure() -> void:
+	push_warning("开发诊断心跳无法替换: %s" % _heartbeat_path)
+
 
 func _write_jsonl_entry(
 	kind: String,
