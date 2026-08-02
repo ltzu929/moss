@@ -12,7 +12,7 @@ const DEFAULT_HEARTBEAT_PATH: String = "user://moss_runtime_heartbeat.json"
 const DEFAULT_MAX_BYTES: int = 512 * 1024
 const DEFAULT_HEARTBEAT_INTERVAL_SEC: float = 2.0
 const FORMAT_VERSION: int = 2
-const HEARTBEAT_TEMP_SUFFIX: String = ".tmp"
+const HEARTBEAT_SLOT_SUFFIXES = ["a", "b"]
 
 # ============================================================
 # 成员变量
@@ -25,6 +25,7 @@ var _max_bytes: int = DEFAULT_MAX_BYTES
 var _session_id: String = ""
 var _entry_index: int = 0
 var _current_log_bytes: int = -1
+var _heartbeat_index: int = 0
 
 var _runtime_phase: String = "not_started"
 var _runtime_snapshot: Dictionary = {}
@@ -47,6 +48,7 @@ func configure(
 	_max_bytes = max_bytes
 	_heartbeat_path = heartbeat_path
 	_current_log_bytes = -1
+	_heartbeat_index = _get_latest_heartbeat_index()
 
 
 ## 开始一次运行会话，并写入会话头和首个心跳。
@@ -98,43 +100,33 @@ func update_runtime_snapshot(snapshot: Dictionary) -> void:
 	_runtime_snapshot = snapshot.duplicate(true)
 
 
-## 立即把当前阶段写入临时文件，再原子替换正式心跳，供卡死后读取。
+## 把当前阶段写入较旧的心跳槽；另一个槽始终保留上一份有效记录。
 func flush_heartbeat() -> bool:
 	if not _enabled or _heartbeat_path.is_empty() or _session_id.is_empty():
 		return false
 
+	var heartbeat_slots := _read_heartbeat_slots()
+	var latest_stored_index := _get_latest_heartbeat_index(heartbeat_slots)
+	var next_heartbeat_index: int = max(
+		_heartbeat_index,
+		latest_stored_index
+	) + 1
 	var heartbeat := {
 		"version": FORMAT_VERSION,
 		"kind": "heartbeat",
 		"session_id": _session_id,
+		"heartbeat_index": next_heartbeat_index,
 		"phase": _runtime_phase,
 		"ticks_msec": Time.get_ticks_msec(),
 		"unix_time": Time.get_unix_time_from_system(),
 		"snapshot": _runtime_snapshot.duplicate(true),
 		"details": _runtime_details.duplicate(true),
 	}
-	var temporary_path := _heartbeat_path + HEARTBEAT_TEMP_SUFFIX
-	var file := FileAccess.open(temporary_path, FileAccess.WRITE)
-	if file == null:
+	var target_path := _get_older_heartbeat_slot_path(heartbeat_slots)
+	if not _write_heartbeat_slot(target_path, JSON.stringify(heartbeat)):
+		_report_heartbeat_write_failure(target_path)
 		return false
-	var stored := file.store_line(JSON.stringify(heartbeat))
-	file.flush()
-	var write_error := file.get_error()
-	file.close()
-	if not stored or write_error != OK:
-		_remove_heartbeat_temporary_file(temporary_path)
-		return false
-
-	var temporary_absolute_path := ProjectSettings.globalize_path(temporary_path)
-	var heartbeat_absolute_path := ProjectSettings.globalize_path(_heartbeat_path)
-	var replace_error := _replace_heartbeat_file(
-		temporary_absolute_path,
-		heartbeat_absolute_path
-	)
-	if replace_error != OK:
-		_remove_heartbeat_temporary_file(temporary_path)
-		_report_heartbeat_replace_failure()
-		return false
+	_heartbeat_index = next_heartbeat_index
 	return true
 
 
@@ -151,33 +143,129 @@ func get_log_path() -> String:
 	return _log_path
 
 
-## 返回当前心跳路径，便于开发工具直接读取最新运行阶段。
+## 返回当前最新有效心跳槽路径；尚无有效记录时返回 A 槽。
 func get_heartbeat_path() -> String:
-	return _heartbeat_path
+	var latest_slot := _get_latest_heartbeat_slot(_read_heartbeat_slots())
+	if latest_slot.is_empty():
+		return _get_heartbeat_slot_path(HEARTBEAT_SLOT_SUFFIXES[0])
+	return latest_slot.get("path", "")
+
+
+## 返回两个独立心跳槽路径，供诊断工具逐槽检查。
+func get_heartbeat_paths() -> Array[String]:
+	var paths: Array[String] = []
+	for suffix in HEARTBEAT_SLOT_SUFFIXES:
+		paths.append(_get_heartbeat_slot_path(suffix))
+	return paths
+
+
+## 读取序号最高且 JSON 可解析的心跳；损坏槽会被忽略。
+func read_latest_heartbeat() -> Dictionary:
+	var latest_slot := _get_latest_heartbeat_slot(_read_heartbeat_slots())
+	if latest_slot.is_empty():
+		return {}
+	var heartbeat: Dictionary = latest_slot.get("heartbeat", {})
+	return heartbeat.duplicate(true)
 
 # ============================================================
-# JSONL 文件写入
+# 心跳与 JSONL 文件写入
 # ============================================================
 
-## 通过同目录重命名替换正式心跳；失败时旧文件保持不变。
-func _replace_heartbeat_file(
-	temporary_absolute_path: String,
-	heartbeat_absolute_path: String
-) -> Error:
-	return DirAccess.rename_absolute(
-		temporary_absolute_path,
-		heartbeat_absolute_path
-	)
+## 直接覆盖指定槽。写入中断只会破坏当前槽，另一个槽不受影响。
+func _write_heartbeat_slot(slot_path: String, line: String) -> bool:
+	var file := FileAccess.open(slot_path, FileAccess.WRITE)
+	if file == null:
+		return false
+	var stored := file.store_line(line)
+	file.flush()
+	var write_error := file.get_error()
+	file.close()
+	return stored and write_error == OK
 
 
-func _remove_heartbeat_temporary_file(temporary_path: String) -> void:
-	if not FileAccess.file_exists(temporary_path):
-		return
-	DirAccess.remove_absolute(ProjectSettings.globalize_path(temporary_path))
+func _report_heartbeat_write_failure(slot_path: String) -> void:
+	push_warning("开发诊断心跳无法写入: %s" % slot_path)
 
 
-func _report_heartbeat_replace_failure() -> void:
-	push_warning("开发诊断心跳无法替换: %s" % _heartbeat_path)
+func _get_heartbeat_slot_path(slot_suffix: String) -> String:
+	var extension := _heartbeat_path.get_extension()
+	if extension.is_empty():
+		return "%s_%s" % [_heartbeat_path, slot_suffix]
+	return "%s_%s.%s" % [
+		_heartbeat_path.get_basename(),
+		slot_suffix,
+		extension,
+	]
+
+
+func _read_heartbeat_slots() -> Array[Dictionary]:
+	var slots: Array[Dictionary] = []
+	for path in get_heartbeat_paths():
+		slots.append({
+			"path": path,
+			"heartbeat": _read_heartbeat_slot(path),
+		})
+	return slots
+
+
+func _read_heartbeat_slot(slot_path: String) -> Dictionary:
+	if not FileAccess.file_exists(slot_path):
+		return {}
+	var file := FileAccess.open(slot_path, FileAccess.READ)
+	if file == null:
+		return {}
+	var contents := file.get_as_text()
+	file.close()
+	var parser := JSON.new()
+	if parser.parse(contents) != OK:
+		return {}
+	var parsed: Variant = parser.data
+	if not parsed is Dictionary:
+		return {}
+	var heartbeat: Dictionary = parsed
+	if heartbeat.get("kind", "") != "heartbeat":
+		return {}
+	if int(heartbeat.get("heartbeat_index", 0)) <= 0:
+		return {}
+	return heartbeat
+
+
+func _get_older_heartbeat_slot_path(slots: Array[Dictionary]) -> String:
+	var selected_path := ""
+	var selected_index := 9223372036854775807
+	for slot in slots:
+		var heartbeat: Dictionary = slot.get("heartbeat", {})
+		var heartbeat_index := int(heartbeat.get("heartbeat_index", 0))
+		if heartbeat.is_empty():
+			return slot.get("path", "")
+		if heartbeat_index < selected_index:
+			selected_index = heartbeat_index
+			selected_path = slot.get("path", "")
+	return selected_path
+
+
+func _get_latest_heartbeat_slot(slots: Array[Dictionary]) -> Dictionary:
+	var latest_slot: Dictionary = {}
+	var latest_index := 0
+	for slot in slots:
+		var heartbeat: Dictionary = slot.get("heartbeat", {})
+		var heartbeat_index := int(heartbeat.get("heartbeat_index", 0))
+		if heartbeat_index <= latest_index:
+			continue
+		latest_index = heartbeat_index
+		latest_slot = slot
+	return latest_slot
+
+
+func _get_latest_heartbeat_index(slots: Array[Dictionary] = []) -> int:
+	var inspected_slots := slots
+	if inspected_slots.is_empty() and not _heartbeat_path.is_empty():
+		inspected_slots = _read_heartbeat_slots()
+	var latest_slot := _get_latest_heartbeat_slot(inspected_slots)
+	if latest_slot.is_empty():
+		return 0
+	var heartbeat: Dictionary = latest_slot.get("heartbeat", {})
+	return int(heartbeat.get("heartbeat_index", 0))
 
 
 func _write_jsonl_entry(

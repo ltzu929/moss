@@ -10,8 +10,8 @@ const LOGGER_SCRIPT_PATH: String = "res://scripts/systems/development_log.gd"
 const MAIN_SCENE_PATH: String = "res://scenes/main_os.tscn"
 const UNIT_LOG_PATH: String = "user://moss_development_log_unit_test.jsonl"
 const UNIT_HEARTBEAT_PATH: String = "user://moss_development_log_unit_heartbeat.json"
-const REPLACE_FAILURE_LOG_PATH: String = "user://moss_heartbeat_replace_failure.jsonl"
-const REPLACE_FAILURE_HEARTBEAT_PATH: String = "user://moss_heartbeat_replace_failure.json"
+const SLOT_DAMAGE_LOG_PATH: String = "user://moss_heartbeat_slot_damage.jsonl"
+const SLOT_DAMAGE_HEARTBEAT_PATH: String = "user://moss_heartbeat_slot_damage.json"
 const ROTATION_LOG_PATH: String = "user://moss_development_log_rotation_test.jsonl"
 const DEFAULT_LOG_PATH: String = "user://moss_development_diagnostics.jsonl"
 const DEFAULT_HEARTBEAT_PATH: String = "user://moss_runtime_heartbeat.json"
@@ -20,24 +20,26 @@ const DEFAULT_HEARTBEAT_PATH: String = "user://moss_runtime_heartbeat.json"
 # 测试状态
 # ============================================================
 
-class ReplaceFailingDevelopmentLog:
+class SlotDamagingDevelopmentLog:
 	extends DevelopmentDiagnosticsLog
 
-	var fail_next_replace: bool = false
+	var damage_next_slot: bool = false
+	var damaged_slot_path: String = ""
 
-	func _replace_heartbeat_file(
-		temporary_absolute_path: String,
-		heartbeat_absolute_path: String
-	) -> Error:
-		if fail_next_replace:
-			fail_next_replace = false
-			return ERR_CANT_CREATE
-		return super._replace_heartbeat_file(
-			temporary_absolute_path,
-			heartbeat_absolute_path
-		)
+	func _write_heartbeat_slot(slot_path: String, line: String) -> bool:
+		if not damage_next_slot:
+			return super._write_heartbeat_slot(slot_path, line)
+		damage_next_slot = false
+		damaged_slot_path = slot_path
+		var file := FileAccess.open(slot_path, FileAccess.WRITE)
+		if file == null:
+			return false
+		file.store_string("{")
+		file.flush()
+		file.close()
+		return false
 
-	func _report_heartbeat_replace_failure() -> void:
+	func _report_heartbeat_write_failure(_slot_path: String) -> void:
 		pass
 
 
@@ -48,21 +50,16 @@ class ReplaceFailingDevelopmentLog:
 ## 执行开发诊断日志断言
 func _ready() -> void:
 	_delete_user_file(UNIT_LOG_PATH)
-	_delete_user_file(UNIT_HEARTBEAT_PATH)
-	_delete_user_file(UNIT_HEARTBEAT_PATH + DevelopmentDiagnosticsLog.HEARTBEAT_TEMP_SUFFIX)
-	_delete_user_file(REPLACE_FAILURE_LOG_PATH)
-	_delete_user_file(REPLACE_FAILURE_HEARTBEAT_PATH)
-	_delete_user_file(
-		REPLACE_FAILURE_HEARTBEAT_PATH
-		+ DevelopmentDiagnosticsLog.HEARTBEAT_TEMP_SUFFIX
-	)
+	_delete_heartbeat_files(UNIT_HEARTBEAT_PATH)
+	_delete_user_file(SLOT_DAMAGE_LOG_PATH)
+	_delete_heartbeat_files(SLOT_DAMAGE_HEARTBEAT_PATH)
 	_delete_user_file(ROTATION_LOG_PATH)
 	_delete_user_file(ROTATION_LOG_PATH + ".1")
 	_delete_user_file(DEFAULT_LOG_PATH)
-	_delete_user_file(DEFAULT_HEARTBEAT_PATH)
+	_delete_heartbeat_files(DEFAULT_HEARTBEAT_PATH)
 
 	_assert_development_log_writes_jsonl_and_heartbeat()
-	_assert_failed_heartbeat_replace_preserves_previous_record()
+	_assert_damaged_heartbeat_slot_preserves_previous_record()
 	_assert_log_rotates_while_running()
 	await _assert_main_scene_writes_startup_snapshot()
 
@@ -119,7 +116,7 @@ func _assert_development_log_writes_jsonl_and_heartbeat() -> void:
 	_assert_eq(entries[1].get("details", {}).get("reason", ""), "test", "事件详情应保留原因")
 	_assert_eq(entries[2].get("kind", ""), "breadcrumb", "高频事件应标记为轻量路径记录")
 
-	var heartbeat := _read_json_object(UNIT_HEARTBEAT_PATH)
+	var heartbeat: Dictionary = logger.read_latest_heartbeat()
 	_assert_eq(heartbeat.get("kind", ""), "heartbeat", "心跳文件应标记独立记录类型")
 	_assert_eq(heartbeat.get("phase", ""), "unit:waiting", "心跳应保留当前运行阶段")
 	_assert_eq(
@@ -128,7 +125,7 @@ func _assert_development_log_writes_jsonl_and_heartbeat() -> void:
 		"心跳应保留最小运行状态"
 	)
 	logger.shutdown()
-	var stopped_heartbeat := _read_json_object(UNIT_HEARTBEAT_PATH)
+	var stopped_heartbeat: Dictionary = logger.read_latest_heartbeat()
 	_assert_eq(
 		stopped_heartbeat.get("phase", ""),
 		"session_stopped",
@@ -136,42 +133,62 @@ func _assert_development_log_writes_jsonl_and_heartbeat() -> void:
 	)
 
 
-## 心跳替换失败时，正式文件必须保留上一份完整且可解析的记录。
-func _assert_failed_heartbeat_replace_preserves_previous_record() -> void:
-	var logger := ReplaceFailingDevelopmentLog.new()
+## 当前写入槽被截断时，另一个槽必须保留上一份完整且可解析的记录。
+func _assert_damaged_heartbeat_slot_preserves_previous_record() -> void:
+	var logger := SlotDamagingDevelopmentLog.new()
 	logger.configure(
-		REPLACE_FAILURE_LOG_PATH,
+		SLOT_DAMAGE_LOG_PATH,
 		true,
 		1024 * 1024,
-		REPLACE_FAILURE_HEARTBEAT_PATH
+		SLOT_DAMAGE_HEARTBEAT_PATH
 	)
-	logger.start_session({"mode": "replace_failure_test"})
+	logger.start_session({"mode": "slot_damage_test"})
 	logger.set_runtime_phase("unit:stable", {"year": 2044, "month": 1})
-	_assert_true(logger.flush_heartbeat(), "首次心跳替换应成功")
-	var stable_heartbeat := _read_json_object(REPLACE_FAILURE_HEARTBEAT_PATH)
+	_assert_true(logger.flush_heartbeat(), "第二个心跳槽应写入成功")
+	var stable_heartbeat: Dictionary = logger.read_latest_heartbeat()
+	_assert_eq(
+		stable_heartbeat.get("heartbeat_index", 0),
+		2,
+		"稳定心跳应使用连续序号"
+	)
 
-	logger.set_runtime_phase("unit:replacement_failed", {"year": 2044, "month": 2})
-	logger.fail_next_replace = true
-	_assert_true(not logger.flush_heartbeat(), "模拟替换失败时应返回 false")
-	var preserved_heartbeat := _read_json_object(REPLACE_FAILURE_HEARTBEAT_PATH)
+	logger.set_runtime_phase("unit:slot_damaged", {"year": 2044, "month": 2})
+	logger.damage_next_slot = true
+	_assert_true(not logger.flush_heartbeat(), "目标槽被截断时应返回 false")
+	var preserved_heartbeat: Dictionary = logger.read_latest_heartbeat()
 	_assert_eq(
 		preserved_heartbeat.get("phase", ""),
 		stable_heartbeat.get("phase", ""),
-		"替换失败后应保留上一份有效心跳"
+		"一个槽损坏后应从另一个槽恢复上一份有效心跳"
 	)
 	_assert_eq(
 		preserved_heartbeat.get("snapshot", {}).get("month", 0),
 		1,
-		"替换失败后不应截断或污染上一份快照"
+		"损坏当前槽不应截断或污染上一份快照"
 	)
 	_assert_true(
-		not FileAccess.file_exists(
-			REPLACE_FAILURE_HEARTBEAT_PATH
-			+ DevelopmentDiagnosticsLog.HEARTBEAT_TEMP_SUFFIX
-		),
-		"替换失败后应清理临时心跳文件"
+		not _read_json_variant(logger.damaged_slot_path) is Dictionary,
+		"回归场景必须真实留下被截断且不可解析的目标槽"
 	)
-	logger.shutdown()
+	var valid_slot_count := 0
+	for slot_path in logger.get_heartbeat_paths():
+		if _read_json_variant(slot_path) is Dictionary:
+			valid_slot_count += 1
+	_assert_eq(valid_slot_count, 1, "目标槽损坏后仍应恰有一个可解析心跳槽")
+
+	var recovery_logger := DevelopmentDiagnosticsLog.new()
+	recovery_logger.configure(
+		SLOT_DAMAGE_LOG_PATH,
+		true,
+		1024 * 1024,
+		SLOT_DAMAGE_HEARTBEAT_PATH
+	)
+	var recovered_heartbeat := recovery_logger.read_latest_heartbeat()
+	_assert_eq(
+		recovered_heartbeat.get("heartbeat_index", 0),
+		stable_heartbeat.get("heartbeat_index", 0),
+		"新日志器应在仅有磁盘状态时选择序号最高的有效槽"
+	)
 
 
 ## 日志达到上限时应在同一会话内轮转，而不是等到下次启动
@@ -233,7 +250,7 @@ func _assert_main_scene_writes_startup_snapshot() -> void:
 		_assert_true(snapshot.has("technology"), "启动快照应包含科技摘要")
 		_assert_true(snapshot.has("resources"), "启动快照应包含资源摘要")
 
-	var heartbeat := _read_json_object(DEFAULT_HEARTBEAT_PATH)
+	var heartbeat: Dictionary = main_os._development_log.read_latest_heartbeat()
 	_assert_eq(heartbeat.get("phase", ""), "idle", "主场景就绪后心跳阶段应为空闲")
 	_assert_eq(
 		heartbeat.get("snapshot", {}).get("year", 0),
@@ -261,7 +278,9 @@ func _assert_main_scene_writes_startup_snapshot() -> void:
 		"timer_not_run",
 		"同步阶段记录应保留诊断详情"
 	)
-	var heartbeat_before_timer := _read_json_object(DEFAULT_HEARTBEAT_PATH)
+	var heartbeat_before_timer: Dictionary = (
+		main_os._development_log.read_latest_heartbeat()
+	)
 	_assert_eq(
 		heartbeat_before_timer.get("phase", ""),
 		"idle",
@@ -270,7 +289,9 @@ func _assert_main_scene_writes_startup_snapshot() -> void:
 	main_os._set_development_phase("idle", {}, true)
 	main_os.current_month = 2
 	main_os._on_development_heartbeat_timeout()
-	var refreshed_heartbeat := _read_json_object(DEFAULT_HEARTBEAT_PATH)
+	var refreshed_heartbeat: Dictionary = (
+		main_os._development_log.read_latest_heartbeat()
+	)
 	_assert_eq(
 		refreshed_heartbeat.get("snapshot", {}).get("month", 0),
 		2,
@@ -289,6 +310,16 @@ func _delete_user_file(path: String) -> void:
 	if not FileAccess.file_exists(path):
 		return
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+
+func _delete_heartbeat_files(base_path: String) -> void:
+	_delete_user_file(base_path)
+	var extension := base_path.get_extension()
+	for suffix in DevelopmentDiagnosticsLog.HEARTBEAT_SLOT_SUFFIXES:
+		var slot_path := "%s_%s" % [base_path, suffix]
+		if not extension.is_empty():
+			slot_path = "%s_%s.%s" % [base_path.get_basename(), suffix, extension]
+		_delete_user_file(slot_path)
 
 
 ## 读取 JSONL 文件中的所有有效字典
@@ -327,6 +358,20 @@ func _read_json_object(path: String) -> Dictionary:
 	file.close()
 	_assert_true(parsed is Dictionary, "JSON 文件应包含字典：%s" % path)
 	return parsed if parsed is Dictionary else {}
+
+
+func _read_json_variant(path: String) -> Variant:
+	if not FileAccess.file_exists(path):
+		return null
+	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		return null
+	var contents := file.get_as_text()
+	file.close()
+	var parser := JSON.new()
+	if parser.parse(contents) != OK:
+		return null
+	return parser.data
 
 
 ## 返回文件字节数
