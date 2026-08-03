@@ -64,6 +64,7 @@ var end_screen_instance: Control = null
 ## 打字机动画队列
 var _typewriter_queue: Array[Dictionary] = []
 var _typewriter_active: bool = false
+var _typewriter_generation: int = 0
 
 ## 当前年份 (2044-2075)
 var current_year: int = 2044
@@ -2943,10 +2944,6 @@ func _add_log_entry_to_ui(entry: Dictionary) -> void:
 	if log_container == null:
 		return
 
-	# 如果超过限制，移除最旧的条目
-	while log_container.get_child_count() >= ACTION_LOG_LIMIT:
-		log_container.get_child(0).queue_free()
-
 	# 构建日志完整文本
 	var year: int = entry.get("year", 2044)
 	var month: int = entry.get("month", 1)
@@ -2973,6 +2970,8 @@ func _add_log_entry_to_ui(entry: Dictionary) -> void:
 
 	# 加入打字机队列
 	_typewriter_queue.append({"text": full_text, "kind": kind, "message": message})
+	while _typewriter_queue.size() > ACTION_LOG_LIMIT:
+		_typewriter_queue.pop_front()
 
 	# 如果没有活跃的打字机动画，启动新的
 	if not _typewriter_active:
@@ -3012,6 +3011,7 @@ func _process_typewriter_queue() -> void:
 	if log_container == null:
 		_typewriter_active = false
 		return
+	_trim_log_entries(log_container, ACTION_LOG_LIMIT - 1)
 
 	var log_label := Label.new()
 	log_label.name = "LogEntry"
@@ -3037,10 +3037,19 @@ func _process_typewriter_queue() -> void:
 	log_container.add_child(log_label)
 
 	# 启动打字机效果
-	_start_typewriter(log_label, full_text)
+	_start_typewriter(log_label, full_text, _typewriter_generation)
+
+
+## 在创建新标签前同步移除溢出的旧标签，避免延迟删除造成计数不变的紧循环。
+func _trim_log_entries(log_container: VBoxContainer, maximum_entries: int) -> void:
+	var overflow := maxi(0, log_container.get_child_count() - maximum_entries)
+	for _index in range(overflow):
+		var oldest_entry := log_container.get_child(0)
+		log_container.remove_child(oldest_entry)
+		oldest_entry.queue_free()
 
 ## 打字机效果：逐字显示文本
-func _start_typewriter(label: Label, full_text: String) -> void:
+func _start_typewriter(label: Label, full_text: String, generation: int) -> void:
 	var cursor := _get_log_cursor()
 
 	# 隐藏光标在打字期间
@@ -3049,8 +3058,9 @@ func _start_typewriter(label: Label, full_text: String) -> void:
 
 	var chars := full_text.length()
 	for i in range(chars):
-		if not is_instance_valid(label):
-			_process_typewriter_queue()
+		if generation != _typewriter_generation or not is_instance_valid(label):
+			if generation == _typewriter_generation:
+				_process_typewriter_queue()
 			return
 		label.text = full_text.left(i + 1)
 
@@ -3058,8 +3068,9 @@ func _start_typewriter(label: Label, full_text: String) -> void:
 		var scroll := _get_log_scroll_container()
 		if scroll != null:
 			await get_tree().process_frame
-			if not is_instance_valid(label):
-				_process_typewriter_queue()
+			if generation != _typewriter_generation or not is_instance_valid(label):
+				if generation == _typewriter_generation:
+					_process_typewriter_queue()
 				return
 			scroll.scroll_vertical = int(scroll.get_v_scroll_bar().max_value)
 
@@ -3068,6 +3079,9 @@ func _start_typewriter(label: Label, full_text: String) -> void:
 			await get_tree().create_timer(0.08).timeout
 		else:
 			await get_tree().create_timer(0.02).timeout
+
+	if generation != _typewriter_generation:
+		return
 
 	# 恢复光标
 	if cursor != null:
@@ -3078,10 +3092,15 @@ func _start_typewriter(label: Label, full_text: String) -> void:
 
 ## 重启时清空日志UI
 func _clear_log_ui() -> void:
+	_typewriter_generation += 1
 	var log_container := _get_log_container()
 	if log_container != null:
 		for child in log_container.get_children():
+			log_container.remove_child(child)
 			child.queue_free()
 
 	_typewriter_queue.clear()
 	_typewriter_active = false
+	var cursor := _get_log_cursor()
+	if cursor != null:
+		cursor.visible = true

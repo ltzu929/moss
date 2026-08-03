@@ -12,7 +12,7 @@ class TestSelectionTests(unittest.TestCase):
     def test_all_suite_contains_each_registered_scene_once(self) -> None:
         selected = run_godot_tests.select_test_specs("all")
 
-        self.assertEqual(len(selected), 23)
+        self.assertEqual(len(selected), 24)
         self.assertEqual(
             len({spec.scene for spec in selected}),
             len(selected),
@@ -118,6 +118,27 @@ class LogGateTests(unittest.TestCase):
         self.assertEqual(result.status, "passed")
         self.assertEqual(result.unexpected_errors, [])
 
+    def test_memory_limit_failure_is_reported(self) -> None:
+        spec = run_godot_tests.TestSpec(
+            "tests/example.tscn",
+            "domain",
+            "headless",
+            ("[MOSS-EXAMPLE] 完成，失败断言：0",),
+        )
+        command_result = run_godot_tests.CommandResult(
+            exit_code=125,
+            output="Process memory limit exceeded.\n",
+            duration_seconds=0.1,
+            memory_limit_exceeded=True,
+            peak_memory_bytes=128 * 1024 * 1024,
+        )
+
+        result = run_godot_tests.evaluate_scene_result(spec, command_result)
+
+        self.assertEqual(result.status, "failed")
+        self.assertIn("memory_limit_exceeded", result.failure_reasons)
+        self.assertEqual(result.peak_memory_mb, 128.0)
+
 
 class CommandAndReportTests(unittest.TestCase):
     def test_linux_display_mode_forces_supported_xvfb_renderer(self) -> None:
@@ -150,6 +171,33 @@ class CommandAndReportTests(unittest.TestCase):
 
         self.assertTrue(result.timed_out)
         self.assertEqual(result.exit_code, 124)
+
+    @unittest.skipUnless(
+        run_godot_tests.platform.system() in ("Windows", "Linux"),
+        "Process memory sampling is implemented on Windows and Linux.",
+    )
+    def test_memory_hungry_command_is_terminated_before_timeout(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            result = run_godot_tests.run_command(
+                [
+                    sys.executable,
+                    "-c",
+                    (
+                        "import time; "
+                        "payload = bytearray(64 * 1024 * 1024); "
+                        "time.sleep(2)"
+                    ),
+                ],
+                Path(temporary_directory),
+                5,
+                echo=False,
+                memory_limit_mb=32,
+            )
+
+        self.assertTrue(result.memory_limit_exceeded)
+        self.assertFalse(result.timed_out)
+        self.assertEqual(result.exit_code, 125)
+        self.assertIn("memory limit", result.output.lower())
 
     def test_json_report_contains_machine_readable_summary(self) -> None:
         scene_result = run_godot_tests.SceneResult(
@@ -184,6 +232,62 @@ class CommandAndReportTests(unittest.TestCase):
             "passed": 1,
             "failed": 0,
         })
+
+    def test_github_summary_contains_import_and_scene_peak_memory(self) -> None:
+        scene_result = run_godot_tests.SceneResult(
+            scene="tests/example.tscn",
+            suite="domain",
+            mode="headless",
+            status="passed",
+            exit_code=0,
+            duration_seconds=0.25,
+            timed_out=False,
+            peak_memory_mb=256.0,
+        )
+        import_results = [
+            {
+                "phase": "bootstrap",
+                "exit_code": 0,
+                "duration_seconds": 0.1,
+                "timed_out": False,
+                "memory_limit_exceeded": False,
+                "peak_memory_mb": 128.5,
+                "unexpected_errors": [],
+            },
+            {
+                "phase": "validation",
+                "exit_code": 0,
+                "duration_seconds": 0.2,
+                "timed_out": False,
+                "memory_limit_exceeded": False,
+                "peak_memory_mb": 132.0,
+                "unexpected_errors": [],
+            },
+        ]
+
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            summary_path = Path(temporary_directory) / "summary.md"
+            with mock.patch.dict(
+                run_godot_tests.os.environ,
+                {"GITHUB_STEP_SUMMARY": str(summary_path)},
+            ):
+                run_godot_tests.append_github_summary(
+                    "domain",
+                    import_results,
+                    [scene_result],
+                    0.5,
+                )
+            summary = summary_path.read_text(encoding="utf-8")
+
+        self.assertIn("#### Import phases", summary)
+        self.assertIn("| `bootstrap` | passed | 0.100s | 128.5 MiB |", summary)
+        self.assertIn("| `validation` | passed | 0.200s | 132.0 MiB |", summary)
+        self.assertIn("#### Test scenes", summary)
+        self.assertIn(
+            "| `tests/example.tscn` | headless | passed | 0.250s | "
+            "256.0 MiB |",
+            summary,
+        )
 
 
 if __name__ == "__main__":
