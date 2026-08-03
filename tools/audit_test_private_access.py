@@ -232,7 +232,7 @@ def extract_accesses(
         member = m.group(0)[m.group(0).find("_") :]
         kind = "engine_callback" if is_engine_callback(member) else "direct_member"
         found.append((member, kind))
-    # 先消费上一行遗留的未闭合动态调用（参数在本行）
+    # 先消费上一行遗留的未闭合动态调用（参数可能跨多个空白/注释行）
     if pending is not None:
         idx = 0
         while (
@@ -245,6 +245,7 @@ def extract_accesses(
             value, _end = parse_string_at(tokens[idx][1], 0)
             if value is not None and value.startswith("_"):
                 found.append((value, _DYNAMIC_KINDS[pending]))
+            pending = None
         elif (
             idx + 1 < len(tokens)
             and tokens[idx][0] == _TOKEN_CODE
@@ -254,16 +255,26 @@ def extract_accesses(
             value, _end = parse_string_at(tokens[idx + 1][1], 0)
             if value is not None and value.startswith("_"):
                 found.append((value, _DYNAMIC_KINDS[pending]))
-        pending = None
+            pending = None
+        elif idx >= len(tokens):
+            # 本行只有空白或注释：参数仍在后续行，保留 pending
+            pass
+        else:
+            # 遇到首个非字符串内容：放弃跨行参数
+            pending = None
     # 动态访问 get/set/call("_...")
     for idx, (kind, text) in enumerate(tokens):
         if kind != _TOKEN_CODE:
             continue
         for m in _DYNAMIC_RE.finditer(text):
+            # 无显式接收者的裸 get/set/call 等价于 self 调用，豁免
+            #（与裸名 _helper() 的豁免规则一致）。
+            before = text[: m.start()]
+            dot = before.rfind(".")
+            if dot == -1:
+                continue
             # 接收者 self./super. 豁免（与直接成员分支一致）。
-            # 动态正则从方法名开始匹配，前缀以 `.` 结尾，先去掉尾部点号与空白。
-            prefix = text[: m.start()].rstrip(" .\t")
-            tail = _RECEIVER_TAIL_RE.search(prefix)
+            tail = _RECEIVER_TAIL_RE.search(before[:dot].rstrip(" .\t"))
             if tail is not None and tail.group(1) in _SELF_SUPER:
                 continue
             method = m.group(1)

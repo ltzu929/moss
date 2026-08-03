@@ -220,6 +220,57 @@ class ScanFileTests(unittest.TestCase):
             [("_private_method", "dynamic_call")],
         )
 
+    def test_multiline_dynamic_call_with_comment_line(self) -> None:
+        # 注释行分隔：call( 与字符串参数之间夹着注释
+        content = (
+            "var v = obj.call(\n"
+            "    # 通过私有接口构造测试状态\n"
+            "    \"_private_method\"\n"
+            ")\n"
+        )
+        self.assertEqual(
+            self._scan(content),
+            [("_private_method", "dynamic_call")],
+        )
+
+    def test_multiline_dynamic_call_with_blank_line(self) -> None:
+        # 空行分隔：call( 与字符串参数之间夹着空行
+        content = (
+            "var v = obj.call(\n"
+            "\n"
+            "    \"_private_method\"\n"
+            ")\n"
+        )
+        self.assertEqual(
+            self._scan(content),
+            [("_private_method", "dynamic_call")],
+        )
+
+    def test_multiline_dynamic_call_abandoned_on_plain_code(self) -> None:
+        # 跨行后遇到非字符串内容：放弃，不报
+        content = (
+            "var v = obj.call(\n"
+            "    # 注释行不打断\n"
+            "    some_var\n"
+            ")\n"
+        )
+        self.assertEqual(self._scan(content), [])
+
+    def test_bare_dynamic_call_exempted(self) -> None:
+        # 无显式接收者的裸 get/set/call 等价于 self 调用，与裸名 _helper() 一致
+        content = (
+            'call("_test_helper")\n'
+            'get("_test_state")\n'
+            'set("_test_state", true)\n'
+            "var x = call(\"_assigned\")\n"
+        )
+        self.assertEqual(self._scan(content), [])
+        # 对照：带接收者的动态调用仍报告
+        self.assertEqual(
+            audit.extract_accesses_from_code('obj.call("_test_helper")'),
+            [("_test_helper", "dynamic_call")],
+        )
+
     def test_stringname_dynamic_call_reported(self) -> None:
         self.assertEqual(
             audit.extract_accesses_from_code('obj.call(&"_private_method")'),
