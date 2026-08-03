@@ -271,6 +271,28 @@ class ScanFileTests(unittest.TestCase):
             [("_test_helper", "dynamic_call")],
         )
 
+    def test_bare_dynamic_call_with_preceding_dot_in_line(self) -> None:
+        # 同行前面有其他点号（node.value）不影响裸调用判定：仍视为 self
+        content = (
+            "_assert_eq(node.value, call(\"_test_helper\"))\n"
+            "_assert_eq(node.value, get(\"_test_state\"))\n"
+        )
+        self.assertEqual(self._scan(content), [])
+        # 对照：方法名紧邻点号才算有接收者，仍报告
+        self.assertEqual(
+            audit.extract_accesses_from_code(
+                '_assert_eq(node.value, obj.call("_test_helper"))'
+            ),
+            [("_test_helper", "dynamic_call")],
+        )
+        # 对照：self 动态调用即使同行有其他点号也豁免
+        self.assertEqual(
+            audit.extract_accesses_from_code(
+                '_assert_eq(node.value, self.call("_test_helper"))'
+            ),
+            [],
+        )
+
     def test_stringname_dynamic_call_reported(self) -> None:
         self.assertEqual(
             audit.extract_accesses_from_code('obj.call(&"_private_method")'),

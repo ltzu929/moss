@@ -269,12 +269,15 @@ def extract_accesses(
         for m in _DYNAMIC_RE.finditer(text):
             # 无显式接收者的裸 get/set/call 等价于 self 调用，豁免
             #（与裸名 _helper() 的豁免规则一致）。
+            # 只有方法名前面（去除空白后）确实紧邻 `.` 时才视为有接收者；
+            # 同行前面其他点号（如 `_assert_eq(node.value, call(...))`）不算。
             before = text[: m.start()]
-            dot = before.rfind(".")
-            if dot == -1:
+            stripped = before.rstrip(" \t")
+            if not stripped.endswith("."):
                 continue
+            dot = stripped.rfind(".")
             # 接收者 self./super. 豁免（与直接成员分支一致）。
-            tail = _RECEIVER_TAIL_RE.search(before[:dot].rstrip(" .\t"))
+            tail = _RECEIVER_TAIL_RE.search(stripped[:dot].rstrip(" .\t"))
             if tail is not None and tail.group(1) in _SELF_SUPER:
                 continue
             method = m.group(1)
