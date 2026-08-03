@@ -180,6 +180,75 @@ class ScanFileTests(unittest.TestCase):
              ("_load_editor_preview_states", "dynamic_call")],
         )
 
+    def test_multiline_dynamic_call_via_file_scan(self) -> None:
+        # 跨行调用：call( 在行尾，字符串参数在下一行
+        content = (
+            "var rect = obj.call(\n"
+            "    \"_private_method\"\n"
+            ")\n"
+        )
+        self.assertEqual(
+            self._scan(content),
+            [("_private_method", "dynamic_call")],
+        )
+
+    def test_multiline_dynamic_get_with_plain_key_not_reported(self) -> None:
+        content = (
+            "var v = d.get(\n"
+            "    \"key\"\n"
+            ")\n"
+        )
+        self.assertEqual(self._scan(content), [])
+
+    def test_multiline_dynamic_call_with_plain_arg_not_reported(self) -> None:
+        content = (
+            "var v = obj.call(\n"
+            "    some_var\n"
+            ")\n"
+        )
+        self.assertEqual(self._scan(content), [])
+
+    def test_multiline_stringname_dynamic_call_via_file_scan(self) -> None:
+        # 跨行 + StringName 字面量组合
+        content = (
+            "var v = obj.call(\n"
+            "    &\"_private_method\"\n"
+            ")\n"
+        )
+        self.assertEqual(
+            self._scan(content),
+            [("_private_method", "dynamic_call")],
+        )
+
+    def test_stringname_dynamic_call_reported(self) -> None:
+        self.assertEqual(
+            audit.extract_accesses_from_code('obj.call(&"_private_method")'),
+            [("_private_method", "dynamic_call")],
+        )
+        self.assertEqual(
+            audit.extract_accesses_from_code('obj.get( &"_state" )'),
+            [("_state", "dynamic_get")],
+        )
+
+    def test_self_and_super_dynamic_call_exempted(self) -> None:
+        self.assertEqual(
+            audit.extract_accesses_from_code('self.call("_test_helper")'),
+            [],
+        )
+        self.assertEqual(
+            audit.extract_accesses_from_code('super.call("_parent_helper")'),
+            [],
+        )
+        self.assertEqual(
+            audit.extract_accesses_from_code('self . get("_own_field")'),
+            [],
+        )
+        # 对照：非 self/super 接收者仍报告
+        self.assertEqual(
+            audit.extract_accesses_from_code('_main_os.call("_test_helper")'),
+            [("_test_helper", "dynamic_call")],
+        )
+
 
 class CliTests(unittest.TestCase):
     """CLI 门禁模式与基线往返测试（tempfile 自建目录）。"""
@@ -270,6 +339,22 @@ class CliTests(unittest.TestCase):
         with self.assertRaises(SystemExit) as ctx:
             audit.main(
                 ["--fail-on-new", "--require-zero"],
+                tests_dir=self.tests,
+            )
+        self.assertEqual(ctx.exception.code, 2)
+
+    def test_write_baseline_conflicts_with_gates(self) -> None:
+        # 写基线不得与门禁同时执行：否则可用当前状态覆盖基线再自比通过
+        baseline = self._baseline()
+        with self.assertRaises(SystemExit) as ctx:
+            audit.main(
+                ["--write-baseline", str(baseline), "--fail-on-new"],
+                tests_dir=self.tests,
+            )
+        self.assertEqual(ctx.exception.code, 2)
+        with self.assertRaises(SystemExit) as ctx:
+            audit.main(
+                ["--write-baseline", str(baseline), "--require-zero"],
                 tests_dir=self.tests,
             )
         self.assertEqual(ctx.exception.code, 2)

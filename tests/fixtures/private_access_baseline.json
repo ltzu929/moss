@@ -213,7 +213,7 @@
     "path": "world_map_view_test.gd",
     "member": "_region_at_position",
     "kind": "dynamic_call",
-    "count": 3
+    "count": 4
   },
   {
     "path": "world_map_view_test.gd",

@@ -213,12 +213,13 @@ def parse_string_at(code: str, start: int) -> tuple[Optional[str], int]:
     return None, -1
 
 
-def extract_accesses(tokens: list[tuple[str, str]]) -> list[tuple[str, str]]:
+def extract_accesses(
+    tokens: list[tuple[str, str]], pending: Optional[str] = None
+) -> tuple[list[tuple[str, str]], Optional[str]]:
     """从一行 token 流中提取（member, kind）访问列表。
 
-    - 直接成员访问只作用于 code token（字符串与注释内容已隔离）；
-    - 动态访问在 code token 中找到 `get/set/call(` 调用后，取紧随其后的
-      str token 解析字符串参数，参数以 `_` 开头才报告。
+    返回（found, next_pending）。pending 表示上一行遗留的未闭合动态调用
+    （`get(`/`set(`/`call(` 出现在行尾），其字符串参数可能在本行跨行出现。
     """
     found: list[tuple[str, str]] = []
     # 直接成员访问 obj._foo / obj._foo()
@@ -231,11 +232,41 @@ def extract_accesses(tokens: list[tuple[str, str]]) -> list[tuple[str, str]]:
         member = m.group(0)[m.group(0).find("_") :]
         kind = "engine_callback" if is_engine_callback(member) else "direct_member"
         found.append((member, kind))
+    # 先消费上一行遗留的未闭合动态调用（参数在本行）
+    if pending is not None:
+        idx = 0
+        while (
+            idx < len(tokens)
+            and tokens[idx][0] == _TOKEN_CODE
+            and not tokens[idx][1].strip()
+        ):
+            idx += 1
+        if idx < len(tokens) and tokens[idx][0] == _TOKEN_STR:
+            value, _end = parse_string_at(tokens[idx][1], 0)
+            if value is not None and value.startswith("_"):
+                found.append((value, _DYNAMIC_KINDS[pending]))
+        elif (
+            idx + 1 < len(tokens)
+            and tokens[idx][0] == _TOKEN_CODE
+            and tokens[idx][1].strip() == "&"
+            and tokens[idx + 1][0] == _TOKEN_STR
+        ):
+            value, _end = parse_string_at(tokens[idx + 1][1], 0)
+            if value is not None and value.startswith("_"):
+                found.append((value, _DYNAMIC_KINDS[pending]))
+        pending = None
     # 动态访问 get/set/call("_...")
     for idx, (kind, text) in enumerate(tokens):
         if kind != _TOKEN_CODE:
             continue
         for m in _DYNAMIC_RE.finditer(text):
+            # 接收者 self./super. 豁免（与直接成员分支一致）。
+            # 动态正则从方法名开始匹配，前缀以 `.` 结尾，先去掉尾部点号与空白。
+            prefix = text[: m.start()].rstrip(" .\t")
+            tail = _RECEIVER_TAIL_RE.search(prefix)
+            if tail is not None and tail.group(1) in _SELF_SUPER:
+                continue
+            method = m.group(1)
             rest = text[m.end() :]
             # 跳过紧跟的纯空白 code token（允许跨行空白）
             j = idx + 1
@@ -245,34 +276,59 @@ def extract_accesses(tokens: list[tuple[str, str]]) -> list[tuple[str, str]]:
                 and not tokens[j][1].strip()
             ):
                 j += 1
-            if rest.strip():
+            # 首个实参为 StringName 字面量（&"..."）时允许 `&` 前缀
+            has_amp = rest.strip() == "&"
+            if rest.strip() and not has_amp:
                 # '(' 之后还有非空白代码：首个实参不是字符串字面量
                 continue
-            if j >= len(tokens) or tokens[j][0] != _TOKEN_STR:
+            if has_amp:
+                # & 在 '(' 后同行：参数必须是紧随的字符串 token
+                if j < len(tokens) and tokens[j][0] == _TOKEN_STR:
+                    value, _end = parse_string_at(tokens[j][1], 0)
+                    if value is not None and value.startswith("_"):
+                        found.append((value, _DYNAMIC_KINDS[method]))
                 continue
-            value, _end = parse_string_at(tokens[j][1], 0)
-            if value is None or not value.startswith("_"):
-                continue  # 只有以 `_` 开头的字符串参数才算动态私有访问
-            found.append((value, _DYNAMIC_KINDS[m.group(1)]))
-    return found
+            # rest 为空：参数可能在同行字符串 token，或跨行（设置 pending）
+            if j < len(tokens) and tokens[j][0] == _TOKEN_STR:
+                value, _end = parse_string_at(tokens[j][1], 0)
+                if value is not None and value.startswith("_"):
+                    found.append((value, _DYNAMIC_KINDS[method]))
+            elif (
+                j < len(tokens)
+                and tokens[j][0] == _TOKEN_CODE
+                and tokens[j][1].strip() == "&"
+                and j + 1 < len(tokens)
+                and tokens[j + 1][0] == _TOKEN_STR
+            ):
+                # 同行 `&"..."` 但 & 落在下一个 code token（如 `call( &"_x"`）
+                value, _end = parse_string_at(tokens[j + 1][1], 0)
+                if value is not None and value.startswith("_"):
+                    found.append((value, _DYNAMIC_KINDS[method]))
+            elif j >= len(tokens) or tokens[j][0] != _TOKEN_STR:
+                # 行尾未闭合：本行内没有字符串参数，交给下一行
+                pending = method
+    return found, pending
 
 
 def extract_accesses_from_code(code: str) -> list[tuple[str, str]]:
     """便捷函数：把一段代码当作单行解析（含字符串与注释处理）后提取访问。"""
     tokens, _state = split_line(code, _CODE)
-    return extract_accesses(tokens)
+    found, _pending = extract_accesses(tokens)
+    return found
 
 
 def scan_file(path: Path) -> list[tuple[str, str]]:
     """扫描单个 .gd 文件，返回（member, kind）访问列表。"""
     accesses: list[tuple[str, str]] = []
     state = _CODE
+    pending: Optional[str] = None
     try:
         with path.open("r", encoding="utf-8", errors="replace") as fh:
             for raw in fh:
                 line = raw.rstrip("\r\n")
                 tokens, state = split_line(line, state)
-                accesses.extend(extract_accesses(tokens))
+                found, pending = extract_accesses(tokens, pending)
+                accesses.extend(found)
     except OSError as exc:
         print(f"警告：无法读取 {path}：{exc}", file=sys.stderr)
     return accesses
@@ -385,10 +441,10 @@ def main(argv: Optional[list[str]] = None, tests_dir: Optional[Path] = None) -> 
         action="store_true",
         help="要求当前扫描结果为空，否则失败（退出码 1）",
     )
-    parser.add_argument(
+    mode.add_argument(
         "--write-baseline",
         metavar="FILE",
-        help="把当前扫描结果写出为基线 JSON（用于首次生成）",
+        help="把当前扫描结果写出为基线 JSON（用于首次生成；与两种门禁模式互斥）",
     )
     args = parser.parse_args(argv)
 
