@@ -12,7 +12,7 @@ class TestSelectionTests(unittest.TestCase):
     def test_all_suite_contains_each_registered_scene_once(self) -> None:
         selected = run_godot_tests.select_test_specs("all")
 
-        self.assertEqual(len(selected), 23)
+        self.assertEqual(len(selected), 24)
         self.assertEqual(
             len({spec.scene for spec in selected}),
             len(selected),
@@ -118,6 +118,27 @@ class LogGateTests(unittest.TestCase):
         self.assertEqual(result.status, "passed")
         self.assertEqual(result.unexpected_errors, [])
 
+    def test_memory_limit_failure_is_reported(self) -> None:
+        spec = run_godot_tests.TestSpec(
+            "tests/example.tscn",
+            "domain",
+            "headless",
+            ("[MOSS-EXAMPLE] 完成，失败断言：0",),
+        )
+        command_result = run_godot_tests.CommandResult(
+            exit_code=125,
+            output="Process memory limit exceeded.\n",
+            duration_seconds=0.1,
+            memory_limit_exceeded=True,
+            peak_memory_bytes=128 * 1024 * 1024,
+        )
+
+        result = run_godot_tests.evaluate_scene_result(spec, command_result)
+
+        self.assertEqual(result.status, "failed")
+        self.assertIn("memory_limit_exceeded", result.failure_reasons)
+        self.assertEqual(result.peak_memory_mb, 128.0)
+
 
 class CommandAndReportTests(unittest.TestCase):
     def test_linux_display_mode_forces_supported_xvfb_renderer(self) -> None:
@@ -150,6 +171,33 @@ class CommandAndReportTests(unittest.TestCase):
 
         self.assertTrue(result.timed_out)
         self.assertEqual(result.exit_code, 124)
+
+    @unittest.skipUnless(
+        run_godot_tests.platform.system() in ("Windows", "Linux"),
+        "Process memory sampling is implemented on Windows and Linux.",
+    )
+    def test_memory_hungry_command_is_terminated_before_timeout(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            result = run_godot_tests.run_command(
+                [
+                    sys.executable,
+                    "-c",
+                    (
+                        "import time; "
+                        "payload = bytearray(64 * 1024 * 1024); "
+                        "time.sleep(2)"
+                    ),
+                ],
+                Path(temporary_directory),
+                5,
+                echo=False,
+                memory_limit_mb=32,
+            )
+
+        self.assertTrue(result.memory_limit_exceeded)
+        self.assertFalse(result.timed_out)
+        self.assertEqual(result.exit_code, 125)
+        self.assertIn("memory limit", result.output.lower())
 
     def test_json_report_contains_machine_readable_summary(self) -> None:
         scene_result = run_godot_tests.SceneResult(

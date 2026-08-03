@@ -61,6 +61,7 @@ func _ready() -> void:
 	_assert_no_legacy_signal_emit()
 	_assert_function_return_types()
 	_assert_no_chained_get_parent()
+	_assert_no_deferred_free_count_loops()
 	_assert_process_has_no_blocking_work()
 	_assert_autowrap_labels_have_maximum_width()
 	_assert_test_fixture_patterns()
@@ -120,6 +121,17 @@ func _assert_no_chained_get_parent() -> void:
 			_assert_true(
 				not _source_has_pattern(path, FORBIDDEN_CHAINED_GET_PARENT),
 				"不得链式跨层 get_parent()：%s" % path
+			)
+
+
+## 禁止以未同步变化的子节点数量驱动 queue_free() 循环。
+## queue_free() 到帧末才删除节点，此模式会永久自旋并耗尽系统内存。
+func _assert_no_deferred_free_count_loops() -> void:
+	for root in PRODUCTION_SCRIPT_ROOTS:
+		for path in _collect_files(root, "gd"):
+			_assert_true(
+				not _source_has_deferred_free_count_loop(path),
+				"不得用 get_child_count() 循环驱动延迟 queue_free()：%s" % path
 			)
 
 
@@ -252,6 +264,28 @@ func _source_declares_failed(source: String) -> bool:
 	for line in source.split("\n"):
 		if _failed_declaration_regex.search(String(line)) != null:
 			return true
+	return false
+
+
+## 检查 while 子节点计数循环中是否使用了延迟删除。
+func _source_has_deferred_free_count_loop(path: String) -> bool:
+	var lines := _read_text(path).split("\n")
+	for line_index in lines.size():
+		var line := String(lines[line_index])
+		var stripped := line.strip_edges()
+		if not stripped.begins_with("while ") or not "get_child_count()" in stripped:
+			continue
+
+		var loop_indent := _leading_whitespace_size(line)
+		for body_index in range(line_index + 1, lines.size()):
+			var body_line := String(lines[body_index])
+			var body_stripped := body_line.strip_edges()
+			if body_stripped.is_empty():
+				continue
+			if _leading_whitespace_size(body_line) <= loop_indent:
+				break
+			if "queue_free()" in body_stripped:
+				return true
 	return false
 
 

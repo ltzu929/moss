@@ -1,4 +1,5 @@
 import argparse
+import ctypes
 from dataclasses import asdict, dataclass, field
 import json
 import os
@@ -16,6 +17,7 @@ from typing import Iterable, Sequence
 
 DEFAULT_IMPORT_TIMEOUT_SECONDS = 180
 DEFAULT_TEST_TIMEOUT_SECONDS = 90
+DEFAULT_MEMORY_LIMIT_MB = 4096
 VALID_SUITES = ("contracts", "domain", "ui", "playthrough")
 
 
@@ -33,6 +35,8 @@ class CommandResult:
     output: str
     duration_seconds: float
     timed_out: bool = False
+    memory_limit_exceeded: bool = False
+    peak_memory_bytes: int = 0
 
 
 @dataclass
@@ -44,6 +48,8 @@ class SceneResult:
     exit_code: int
     duration_seconds: float
     timed_out: bool
+    memory_limit_exceeded: bool = False
+    peak_memory_mb: float = 0.0
     missing_markers: list[str] = field(default_factory=list)
     unexpected_errors: list[str] = field(default_factory=list)
     failure_reasons: list[str] = field(default_factory=list)
@@ -147,6 +153,12 @@ TEST_SPECS = [
         ("[MOSS-SITUATION-UI] 完成，失败断言：0",),
     ),
     TestSpec(
+        "tests/action_log_ui_test.tscn",
+        "ui",
+        "display",
+        ("[MOSS-ACTION-LOG-UI] 完成，失败断言：0",),
+    ),
+    TestSpec(
         "tests/ui_layout_1080p_test.tscn",
         "ui",
         "display",
@@ -233,12 +245,62 @@ def _stream_reader(
         output_queue.put(None)
 
 
+class _WindowsProcessMemoryCountersEx(ctypes.Structure):
+    _fields_ = [
+        ("cb", ctypes.c_ulong),
+        ("page_fault_count", ctypes.c_ulong),
+        ("peak_working_set_size", ctypes.c_size_t),
+        ("working_set_size", ctypes.c_size_t),
+        ("quota_peak_paged_pool_usage", ctypes.c_size_t),
+        ("quota_paged_pool_usage", ctypes.c_size_t),
+        ("quota_peak_non_paged_pool_usage", ctypes.c_size_t),
+        ("quota_non_paged_pool_usage", ctypes.c_size_t),
+        ("pagefile_usage", ctypes.c_size_t),
+        ("peak_pagefile_usage", ctypes.c_size_t),
+        ("private_usage", ctypes.c_size_t),
+    ]
+
+
+def _read_process_memory_bytes(process: subprocess.Popen[str]) -> int:
+    if process.poll() is not None:
+        return 0
+
+    system_name = platform.system()
+    if system_name == "Windows":
+        process_handle = getattr(process, "_handle", None)
+        if process_handle is None:
+            return 0
+        counters = _WindowsProcessMemoryCountersEx()
+        counters.cb = ctypes.sizeof(counters)
+        get_process_memory_info = ctypes.windll.psapi.GetProcessMemoryInfo
+        succeeded = get_process_memory_info(
+            ctypes.c_void_p(int(process_handle)),
+            ctypes.byref(counters),
+            counters.cb,
+        )
+        return int(counters.private_usage) if succeeded else 0
+
+    if system_name == "Linux":
+        try:
+            status = Path(f"/proc/{process.pid}/status").read_text(
+                encoding="utf-8"
+            )
+        except (FileNotFoundError, PermissionError, ProcessLookupError):
+            return 0
+        for line in status.splitlines():
+            if line.startswith("VmRSS:"):
+                return int(line.split()[1]) * 1024
+
+    return 0
+
+
 def run_command(
     command: Sequence[str],
     project_root: Path,
     timeout_seconds: int | float,
     *,
     echo: bool = True,
+    memory_limit_mb: int = DEFAULT_MEMORY_LIMIT_MB,
 ) -> CommandResult:
     started = time.monotonic()
     try:
@@ -270,9 +332,25 @@ def run_command(
     output_lines: list[str] = []
     stream_finished = False
     timed_out = False
+    memory_limit_exceeded = False
+    peak_memory_bytes = 0
+    memory_limit_bytes = memory_limit_mb * 1024 * 1024
     while process.poll() is None or not stream_finished:
         elapsed = time.monotonic() - started
-        if process.poll() is None and elapsed > timeout_seconds:
+        if process.poll() is None and not memory_limit_exceeded:
+            memory_bytes = _read_process_memory_bytes(process)
+            peak_memory_bytes = max(peak_memory_bytes, memory_bytes)
+            if (
+                memory_limit_bytes > 0
+                and memory_bytes > memory_limit_bytes
+            ):
+                memory_limit_exceeded = True
+                process.kill()
+        if (
+            process.poll() is None
+            and not memory_limit_exceeded
+            and elapsed > timeout_seconds
+        ):
             timed_out = True
             process.kill()
 
@@ -300,12 +378,24 @@ def run_command(
         output_lines.append(timeout_message + "\n")
         if echo:
             print(timeout_message, file=sys.stderr, flush=True)
+    elif memory_limit_exceeded:
+        exit_code = 125
+        peak_memory_mb = peak_memory_bytes / (1024 * 1024)
+        memory_message = (
+            f"Command exceeded memory limit of {memory_limit_mb} MiB "
+            f"(peak {peak_memory_mb:.1f} MiB): {' '.join(command)}"
+        )
+        output_lines.append(memory_message + "\n")
+        if echo:
+            print(memory_message, file=sys.stderr, flush=True)
 
     return CommandResult(
         exit_code=exit_code,
         output="".join(output_lines),
         duration_seconds=duration,
         timed_out=timed_out,
+        memory_limit_exceeded=memory_limit_exceeded,
+        peak_memory_bytes=peak_memory_bytes,
     )
 
 
@@ -448,6 +538,8 @@ def evaluate_scene_result(
     failure_reasons: list[str] = []
     if command_result.timed_out:
         failure_reasons.append("timeout")
+    if command_result.memory_limit_exceeded:
+        failure_reasons.append("memory_limit_exceeded")
     if command_result.exit_code != 0:
         failure_reasons.append(f"exit_code={command_result.exit_code}")
     if missing_markers:
@@ -463,6 +555,11 @@ def evaluate_scene_result(
         exit_code=command_result.exit_code,
         duration_seconds=round(command_result.duration_seconds, 3),
         timed_out=command_result.timed_out,
+        memory_limit_exceeded=command_result.memory_limit_exceeded,
+        peak_memory_mb=round(
+            command_result.peak_memory_bytes / (1024 * 1024),
+            1,
+        ),
         missing_markers=missing_markers,
         unexpected_errors=unexpected_errors,
         failure_reasons=failure_reasons,
@@ -481,6 +578,7 @@ def write_json_report(
     imports_passed = bool(import_results) and all(
         result["exit_code"] == 0
         and not result["timed_out"]
+        and not result.get("memory_limit_exceeded", False)
         and not result["unexpected_errors"]
         for result in import_results
     )
@@ -522,13 +620,13 @@ def append_github_summary(
     lines = [
         f"### Godot test suite: `{suite}`",
         "",
-        "| Scene | Mode | Status | Duration |",
-        "| --- | --- | --- | ---: |",
+        "| Scene | Mode | Status | Duration | Peak memory |",
+        "| --- | --- | --- | ---: | ---: |",
     ]
     for result in scene_results:
         lines.append(
             f"| `{result.scene}` | {result.mode} | {result.status} | "
-            f"{result.duration_seconds:.3f}s |"
+            f"{result.duration_seconds:.3f}s | {result.peak_memory_mb:.1f} MiB |"
         )
     lines.extend([
         "",
@@ -582,6 +680,15 @@ def build_parser() -> argparse.ArgumentParser:
         default=DEFAULT_TEST_TIMEOUT_SECONDS,
         help="Per-scene timeout in seconds (default: 90)",
     )
+    parser.add_argument(
+        "--memory-limit-mb",
+        type=int,
+        default=DEFAULT_MEMORY_LIMIT_MB,
+        help=(
+            "Per-process memory limit in MiB; 0 disables the guard "
+            "(default: 4096)"
+        ),
+    )
     return parser
 
 
@@ -590,6 +697,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.import_timeout <= 0 or args.test_timeout <= 0:
         parser.error("Timeout values must be positive integers.")
+    if args.memory_limit_mb < 0:
+        parser.error("Memory limit must be zero or a positive integer.")
 
     try:
         selected_specs = select_test_specs(args.suite, args.scene)
@@ -621,6 +730,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         f"Selected suite: {args.suite} ({len(selected_specs)} scene(s))",
         flush=True,
     )
+    if args.memory_limit_mb > 0:
+        print(
+            f"Per-process memory limit: {args.memory_limit_mb} MiB",
+            flush=True,
+        )
 
     import_results: list[dict] = []
     print("Bootstrapping project import cache...", flush=True)
@@ -629,6 +743,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         project_root,
         args.import_timeout,
         echo=not args.quiet,
+        memory_limit_mb=args.memory_limit_mb,
     )
     import_results.append(
         {
@@ -636,6 +751,13 @@ def main(argv: Sequence[str] | None = None) -> int:
             "exit_code": bootstrap_result.exit_code,
             "duration_seconds": round(bootstrap_result.duration_seconds, 3),
             "timed_out": bootstrap_result.timed_out,
+            "memory_limit_exceeded": (
+                bootstrap_result.memory_limit_exceeded
+            ),
+            "peak_memory_mb": round(
+                bootstrap_result.peak_memory_bytes / (1024 * 1024),
+                1,
+            ),
             "unexpected_errors": [],
         }
     )
@@ -661,6 +783,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         project_root,
         args.import_timeout,
         echo=not args.quiet,
+        memory_limit_mb=args.memory_limit_mb,
     )
     validation_errors = find_unexpected_errors(
         validation_result.output,
@@ -672,6 +795,13 @@ def main(argv: Sequence[str] | None = None) -> int:
             "exit_code": validation_result.exit_code,
             "duration_seconds": round(validation_result.duration_seconds, 3),
             "timed_out": validation_result.timed_out,
+            "memory_limit_exceeded": (
+                validation_result.memory_limit_exceeded
+            ),
+            "peak_memory_mb": round(
+                validation_result.peak_memory_bytes / (1024 * 1024),
+                1,
+            ),
             "unexpected_errors": validation_errors,
         }
     )
@@ -714,6 +844,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 project_root,
                 args.test_timeout,
                 echo=not args.quiet,
+                memory_limit_mb=args.memory_limit_mb,
             )
             scene_result = evaluate_scene_result(spec, command_result)
 
@@ -721,7 +852,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         if scene_result.status == "passed":
             print(
                 f"PASSED {spec.scene} in "
-                f"{scene_result.duration_seconds:.3f}s.",
+                f"{scene_result.duration_seconds:.3f}s "
+                f"(peak {scene_result.peak_memory_mb:.1f} MiB).",
                 flush=True,
             )
             continue
