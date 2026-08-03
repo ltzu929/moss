@@ -609,6 +609,7 @@ def write_json_report(
 
 def append_github_summary(
     suite: str,
+    import_results: list[dict],
     scene_results: list[SceneResult],
     total_duration_seconds: float,
 ) -> None:
@@ -620,9 +621,31 @@ def append_github_summary(
     lines = [
         f"### Godot test suite: `{suite}`",
         "",
+        "#### Import phases",
+        "",
+        "| Phase | Status | Duration | Peak memory |",
+        "| --- | --- | ---: | ---: |",
+    ]
+    for result in import_results:
+        import_failed = (
+            result.get("exit_code", 1) != 0
+            or result.get("timed_out", False)
+            or result.get("memory_limit_exceeded", False)
+            or bool(result.get("unexpected_errors", []))
+        )
+        status = "failed" if import_failed else "passed"
+        lines.append(
+            f"| `{result.get('phase', 'unknown')}` | {status} | "
+            f"{float(result.get('duration_seconds', 0.0)):.3f}s | "
+            f"{float(result.get('peak_memory_mb', 0.0)):.1f} MiB |"
+        )
+    lines.extend([
+        "",
+        "#### Test scenes",
+        "",
         "| Scene | Mode | Status | Duration | Peak memory |",
         "| --- | --- | --- | ---: | ---: |",
-    ]
+    ])
     for result in scene_results:
         lines.append(
             f"| `{result.scene}` | {result.mode} | {result.status} | "
@@ -767,13 +790,20 @@ def main(argv: Sequence[str] | None = None) -> int:
             f"{bootstrap_result.exit_code}.",
             flush=True,
         )
+        bootstrap_duration = time.monotonic() - started
+        append_github_summary(
+            args.suite,
+            import_results,
+            [],
+            bootstrap_duration,
+        )
         if args.report_json:
             write_json_report(
                 args.report_json,
                 suite=args.suite,
                 import_results=import_results,
                 scene_results=[],
-                total_duration_seconds=time.monotonic() - started,
+                total_duration_seconds=bootstrap_duration,
             )
         return bootstrap_result.exit_code
 
@@ -809,13 +839,20 @@ def main(argv: Sequence[str] | None = None) -> int:
         print("Project validation import failed strict log checks.", flush=True)
         for error in validation_errors:
             print(f"- {error}", flush=True)
+        validation_duration = time.monotonic() - started
+        append_github_summary(
+            args.suite,
+            import_results,
+            [],
+            validation_duration,
+        )
         if args.report_json:
             write_json_report(
                 args.report_json,
                 suite=args.suite,
                 import_results=import_results,
                 scene_results=[],
-                total_duration_seconds=time.monotonic() - started,
+                total_duration_seconds=validation_duration,
             )
         return 1
 
@@ -869,7 +906,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"- Unexpected error: {error}", flush=True)
 
     total_duration = time.monotonic() - started
-    append_github_summary(args.suite, scene_results, total_duration)
+    append_github_summary(
+        args.suite,
+        import_results,
+        scene_results,
+        total_duration,
+    )
     if args.report_json:
         write_json_report(
             args.report_json,

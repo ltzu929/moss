@@ -3,6 +3,7 @@ extends "res://tests/support/moss_test_case.gd"
 
 const MAIN_SCENE: PackedScene = preload("res://scenes/main_os.tscn")
 const ACTION_LOG_LIMIT: int = 24
+const SHORT_DISPLAY_TEXTS: String = "ABCDEFGHIJKLMNOPQRSTUVWX"
 
 var _main_os: Control
 
@@ -16,6 +17,7 @@ func _ready() -> void:
 	_assert_full_container_evicts_without_hanging()
 	await get_tree().process_frame
 	await _assert_burst_queue_stays_bounded()
+	await _assert_active_typewriter_is_cancelled_by_clear()
 
 	print("[MOSS-ACTION-LOG-UI] 完成，失败断言：%d" % _failed)
 	await get_tree().create_timer(0.1).timeout
@@ -45,14 +47,16 @@ func _assert_full_container_evicts_without_hanging() -> void:
 	)
 
 
-## 模拟高频交互暂时快于打字机动画，队列只保留最近的有界记录。
+## 真实启动打字机后模拟高频交互，并等待最新 24 条完整显示。
 func _assert_burst_queue_stays_bounded() -> void:
 	_main_os._clear_log_ui()
-	_main_os._typewriter_active = true
+	var previous_time_scale := Engine.time_scale
+	Engine.time_scale = 10.0
 	for index in range(100):
-		_main_os.record_action("situation", "突发操作 %d" % index, "队列容量测试")
+		_main_os.record_action("situation", str(index), "")
 
 	var action_log: Array[Dictionary] = _main_os.get_action_log()
+	_assert_true(_main_os._typewriter_active, "突发写入期间应有真实打字机协程运行")
 	_assert_eq(action_log.size(), ACTION_LOG_LIMIT, "领域行动日志应保持固定容量")
 	_assert_eq(
 		_main_os._typewriter_queue.size(),
@@ -61,19 +65,71 @@ func _assert_burst_queue_stays_bounded() -> void:
 	)
 	_assert_eq(
 		str(action_log[0].get("title", "")),
-		"突发操作 76",
+		"76",
 		"容量淘汰后应保留最近 24 条行动"
 	)
 	_assert_eq(
 		str(_main_os._typewriter_queue[0].get("text", "")),
-		"[2044.01] [SITUATION] 突发操作 76\n　队列容量测试",
+		"[2044.01] [SITUATION] 76",
 		"打字机队列应丢弃最旧积压并保留最近内容"
 	)
+
+	# 已验证队列内容后缩短待显示文本，让真实逐字协程在测试时限内完成。
+	for queue_index in range(_main_os._typewriter_queue.size()):
+		_main_os._typewriter_queue[queue_index]["text"] = SHORT_DISPLAY_TEXTS.substr(
+			queue_index,
+			1
+		)
+	await _wait_for_typewriter_idle(1200)
+	Engine.time_scale = previous_time_scale
+
+	var log_container := _main_os.get_node("%LogEntryContainer") as VBoxContainer
+	var first_label := log_container.get_child(0) as Label
+	var last_label := log_container.get_child(ACTION_LOG_LIMIT - 1) as Label
+	_assert_eq(
+		log_container.get_child_count(),
+		ACTION_LOG_LIMIT,
+		"突发日志最终应收敛为 24 个标签"
+	)
+	_assert_eq(first_label.text, "A", "显示结果应从最新 24 条的首条开始")
+	_assert_eq(last_label.text, "X", "显示结果应保留最新一条")
+	_assert_eq(_main_os._typewriter_queue.size(), 0, "打字机完成后待显示队列应清空")
+	_assert_true(not _main_os._typewriter_active, "打字机完成后应回到空闲状态")
+	_assert_true(_main_os._get_log_cursor().visible, "打字机完成后光标应恢复可见")
+
+
+## 在真实协程等待帧或字符 Timer 时清空，旧协程醒来后不得恢复状态。
+func _assert_active_typewriter_is_cancelled_by_clear() -> void:
 	_main_os._clear_log_ui()
+	_main_os.record_action("situation", "协程取消", "等待中的旧日志不得恢复")
+	var log_container := _main_os.get_node("%LogEntryContainer") as VBoxContainer
+	var cursor := _main_os._get_log_cursor() as Label
+	_assert_true(_main_os._typewriter_active, "取消前应有真实打字机协程运行")
+	_assert_eq(log_container.get_child_count(), 1, "取消前应已创建正在打字的标签")
+	_assert_true(not cursor.visible, "打字期间光标应隐藏")
+
+	await get_tree().process_frame
+	_main_os._clear_log_ui()
+	_assert_eq(log_container.get_child_count(), 0, "清空应立即把旧标签移出场景树")
+	_assert_eq(_main_os._typewriter_queue.size(), 0, "清空应立即移除待显示记录")
+	_assert_true(not _main_os._typewriter_active, "清空应立即停止打字机")
+	_assert_true(cursor.visible, "清空应立即恢复光标")
+
+	await get_tree().create_timer(0.12).timeout
 	await get_tree().process_frame
 	_assert_eq(
-		(_main_os.get_node("%LogEntryContainer") as VBoxContainer).get_child_count(),
+		log_container.get_child_count(),
 		0,
-		"清空日志后旧打字机协程不应恢复并重新创建标签"
+		"旧协程等待结束后不应恢复并重新创建标签"
 	)
-	_assert_true(not _main_os._typewriter_active, "清空日志后打字机应保持停止")
+	_assert_eq(_main_os._typewriter_queue.size(), 0, "旧协程等待结束后不应修改新队列")
+	_assert_true(not _main_os._typewriter_active, "旧协程等待结束后打字机应保持停止")
+	_assert_true(cursor.visible, "旧协程等待结束后不应再次修改光标")
+
+
+func _wait_for_typewriter_idle(maximum_frames: int) -> void:
+	for _frame_index in range(maximum_frames):
+		if not _main_os._typewriter_active:
+			return
+		await get_tree().process_frame
+	_assert_true(false, "真实打字机协程应在限定帧数内收敛")

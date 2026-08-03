@@ -233,6 +233,62 @@ class CommandAndReportTests(unittest.TestCase):
             "failed": 0,
         })
 
+    def test_github_summary_contains_import_and_scene_peak_memory(self) -> None:
+        scene_result = run_godot_tests.SceneResult(
+            scene="tests/example.tscn",
+            suite="domain",
+            mode="headless",
+            status="passed",
+            exit_code=0,
+            duration_seconds=0.25,
+            timed_out=False,
+            peak_memory_mb=256.0,
+        )
+        import_results = [
+            {
+                "phase": "bootstrap",
+                "exit_code": 0,
+                "duration_seconds": 0.1,
+                "timed_out": False,
+                "memory_limit_exceeded": False,
+                "peak_memory_mb": 128.5,
+                "unexpected_errors": [],
+            },
+            {
+                "phase": "validation",
+                "exit_code": 0,
+                "duration_seconds": 0.2,
+                "timed_out": False,
+                "memory_limit_exceeded": False,
+                "peak_memory_mb": 132.0,
+                "unexpected_errors": [],
+            },
+        ]
+
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            summary_path = Path(temporary_directory) / "summary.md"
+            with mock.patch.dict(
+                run_godot_tests.os.environ,
+                {"GITHUB_STEP_SUMMARY": str(summary_path)},
+            ):
+                run_godot_tests.append_github_summary(
+                    "domain",
+                    import_results,
+                    [scene_result],
+                    0.5,
+                )
+            summary = summary_path.read_text(encoding="utf-8")
+
+        self.assertIn("#### Import phases", summary)
+        self.assertIn("| `bootstrap` | passed | 0.100s | 128.5 MiB |", summary)
+        self.assertIn("| `validation` | passed | 0.200s | 132.0 MiB |", summary)
+        self.assertIn("#### Test scenes", summary)
+        self.assertIn(
+            "| `tests/example.tscn` | headless | passed | 0.250s | "
+            "256.0 MiB |",
+            summary,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
