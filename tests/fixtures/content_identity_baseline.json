@@ -447,7 +447,37 @@
           "index": 0,
           "option_id": "option_01",
           "button_text": "按人道风险迁移",
-          "decision�]��G����ƭy�ton_text": "优先改造根服务器",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
+        },
+        {
+          "index": 1,
+          "option_id": "option_02",
+          "button_text": "按工程岗位迁移",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
+        },
+        {
+          "index": 2,
+          "option_id": "option_03",
+          "button_text": "按 MOSS 预测存续价值迁移",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
+        }
+      ]
+    },
+    {
+      "path": "res://data/events/event_mid_08_root_server_waterproofing_delay.tres",
+      "event_id": "event_mid_08_root_server_waterproofing_delay",
+      "event_title": "根服务器防水改造延期",
+      "event_region": "欧洲",
+      "required_decision_tag_key": "",
+      "required_decision_tag_value": "",
+      "options": [
+        {
+          "index": 0,
+          "option_id": "option_01",
+          "button_text": "优先改造根服务器",
           "decision_tag_key": "",
           "decision_tag_value": ""
         },
