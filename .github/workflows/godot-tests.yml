@@ -19,10 +19,18 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Test Python runner
-        run: python -m unittest tools.tests.test_run_godot_tests tools.tests.test_audit_test_private_access -v
+        run: >-
+          python -m unittest
+          tools.tests.test_run_godot_tests
+          tools.tests.test_audit_test_private_access
+          tools.tests.test_audit_content_identity
+          -v
 
       - name: Audit test private access
         run: python tools/audit_test_private_access.py --baseline tests/fixtures/private_access_baseline.json --fail-on-new
+
+      - name: Audit content identity mapping
+        run: python tools/audit_content_identity.py --baseline tests/fixtures/content_identity_baseline.json
 
   test-suites:
     name: suite-${{ matrix.suite }}

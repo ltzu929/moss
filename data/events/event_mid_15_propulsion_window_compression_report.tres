@@ -7,6 +7,7 @@
 
 [sub_resource type="Resource" id="Option_1"]
 script = ExtResource("2_option")
+option_id = "option_01"
 button_text = "公开风险争取协作"
 order_delta = -5
 hope_delta = 3
@@ -17,6 +18,7 @@ event_state_value = "public_risk"
 
 [sub_resource type="Resource" id="Option_2"]
 script = ExtResource("2_option")
+option_id = "option_02"
 button_text = "压缩报告维持秩序"
 order_delta = 5
 hope_delta = -2
@@ -26,6 +28,7 @@ event_state_value = "compressed_report"
 
 [sub_resource type="Resource" id="Option_3"]
 script = ExtResource("2_option")
+option_id = "option_03"
 button_text = "MOSS 接管推进优先级"
 order_delta = 7
 hope_delta = -5
@@ -35,6 +38,7 @@ event_state_value = "moss_priority"
 
 [resource]
 script = ExtResource("1_event")
+event_id = "event_mid_15_propulsion_window_compression_report"
 event_title = "推进窗口压缩报告"
 event_time = 2072
 event_month = 1

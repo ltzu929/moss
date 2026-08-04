@@ -7,6 +7,7 @@
 
 [sub_resource type="Resource" id="Option_1"]
 script = ExtResource("2_option")
+option_id = "option_01"
 button_text = "公开模型依据"
 order_delta = -3
 hope_delta = 5
@@ -17,6 +18,7 @@ event_state_value = "public_model"
 
 [sub_resource type="Resource" id="Option_2"]
 script = ExtResource("2_option")
+option_id = "option_02"
 button_text = "只给地方委员会结果"
 order_delta = 4
 hope_delta = -1
@@ -26,6 +28,7 @@ event_state_value = "committee_only"
 
 [sub_resource type="Resource" id="Option_3"]
 script = ExtResource("2_option")
+option_id = "option_03"
 button_text = "MOSS 直接重排资源"
 order_delta = 7
 hope_delta = -5
@@ -35,6 +38,7 @@ event_state_value = "moss_direct"
 
 [resource]
 script = ExtResource("1_event")
+event_id = "event_mid_05_local_dispatch_model_pilot"
 event_title = "地方调度模型试点"
 event_time = 2051
 event_region = "南美"

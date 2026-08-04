@@ -7,6 +7,7 @@
 
 [sub_resource type="Resource" id="Option_1"]
 script = ExtResource("2_option")
+option_id = "option_01"
 button_text = "按家庭最低保障"
 order_delta = -3
 hope_delta = 6
@@ -17,6 +18,7 @@ event_state_value = "family_baseline"
 
 [sub_resource type="Resource" id="Option_2"]
 script = ExtResource("2_option")
+option_id = "option_02"
 button_text = "按工程岗位优先"
 order_delta = 5
 hope_delta = -4
@@ -26,6 +28,7 @@ event_state_value = "engineering_priority"
 
 [sub_resource type="Resource" id="Option_3"]
 script = ExtResource("2_option")
+option_id = "option_03"
 button_text = "MOSS 预测风险排序"
 order_delta = 6
 hope_delta = -3
@@ -35,6 +38,7 @@ event_state_value = "moss_risk_score"
 
 [resource]
 script = ExtResource("1_event")
+event_id = "event_mid_06_temporary_settlement_ration_crisis"
 event_title = "临时安置点配给危机"
 event_time = 2052
 event_month = 1

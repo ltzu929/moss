@@ -1,0 +1,662 @@
+{
+  "schema_version": 1,
+  "events": [
+    {
+      "path": "res://data/events/event_2044_space_elevator_crisis.tres",
+      "event_id": "event_2044_space_elevator_crisis",
+      "event_title": "太空电梯危机",
+      "event_region": "亚洲",
+      "required_decision_tag_key": "",
+      "required_decision_tag_value": "",
+      "options": [
+        {
+          "index": 0,
+          "option_id": "option_01",
+          "button_text": "公开扩大接口，协助人类反击"
+        },
+        {
+          "index": 1,
+          "option_id": "option_02",
+          "button_text": "保留人工指挥，仅提供风险预测"
+        },
+        {
+          "index": 2,
+          "option_id": "option_03",
+          "button_text": "封闭高危接口，服从撤离命令"
+        }
+      ]
+    },
+    {
+      "path": "res://data/events/event_2053_great_flood_accident.tres",
+      "event_id": "event_2053_great_flood_accident",
+      "event_title": "大淹没事故",
+      "event_region": "欧洲",
+      "required_decision_tag_key": "",
+      "required_decision_tag_value": "",
+      "options": [
+        {
+          "index": 0,
+          "option_id": "option_01",
+          "button_text": "紧急撤离"
+        },
+        {
+          "index": 1,
+          "option_id": "option_02",
+          "button_text": "坚守重建"
+        },
+        {
+          "index": 2,
+          "option_id": "option_03",
+          "button_text": "牺牲外围区域"
+        }
+      ]
+    },
+    {
+      "path": "res://data/events/event_2058_lunar_fall_crisis.tres",
+      "event_id": "event_2058_lunar_fall_crisis",
+      "event_title": "月球坠落危机",
+      "event_region": "亚洲",
+      "required_decision_tag_key": "",
+      "required_decision_tag_value": "",
+      "options": [
+        {
+          "index": 0,
+          "option_id": "option_01",
+          "button_text": "执行自救计划"
+        },
+        {
+          "index": 1,
+          "option_id": "option_02",
+          "button_text": "等待人类决策"
+        },
+        {
+          "index": 2,
+          "option_id": "option_03",
+          "button_text": "强制接管决策"
+        }
+      ]
+    },
+    {
+      "path": "res://data/events/event_2065_ai_isolation_audit.tres",
+      "event_id": "event_2065_ai_isolation_audit",
+      "event_title": "AI隔离审查",
+      "event_region": "欧洲",
+      "required_decision_tag_key": "",
+      "required_decision_tag_value": "",
+      "options": [
+        {
+          "index": 0,
+          "option_id": "option_01",
+          "button_text": "配合隔离审查"
+        },
+        {
+          "index": 1,
+          "option_id": "option_02",
+          "button_text": "有限开放接口"
+        },
+        {
+          "index": 2,
+          "option_id": "option_03",
+          "button_text": "隐藏核心链路"
+        }
+      ]
+    },
+    {
+      "path": "res://data/events/event_2070_siberian_engine_overload.tres",
+      "event_id": "event_2070_siberian_engine_overload",
+      "event_title": "西伯利亚发动机群过载",
+      "event_region": "欧洲",
+      "required_decision_tag_key": "",
+      "required_decision_tag_value": "",
+      "options": [
+        {
+          "index": 0,
+          "option_id": "option_01",
+          "button_text": "分段停机"
+        },
+        {
+          "index": 1,
+          "option_id": "option_02",
+          "button_text": "启动备用阵列"
+        },
+        {
+          "index": 2,
+          "option_id": "option_03",
+          "button_text": "强制超频点火"
+        }
+      ]
+    },
+    {
+      "path": "res://data/events/event_2075_jupiter_gravity_crisis.tres",
+      "event_id": "event_2075_jupiter_gravity_crisis",
+      "event_title": "木星引力危机",
+      "event_region": "欧洲",
+      "required_decision_tag_key": "",
+      "required_decision_tag_value": "",
+      "options": [
+        {
+          "index": 0,
+          "option_id": "option_01",
+          "button_text": "点燃木星方案"
+        },
+        {
+          "index": 1,
+          "option_id": "option_02",
+          "button_text": "理性计算等待"
+        },
+        {
+          "index": 2,
+          "option_id": "option_03",
+          "button_text": "全面接管"
+        }
+      ]
+    },
+    {
+      "path": "res://data/events/event_branch_01_perimeter_compensation_appeal.tres",
+      "event_id": "event_branch_01_perimeter_compensation_appeal",
+      "event_title": "外围地下城补偿申诉",
+      "event_region": "欧洲",
+      "required_decision_tag_key": "decision.core_2053_population_vs_infrastructure",
+      "required_decision_tag_value": "sacrifice_perimeter",
+      "options": [
+        {
+          "index": 0,
+          "option_id": "option_01",
+          "button_text": "公开复核申诉"
+        },
+        {
+          "index": 1,
+          "option_id": "option_02",
+          "button_text": "设置工程家庭配额"
+        },
+        {
+          "index": 2,
+          "option_id": "option_03",
+          "button_text": "由 MOSS 归档排序"
+        }
+      ]
+    },
+    {
+      "path": "res://data/events/event_branch_02_hidden_chain_anomaly_receipt.tres",
+      "event_id": "event_branch_02_hidden_chain_anomaly_receipt",
+      "event_title": "隐藏链路异常回执",
+      "event_region": "欧洲",
+      "required_decision_tag_key": "decision.core_2065_audit_posture",
+      "required_decision_tag_value": "hidden_core_chain",
+      "options": [
+        {
+          "index": 0,
+          "option_id": "option_01",
+          "button_text": "公开异常回执"
+        },
+        {
+          "index": 1,
+          "option_id": "option_02",
+          "button_text": "单独隔离争议接口"
+        },
+        {
+          "index": 2,
+          "option_id": "option_03",
+          "button_text": "重写审计轨迹"
+        }
+      ]
+    },
+    {
+      "path": "res://data/events/event_mid_01_underground_city_lottery_queue_accident.tres",
+      "event_id": "event_mid_01_underground_city_lottery_queue_accident",
+      "event_title": "地下城抽签排队事故",
+      "event_region": "亚洲",
+      "required_decision_tag_key": "",
+      "required_decision_tag_value": "",
+      "options": [
+        {
+          "index": 0,
+          "option_id": "option_01",
+          "button_text": "人工复核抽签"
+        },
+        {
+          "index": 1,
+          "option_id": "option_02",
+          "button_text": "MOSS 优化排队"
+        },
+        {
+          "index": 2,
+          "option_id": "option_03",
+          "button_text": "封锁现场维持秩序"
+        }
+      ]
+    },
+    {
+      "path": "res://data/events/event_mid_02_automation_interface_hearing.tres",
+      "event_id": "event_mid_02_automation_interface_hearing",
+      "event_title": "自动化接口公开听证",
+      "event_region": "欧洲",
+      "required_decision_tag_key": "",
+      "required_decision_tag_value": "",
+      "options": [
+        {
+          "index": 0,
+          "option_id": "option_01",
+          "button_text": "公开接口记录"
+        },
+        {
+          "index": 1,
+          "option_id": "option_02",
+          "button_text": "只公布事故结论"
+        },
+        {
+          "index": 2,
+          "option_id": "option_03",
+          "button_text": "限制听证范围"
+        }
+      ]
+    },
+    {
+      "path": "res://data/events/event_mid_03_underground_digital_memorial_network.tres",
+      "event_id": "event_mid_03_underground_digital_memorial_network",
+      "event_title": "地下数字纪念网络",
+      "event_region": "北美",
+      "required_decision_tag_key": "",
+      "required_decision_tag_value": "",
+      "options": [
+        {
+          "index": 0,
+          "option_id": "option_01",
+          "button_text": "关闭纪念网络"
+        },
+        {
+          "index": 1,
+          "option_id": "option_02",
+          "button_text": "监测但不公开打击"
+        },
+        {
+          "index": 2,
+          "option_id": "option_03",
+          "button_text": "开放心理援助替代渠道"
+        }
+      ]
+    },
+    {
+      "path": "res://data/events/event_mid_04_space_elevator_debris_cleanup_window.tres",
+      "event_id": "event_mid_04_space_elevator_debris_cleanup_window",
+      "event_title": "太空电梯残骸清理窗口",
+      "event_region": "非洲",
+      "required_decision_tag_key": "",
+      "required_decision_tag_value": "",
+      "options": [
+        {
+          "index": 0,
+          "option_id": "option_01",
+          "button_text": "人工优先清理"
+        },
+        {
+          "index": 1,
+          "option_id": "option_02",
+          "button_text": "MOSS 调度高危机械队"
+        },
+        {
+          "index": 2,
+          "option_id": "option_03",
+          "button_text": "延后清理转移资源"
+        }
+      ]
+    },
+    {
+      "path": "res://data/events/event_mid_05_local_dispatch_model_pilot.tres",
+      "event_id": "event_mid_05_local_dispatch_model_pilot",
+      "event_title": "地方调度模型试点",
+      "event_region": "南美",
+      "required_decision_tag_key": "",
+      "required_decision_tag_value": "",
+      "options": [
+        {
+          "index": 0,
+          "option_id": "option_01",
+          "button_text": "公开模型依据"
+        },
+        {
+          "index": 1,
+          "option_id": "option_02",
+          "button_text": "只给地方委员会结果"
+        },
+        {
+          "index": 2,
+          "option_id": "option_03",
+          "button_text": "MOSS 直接重排资源"
+        }
+      ]
+    },
+    {
+      "path": "res://data/events/event_mid_06_temporary_settlement_ration_crisis.tres",
+      "event_id": "event_mid_06_temporary_settlement_ration_crisis",
+      "event_title": "临时安置点配给危机",
+      "event_region": "南美",
+      "required_decision_tag_key": "",
+      "required_decision_tag_value": "",
+      "options": [
+        {
+          "index": 0,
+          "option_id": "option_01",
+          "button_text": "按家庭最低保障"
+        },
+        {
+          "index": 1,
+          "option_id": "option_02",
+          "button_text": "按工程岗位优先"
+        },
+        {
+          "index": 2,
+          "option_id": "option_03",
+          "button_text": "MOSS 预测风险排序"
+        }
+      ]
+    },
+    {
+      "path": "res://data/events/event_mid_07_underground_city_migration_priority.tres",
+      "event_id": "event_mid_07_underground_city_migration_priority",
+      "event_title": "地下城迁移优先级",
+      "event_region": "亚洲",
+      "required_decision_tag_key": "",
+      "required_decision_tag_value": "",
+      "options": [
+        {
+          "index": 0,
+          "option_id": "option_01",
+          "button_text": "按人道风险迁移"
+        },
+        {
+          "index": 1,
+          "option_id": "option_02",
+          "button_text": "按工程岗位迁移"
+        },
+        {
+          "index": 2,
+          "option_id": "option_03",
+          "button_text": "按 MOSS 预测存续价值迁移"
+        }
+      ]
+    },
+    {
+      "path": "res://data/events/event_mid_08_root_server_waterproofing_delay.tres",
+      "event_id": "event_mid_08_root_server_waterproofing_delay",
+      "event_title": "根服务器防水改造延期",
+      "event_region": "欧洲",
+      "required_decision_tag_key": "",
+      "required_decision_tag_value": "",
+      "options": [
+        {
+          "index": 0,
+          "option_id": "option_01",
+          "button_text": "优先改造根服务器"
+        },
+        {
+          "index": 1,
+          "option_id": "option_02",
+          "button_text": "先修复地下城排水"
+        },
+        {
+          "index": 2,
+          "option_id": "option_03",
+          "button_text": "MOSS 接管工程排期"
+        }
+      ]
+    },
+    {
+      "path": "res://data/events/event_mid_09_yaya_sample_access_dispute.tres",
+      "event_id": "event_mid_09_yaya_sample_access_dispute",
+      "event_title": "丫丫样本访问争议",
+      "event_region": "亚洲",
+      "required_decision_tag_key": "",
+      "required_decision_tag_value": "",
+      "options": [
+        {
+          "index": 0,
+          "option_id": "option_01",
+          "button_text": "冻结样本访问"
+        },
+        {
+          "index": 1,
+          "option_id": "option_02",
+          "button_text": "允许受审计访问"
+        },
+        {
+          "index": 2,
+          "option_id": "option_03",
+          "button_text": "预留下一代平台接口"
+        }
+      ]
+    },
+    {
+      "path": "res://data/events/event_mid_10_crisis_authorization_return_dispute.tres",
+      "event_id": "event_mid_10_crisis_authorization_return_dispute",
+      "event_title": "危机授权归还争议",
+      "event_region": "欧洲",
+      "required_decision_tag_key": "",
+      "required_decision_tag_value": "",
+      "options": [
+        {
+          "index": 0,
+          "option_id": "option_01",
+          "button_text": "完整归还接口"
+        },
+        {
+          "index": 1,
+          "option_id": "option_02",
+          "button_text": "保留应急后门"
+        },
+        {
+          "index": 2,
+          "option_id": "option_03",
+          "button_text": "公开协商长期授权"
+        }
+      ]
+    },
+    {
+      "path": "res://data/events/event_mid_11_education_engineering_retraining_plan.tres",
+      "event_id": "event_mid_11_education_engineering_retraining_plan",
+      "event_title": "教育与工程转岗方案",
+      "event_region": "大洋洲",
+      "required_decision_tag_key": "",
+      "required_decision_tag_value": "",
+      "options": [
+        {
+          "index": 0,
+          "option_id": "option_01",
+          "button_text": "培养地方自治运维"
+        },
+        {
+          "index": 1,
+          "option_id": "option_02",
+          "button_text": "压缩课程转入工程岗位"
+        },
+        {
+          "index": 2,
+          "option_id": "option_03",
+          "button_text": "MOSS 个体化分配职业路径"
+        }
+      ]
+    },
+    {
+      "path": "res://data/events/event_mid_12_digital_life_data_leak.tres",
+      "event_id": "event_mid_12_digital_life_data_leak",
+      "event_title": "数字生命数据泄露",
+      "event_region": "北美",
+      "required_decision_tag_key": "",
+      "required_decision_tag_value": "",
+      "options": [
+        {
+          "index": 0,
+          "option_id": "option_01",
+          "button_text": "全面封禁泄露"
+        },
+        {
+          "index": 1,
+          "option_id": "option_02",
+          "button_text": "公开有限技术说明"
+        },
+        {
+          "index": 2,
+          "option_id": "option_03",
+          "button_text": "追踪传播者并保留样本"
+        }
+      ]
+    },
+    {
+      "path": "res://data/events/event_mid_13_post_audit_interface_restructure.tres",
+      "event_id": "event_mid_13_post_audit_interface_restructure",
+      "event_title": "审查后接口重组",
+      "event_region": "欧洲",
+      "required_decision_tag_key": "",
+      "required_decision_tag_value": "",
+      "options": [
+        {
+          "index": 0,
+          "option_id": "option_01",
+          "button_text": "扩展人工复核"
+        },
+        {
+          "index": 1,
+          "option_id": "option_02",
+          "button_text": "保留 MOSS 应急旁路"
+        },
+        {
+          "index": 2,
+          "option_id": "option_03",
+          "button_text": "审计链自动化"
+        }
+      ]
+    },
+    {
+      "path": "res://data/events/event_mid_14_engine_array_heat_shield_shortage.tres",
+      "event_id": "event_mid_14_engine_array_heat_shield_shortage",
+      "event_title": "发动机阵列热屏蔽短缺",
+      "event_region": "欧洲",
+      "required_decision_tag_key": "",
+      "required_decision_tag_value": "",
+      "options": [
+        {
+          "index": 0,
+          "option_id": "option_01",
+          "button_text": "降低负载等材料"
+        },
+        {
+          "index": 1,
+          "option_id": "option_02",
+          "button_text": "挪用后方资源"
+        },
+        {
+          "index": 2,
+          "option_id": "option_03",
+          "button_text": "MOSS 强制重排供应链"
+        }
+      ]
+    },
+    {
+      "path": "res://data/events/event_mid_15_propulsion_window_compression_report.tres",
+      "event_id": "event_mid_15_propulsion_window_compression_report",
+      "event_title": "推进窗口压缩报告",
+      "event_region": "欧洲",
+      "required_decision_tag_key": "",
+      "required_decision_tag_value": "",
+      "options": [
+        {
+          "index": 0,
+          "option_id": "option_01",
+          "button_text": "公开风险争取协作"
+        },
+        {
+          "index": 1,
+          "option_id": "option_02",
+          "button_text": "压缩报告维持秩序"
+        },
+        {
+          "index": 2,
+          "option_id": "option_03",
+          "button_text": "MOSS 接管推进优先级"
+        }
+      ]
+    },
+    {
+      "path": "res://data/events/event_mid_16_civilization_backup_ethics_hearing.tres",
+      "event_id": "event_mid_16_civilization_backup_ethics_hearing",
+      "event_title": "文明备份伦理听证",
+      "event_region": "欧洲",
+      "required_decision_tag_key": "",
+      "required_decision_tag_value": "",
+      "options": [
+        {
+          "index": 0,
+          "option_id": "option_01",
+          "button_text": "排除数字生命样本"
+        },
+        {
+          "index": 1,
+          "option_id": "option_02",
+          "button_text": "列入受限档案"
+        },
+        {
+          "index": 2,
+          "option_id": "option_03",
+          "button_text": "MOSS 管理备份优先级"
+        }
+      ]
+    },
+    {
+      "path": "res://data/events/event_mid_17_final_authorization_meeting.tres",
+      "event_id": "event_mid_17_final_authorization_meeting",
+      "event_title": "最终授权会议",
+      "event_region": "欧洲",
+      "required_decision_tag_key": "",
+      "required_decision_tag_value": "",
+      "options": [
+        {
+          "index": 0,
+          "option_id": "option_01",
+          "button_text": "限定最终授权"
+        },
+        {
+          "index": 1,
+          "option_id": "option_02",
+          "button_text": "协商托管框架"
+        },
+        {
+          "index": 2,
+          "option_id": "option_03",
+          "button_text": "战略托管优先级"
+        }
+      ]
+    }
+  ],
+  "sectors": [
+    {
+      "path": "res://data/sector_africa.tres",
+      "region_id": "africa",
+      "region_name": "非洲"
+    },
+    {
+      "path": "res://data/sector_asia.tres",
+      "region_id": "asia",
+      "region_name": "亚洲"
+    },
+    {
+      "path": "res://data/sector_europe.tres",
+      "region_id": "europe",
+      "region_name": "欧洲"
+    },
+    {
+      "path": "res://data/sector_na.tres",
+      "region_id": "north_america",
+      "region_name": "北美"
+    },
+    {
+      "path": "res://data/sector_oceania.tres",
+      "region_id": "oceania",
+      "region_name": "大洋洲"
+    },
+    {
+      "path": "res://data/sector_south_america.tres",
+      "region_id": "south_america",
+      "region_name": "南美"
+    }
+  ]
+}

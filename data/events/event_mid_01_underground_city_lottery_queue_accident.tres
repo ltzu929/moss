@@ -7,6 +7,7 @@
 
 [sub_resource type="Resource" id="Option_1"]
 script = ExtResource("2_option")
+option_id = "option_01"
 button_text = "人工复核抽签"
 order_delta = -4
 hope_delta = 6
@@ -17,6 +18,7 @@ event_state_value = "manual_review"
 
 [sub_resource type="Resource" id="Option_2"]
 script = ExtResource("2_option")
+option_id = "option_02"
 button_text = "MOSS 优化排队"
 order_delta = 5
 hope_delta = -2
@@ -26,6 +28,7 @@ event_state_value = "moss_optimized"
 
 [sub_resource type="Resource" id="Option_3"]
 script = ExtResource("2_option")
+option_id = "option_03"
 button_text = "封锁现场维持秩序"
 order_delta = 8
 hope_delta = -6
@@ -35,6 +38,7 @@ event_state_value = "security_lockdown"
 
 [resource]
 script = ExtResource("1_event")
+event_id = "event_mid_01_underground_city_lottery_queue_accident"
 event_title = "地下城抽签排队事故"
 event_time = 2045
 event_region = "亚洲"

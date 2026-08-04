@@ -7,6 +7,7 @@
 
 [sub_resource type="Resource" id="Option_1"]
 script = ExtResource("2_option")
+option_id = "option_01"
 button_text = "全面封禁泄露"
 order_delta = 6
 hope_delta = -5
@@ -16,6 +17,7 @@ event_state_value = "banned"
 
 [sub_resource type="Resource" id="Option_2"]
 script = ExtResource("2_option")
+option_id = "option_02"
 button_text = "公开有限技术说明"
 order_delta = -2
 hope_delta = 4
@@ -26,6 +28,7 @@ event_state_value = "technical_disclosure"
 
 [sub_resource type="Resource" id="Option_3"]
 script = ExtResource("2_option")
+option_id = "option_03"
 button_text = "追踪传播者并保留样本"
 order_delta = 4
 hope_delta = -2
@@ -35,6 +38,7 @@ event_state_value = "tracked_and_preserved"
 
 [resource]
 script = ExtResource("1_event")
+event_id = "event_mid_12_digital_life_data_leak"
 event_title = "数字生命数据泄露"
 event_time = 2062
 event_region = "北美"

@@ -7,6 +7,7 @@
 
 [sub_resource type="Resource" id="Resource_opt1"]
 script = ExtResource("1_option")
+option_id = "option_01"
 button_text = "紧急撤离"
 order_delta = 15
 hope_delta = -10
@@ -20,6 +21,7 @@ metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [sub_resource type="Resource" id="Resource_opt2"]
 script = ExtResource("1_option")
+option_id = "option_02"
 button_text = "坚守重建"
 order_delta = -15
 hope_delta = 20
@@ -33,6 +35,7 @@ metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [sub_resource type="Resource" id="Resource_opt3"]
 script = ExtResource("1_option")
+option_id = "option_03"
 button_text = "牺牲外围区域"
 order_delta = 25
 hope_delta = -25
@@ -46,6 +49,7 @@ metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [resource]
 script = ExtResource("1_event")
+event_id = "event_2053_great_flood_accident"
 event_title = "大淹没事故"
 event_time = 2053
 event_region = "欧洲"

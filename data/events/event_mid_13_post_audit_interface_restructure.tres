@@ -7,6 +7,7 @@
 
 [sub_resource type="Resource" id="Option_1"]
 script = ExtResource("2_option")
+option_id = "option_01"
 button_text = "扩展人工复核"
 order_delta = -4
 hope_delta = 5
@@ -17,6 +18,7 @@ event_state_value = "human_review"
 
 [sub_resource type="Resource" id="Option_2"]
 script = ExtResource("2_option")
+option_id = "option_02"
 button_text = "保留 MOSS 应急旁路"
 order_delta = 6
 hope_delta = -5
@@ -26,6 +28,7 @@ event_state_value = "emergency_bypass"
 
 [sub_resource type="Resource" id="Option_3"]
 script = ExtResource("2_option")
+option_id = "option_03"
 button_text = "审计链自动化"
 order_delta = 5
 hope_delta = -2
@@ -35,6 +38,7 @@ event_state_value = "automated_audit"
 
 [resource]
 script = ExtResource("1_event")
+event_id = "event_mid_13_post_audit_interface_restructure"
 event_title = "审查后接口重组"
 event_time = 2067
 event_month = 1

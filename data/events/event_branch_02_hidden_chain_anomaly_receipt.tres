@@ -6,6 +6,7 @@
 
 [sub_resource type="Resource" id="Option_1"]
 script = ExtResource("2_option")
+option_id = "option_01"
 button_text = "公开异常回执"
 order_delta = -3
 hope_delta = 7
@@ -16,6 +17,7 @@ event_state_value = "public_disclosure"
 
 [sub_resource type="Resource" id="Option_2"]
 script = ExtResource("2_option")
+option_id = "option_02"
 button_text = "单独隔离争议接口"
 order_delta = 2
 hope_delta = 2
@@ -26,6 +28,7 @@ event_state_value = "interface_isolation"
 
 [sub_resource type="Resource" id="Option_3"]
 script = ExtResource("2_option")
+option_id = "option_03"
 button_text = "重写审计轨迹"
 order_delta = 7
 hope_delta = -8
@@ -35,6 +38,7 @@ event_state_value = "audit_trail_rewrite"
 
 [resource]
 script = ExtResource("1_event")
+event_id = "event_branch_02_hidden_chain_anomaly_receipt"
 event_title = "隐藏链路异常回执"
 event_time = 2066
 event_month = 6

@@ -5,6 +5,9 @@ extends Resource
 # 导出变量
 # ============================================================
 
+@export_group("基础信息")
+## 稳定事件标识，用于运行时身份、条件和跨资源引用；不用于显示
+@export var event_id: String = ""
 ## 事件标题，显示在报告顶部
 @export var event_title: String = "事件标题"
 ## 触发年份

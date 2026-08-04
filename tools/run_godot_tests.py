@@ -87,6 +87,12 @@ TEST_SPECS = [
         ("[MOSS-BASE-RESOURCES] 完成，失败断言：0",),
     ),
     TestSpec(
+        "tests/content_identity_contract_test.tscn",
+        "contracts",
+        "headless",
+        ("[MOSS-CONTENT-IDENTITY] 完成，失败断言：0",),
+    ),
+    TestSpec(
         "tests/resource_isolation_test.tscn",
         "domain",
         "headless",

@@ -7,6 +7,7 @@
 
 [sub_resource type="Resource" id="Option_1"]
 script = ExtResource("2_option")
+option_id = "option_01"
 button_text = "降低负载等材料"
 order_delta = -5
 hope_delta = 3
@@ -16,6 +17,7 @@ event_state_value = "load_reduction"
 
 [sub_resource type="Resource" id="Option_2"]
 script = ExtResource("2_option")
+option_id = "option_02"
 button_text = "挪用后方资源"
 order_delta = 5
 hope_delta = -5
@@ -25,6 +27,7 @@ event_state_value = "rear_reallocation"
 
 [sub_resource type="Resource" id="Option_3"]
 script = ExtResource("2_option")
+option_id = "option_03"
 button_text = "MOSS 强制重排供应链"
 order_delta = 7
 hope_delta = -4
@@ -34,6 +37,7 @@ event_state_value = "moss_supply_reorder"
 
 [resource]
 script = ExtResource("1_event")
+event_id = "event_mid_14_engine_array_heat_shield_shortage"
 event_title = "发动机阵列热屏蔽短缺"
 event_time = 2068
 event_month = 1

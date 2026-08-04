@@ -7,6 +7,7 @@
 
 [sub_resource type="Resource" id="Resource_opt1"]
 script = ExtResource("1_option")
+option_id = "option_01"
 button_text = "点燃木星方案"
 order_delta = 15
 hope_delta = 20
@@ -16,6 +17,7 @@ metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [sub_resource type="Resource" id="Resource_opt2"]
 script = ExtResource("1_option")
+option_id = "option_02"
 button_text = "理性计算等待"
 order_delta = 25
 hope_delta = -15
@@ -24,6 +26,7 @@ metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [sub_resource type="Resource" id="Resource_opt3"]
 script = ExtResource("1_option")
+option_id = "option_03"
 button_text = "全面接管"
 order_delta = 40
 hope_delta = -40
@@ -33,6 +36,7 @@ metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [resource]
 script = ExtResource("1_event")
+event_id = "event_2075_jupiter_gravity_crisis"
 event_title = "木星引力危机"
 event_time = 2075
 event_region = "欧洲"

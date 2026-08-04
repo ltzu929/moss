@@ -7,6 +7,7 @@
 
 [sub_resource type="Resource" id="Option_1"]
 script = ExtResource("2_option")
+option_id = "option_01"
 button_text = "人工优先清理"
 order_delta = -3
 hope_delta = 5
@@ -17,6 +18,7 @@ event_state_value = "manual_first"
 
 [sub_resource type="Resource" id="Option_2"]
 script = ExtResource("2_option")
+option_id = "option_02"
 button_text = "MOSS 调度高危机械队"
 order_delta = 5
 hope_delta = -2
@@ -27,6 +29,7 @@ event_state_value = "moss_mechanical"
 
 [sub_resource type="Resource" id="Option_3"]
 script = ExtResource("2_option")
+option_id = "option_03"
 button_text = "延后清理转移资源"
 order_delta = 2
 hope_delta = -5
@@ -36,6 +39,7 @@ event_state_value = "delayed"
 
 [resource]
 script = ExtResource("1_event")
+event_id = "event_mid_04_space_elevator_debris_cleanup_window"
 event_title = "太空电梯残骸清理窗口"
 event_time = 2048
 event_region = "非洲"

@@ -4,6 +4,7 @@
 
 [resource]
 script = ExtResource("1_5176y")
+region_id = "north_america"
 region_name = "北美"
 description = "科研与算力储备充足，秩序稳定，但社会信任偏脆弱。"
 order = 58
