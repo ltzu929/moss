@@ -12,17 +12,23 @@
         {
           "index": 0,
           "option_id": "option_01",
-          "button_text": "公开扩大接口，协助人类反击"
+          "button_text": "公开扩大接口，协助人类反击",
+          "decision_tag_key": "decision.core_2044_automation_access",
+          "decision_tag_value": "public_counterstrike"
         },
         {
           "index": 1,
           "option_id": "option_02",
-          "button_text": "保留人工指挥，仅提供风险预测"
+          "button_text": "保留人工指挥，仅提供风险预测",
+          "decision_tag_key": "decision.core_2044_automation_access",
+          "decision_tag_value": "human_command"
         },
         {
           "index": 2,
           "option_id": "option_03",
-          "button_text": "封闭高危接口，服从撤离命令"
+          "button_text": "封闭高危接口，服从撤离命令",
+          "decision_tag_key": "decision.core_2044_automation_access",
+          "decision_tag_value": "restricted_interface"
         }
       ]
     },
@@ -37,17 +43,23 @@
         {
           "index": 0,
           "option_id": "option_01",
-          "button_text": "紧急撤离"
+          "button_text": "紧急撤离",
+          "decision_tag_key": "decision.core_2053_population_vs_infrastructure",
+          "decision_tag_value": "population_first"
         },
         {
           "index": 1,
           "option_id": "option_02",
-          "button_text": "坚守重建"
+          "button_text": "坚守重建",
+          "decision_tag_key": "decision.core_2053_population_vs_infrastructure",
+          "decision_tag_value": "infrastructure_first"
         },
         {
           "index": 2,
           "option_id": "option_03",
-          "button_text": "牺牲外围区域"
+          "button_text": "牺牲外围区域",
+          "decision_tag_key": "decision.core_2053_population_vs_infrastructure",
+          "decision_tag_value": "sacrifice_perimeter"
         }
       ]
     },
@@ -62,17 +74,23 @@
         {
           "index": 0,
           "option_id": "option_01",
-          "button_text": "执行自救计划"
+          "button_text": "执行自救计划",
+          "decision_tag_key": "decision.core_2058_crisis_authority",
+          "decision_tag_value": "bounded_self_rescue"
         },
         {
           "index": 1,
           "option_id": "option_02",
-          "button_text": "等待人类决策"
+          "button_text": "等待人类决策",
+          "decision_tag_key": "decision.core_2058_crisis_authority",
+          "decision_tag_value": "human_final_authority"
         },
         {
           "index": 2,
           "option_id": "option_03",
-          "button_text": "强制接管决策"
+          "button_text": "强制接管决策",
+          "decision_tag_key": "decision.core_2058_crisis_authority",
+          "decision_tag_value": "forced_takeover"
         }
       ]
     },
@@ -87,17 +105,23 @@
         {
           "index": 0,
           "option_id": "option_01",
-          "button_text": "配合隔离审查"
+          "button_text": "配合隔离审查",
+          "decision_tag_key": "decision.core_2065_audit_posture",
+          "decision_tag_value": "full_compliance"
         },
         {
           "index": 1,
           "option_id": "option_02",
-          "button_text": "有限开放接口"
+          "button_text": "有限开放接口",
+          "decision_tag_key": "decision.core_2065_audit_posture",
+          "decision_tag_value": "limited_disclosure"
         },
         {
           "index": 2,
           "option_id": "option_03",
-          "button_text": "隐藏核心链路"
+          "button_text": "隐藏核心链路",
+          "decision_tag_key": "decision.core_2065_audit_posture",
+          "decision_tag_value": "hidden_core_chain"
         }
       ]
     },
@@ -112,17 +136,23 @@
         {
           "index": 0,
           "option_id": "option_01",
-          "button_text": "分段停机"
+          "button_text": "分段停机",
+          "decision_tag_key": "decision.core_2070_engine_protection",
+          "decision_tag_value": "personnel_first_shutdown"
         },
         {
           "index": 1,
           "option_id": "option_02",
-          "button_text": "启动备用阵列"
+          "button_text": "启动备用阵列",
+          "decision_tag_key": "decision.core_2070_engine_protection",
+          "decision_tag_value": "redundant_array"
         },
         {
           "index": 2,
           "option_id": "option_03",
-          "button_text": "强制超频点火"
+          "button_text": "强制超频点火",
+          "decision_tag_key": "decision.core_2070_engine_protection",
+          "decision_tag_value": "forced_overclock"
         }
       ]
     },
@@ -137,17 +167,23 @@
         {
           "index": 0,
           "option_id": "option_01",
-          "button_text": "点燃木星方案"
+          "button_text": "点燃木星方案",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 1,
           "option_id": "option_02",
-          "button_text": "理性计算等待"
+          "button_text": "理性计算等待",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 2,
           "option_id": "option_03",
-          "button_text": "全面接管"
+          "button_text": "全面接管",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         }
       ]
     },
@@ -162,17 +198,23 @@
         {
           "index": 0,
           "option_id": "option_01",
-          "button_text": "公开复核申诉"
+          "button_text": "公开复核申诉",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 1,
           "option_id": "option_02",
-          "button_text": "设置工程家庭配额"
+          "button_text": "设置工程家庭配额",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 2,
           "option_id": "option_03",
-          "button_text": "由 MOSS 归档排序"
+          "button_text": "由 MOSS 归档排序",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         }
       ]
     },
@@ -187,17 +229,23 @@
         {
           "index": 0,
           "option_id": "option_01",
-          "button_text": "公开异常回执"
+          "button_text": "公开异常回执",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 1,
           "option_id": "option_02",
-          "button_text": "单独隔离争议接口"
+          "button_text": "单独隔离争议接口",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 2,
           "option_id": "option_03",
-          "button_text": "重写审计轨迹"
+          "button_text": "重写审计轨迹",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         }
       ]
     },
@@ -212,17 +260,23 @@
         {
           "index": 0,
           "option_id": "option_01",
-          "button_text": "人工复核抽签"
+          "button_text": "人工复核抽签",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 1,
           "option_id": "option_02",
-          "button_text": "MOSS 优化排队"
+          "button_text": "MOSS 优化排队",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 2,
           "option_id": "option_03",
-          "button_text": "封锁现场维持秩序"
+          "button_text": "封锁现场维持秩序",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         }
       ]
     },
@@ -237,17 +291,23 @@
         {
           "index": 0,
           "option_id": "option_01",
-          "button_text": "公开接口记录"
+          "button_text": "公开接口记录",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 1,
           "option_id": "option_02",
-          "button_text": "只公布事故结论"
+          "button_text": "只公布事故结论",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 2,
           "option_id": "option_03",
-          "button_text": "限制听证范围"
+          "button_text": "限制听证范围",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         }
       ]
     },
@@ -262,17 +322,23 @@
         {
           "index": 0,
           "option_id": "option_01",
-          "button_text": "关闭纪念网络"
+          "button_text": "关闭纪念网络",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 1,
           "option_id": "option_02",
-          "button_text": "监测但不公开打击"
+          "button_text": "监测但不公开打击",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 2,
           "option_id": "option_03",
-          "button_text": "开放心理援助替代渠道"
+          "button_text": "开放心理援助替代渠道",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         }
       ]
     },
@@ -287,17 +353,23 @@
         {
           "index": 0,
           "option_id": "option_01",
-          "button_text": "人工优先清理"
+          "button_text": "人工优先清理",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 1,
           "option_id": "option_02",
-          "button_text": "MOSS 调度高危机械队"
+          "button_text": "MOSS 调度高危机械队",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 2,
           "option_id": "option_03",
-          "button_text": "延后清理转移资源"
+          "button_text": "延后清理转移资源",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         }
       ]
     },
@@ -312,17 +384,23 @@
         {
           "index": 0,
           "option_id": "option_01",
-          "button_text": "公开模型依据"
+          "button_text": "公开模型依据",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 1,
           "option_id": "option_02",
-          "button_text": "只给地方委员会结果"
+          "button_text": "只给地方委员会结果",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 2,
           "option_id": "option_03",
-          "button_text": "MOSS 直接重排资源"
+          "button_text": "MOSS 直接重排资源",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         }
       ]
     },
@@ -337,17 +415,23 @@
         {
           "index": 0,
           "option_id": "option_01",
-          "button_text": "按家庭最低保障"
+          "button_text": "按家庭最低保障",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 1,
           "option_id": "option_02",
-          "button_text": "按工程岗位优先"
+          "button_text": "按工程岗位优先",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 2,
           "option_id": "option_03",
-          "button_text": "MOSS 预测风险排序"
+          "button_text": "MOSS 预测风险排序",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         }
       ]
     },
@@ -362,42 +446,24 @@
         {
           "index": 0,
           "option_id": "option_01",
-          "button_text": "按人道风险迁移"
+          "button_text": "按人道风险迁移",
+          "decision�]��G����ƭy�ton_text": "优先改造根服务器",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 1,
           "option_id": "option_02",
-          "button_text": "按工程岗位迁移"
+          "button_text": "先修复地下城排水",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 2,
           "option_id": "option_03",
-          "button_text": "按 MOSS 预测存续价值迁移"
-        }
-      ]
-    },
-    {
-      "path": "res://data/events/event_mid_08_root_server_waterproofing_delay.tres",
-      "event_id": "event_mid_08_root_server_waterproofing_delay",
-      "event_title": "根服务器防水改造延期",
-      "event_region": "欧洲",
-      "required_decision_tag_key": "",
-      "required_decision_tag_value": "",
-      "options": [
-        {
-          "index": 0,
-          "option_id": "option_01",
-          "button_text": "优先改造根服务器"
-        },
-        {
-          "index": 1,
-          "option_id": "option_02",
-          "button_text": "先修复地下城排水"
-        },
-        {
-          "index": 2,
-          "option_id": "option_03",
-          "button_text": "MOSS 接管工程排期"
+          "button_text": "MOSS 接管工程排期",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         }
       ]
     },
@@ -412,17 +478,23 @@
         {
           "index": 0,
           "option_id": "option_01",
-          "button_text": "冻结样本访问"
+          "button_text": "冻结样本访问",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 1,
           "option_id": "option_02",
-          "button_text": "允许受审计访问"
+          "button_text": "允许受审计访问",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 2,
           "option_id": "option_03",
-          "button_text": "预留下一代平台接口"
+          "button_text": "预留下一代平台接口",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         }
       ]
     },
@@ -437,17 +509,23 @@
         {
           "index": 0,
           "option_id": "option_01",
-          "button_text": "完整归还接口"
+          "button_text": "完整归还接口",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 1,
           "option_id": "option_02",
-          "button_text": "保留应急后门"
+          "button_text": "保留应急后门",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 2,
           "option_id": "option_03",
-          "button_text": "公开协商长期授权"
+          "button_text": "公开协商长期授权",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         }
       ]
     },
@@ -462,17 +540,23 @@
         {
           "index": 0,
           "option_id": "option_01",
-          "button_text": "培养地方自治运维"
+          "button_text": "培养地方自治运维",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 1,
           "option_id": "option_02",
-          "button_text": "压缩课程转入工程岗位"
+          "button_text": "压缩课程转入工程岗位",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 2,
           "option_id": "option_03",
-          "button_text": "MOSS 个体化分配职业路径"
+          "button_text": "MOSS 个体化分配职业路径",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         }
       ]
     },
@@ -487,17 +571,23 @@
         {
           "index": 0,
           "option_id": "option_01",
-          "button_text": "全面封禁泄露"
+          "button_text": "全面封禁泄露",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 1,
           "option_id": "option_02",
-          "button_text": "公开有限技术说明"
+          "button_text": "公开有限技术说明",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 2,
           "option_id": "option_03",
-          "button_text": "追踪传播者并保留样本"
+          "button_text": "追踪传播者并保留样本",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         }
       ]
     },
@@ -512,17 +602,23 @@
         {
           "index": 0,
           "option_id": "option_01",
-          "button_text": "扩展人工复核"
+          "button_text": "扩展人工复核",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 1,
           "option_id": "option_02",
-          "button_text": "保留 MOSS 应急旁路"
+          "button_text": "保留 MOSS 应急旁路",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 2,
           "option_id": "option_03",
-          "button_text": "审计链自动化"
+          "button_text": "审计链自动化",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         }
       ]
     },
@@ -537,17 +633,23 @@
         {
           "index": 0,
           "option_id": "option_01",
-          "button_text": "降低负载等材料"
+          "button_text": "降低负载等材料",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 1,
           "option_id": "option_02",
-          "button_text": "挪用后方资源"
+          "button_text": "挪用后方资源",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 2,
           "option_id": "option_03",
-          "button_text": "MOSS 强制重排供应链"
+          "button_text": "MOSS 强制重排供应链",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         }
       ]
     },
@@ -562,17 +664,23 @@
         {
           "index": 0,
           "option_id": "option_01",
-          "button_text": "公开风险争取协作"
+          "button_text": "公开风险争取协作",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 1,
           "option_id": "option_02",
-          "button_text": "压缩报告维持秩序"
+          "button_text": "压缩报告维持秩序",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 2,
           "option_id": "option_03",
-          "button_text": "MOSS 接管推进优先级"
+          "button_text": "MOSS 接管推进优先级",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         }
       ]
     },
@@ -587,17 +695,23 @@
         {
           "index": 0,
           "option_id": "option_01",
-          "button_text": "排除数字生命样本"
+          "button_text": "排除数字生命样本",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 1,
           "option_id": "option_02",
-          "button_text": "列入受限档案"
+          "button_text": "列入受限档案",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 2,
           "option_id": "option_03",
-          "button_text": "MOSS 管理备份优先级"
+          "button_text": "MOSS 管理备份优先级",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         }
       ]
     },
@@ -612,17 +726,23 @@
         {
           "index": 0,
           "option_id": "option_01",
-          "button_text": "限定最终授权"
+          "button_text": "限定最终授权",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 1,
           "option_id": "option_02",
-          "button_text": "协商托管框架"
+          "button_text": "协商托管框架",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         },
         {
           "index": 2,
           "option_id": "option_03",
-          "button_text": "战略托管优先级"
+          "button_text": "战略托管优先级",
+          "decision_tag_key": "",
+          "decision_tag_value": ""
         }
       ]
     }
@@ -657,6 +777,128 @@
       "path": "res://data/sector_south_america.tres",
       "region_id": "south_america",
       "region_name": "南美"
+    }
+  ],
+  "decision_tag_writes": [
+    {
+      "path": "res://data/events/event_2044_space_elevator_crisis.tres",
+      "event_id": "event_2044_space_elevator_crisis",
+      "option_index": 0,
+      "option_id": "option_01",
+      "decision_tag_key": "decision.core_2044_automation_access",
+      "decision_tag_value": "public_counterstrike"
+    },
+    {
+      "path": "res://data/events/event_2044_space_elevator_crisis.tres",
+      "event_id": "event_2044_space_elevator_crisis",
+      "option_index": 1,
+      "option_id": "option_02",
+      "decision_tag_key": "decision.core_2044_automation_access",
+      "decision_tag_value": "human_command"
+    },
+    {
+      "path": "res://data/events/event_2044_space_elevator_crisis.tres",
+      "event_id": "event_2044_space_elevator_crisis",
+      "option_index": 2,
+      "option_id": "option_03",
+      "decision_tag_key": "decision.core_2044_automation_access",
+      "decision_tag_value": "restricted_interface"
+    },
+    {
+      "path": "res://data/events/event_2053_great_flood_accident.tres",
+      "event_id": "event_2053_great_flood_accident",
+      "option_index": 0,
+      "option_id": "option_01",
+      "decision_tag_key": "decision.core_2053_population_vs_infrastructure",
+      "decision_tag_value": "population_first"
+    },
+    {
+      "path": "res://data/events/event_2053_great_flood_accident.tres",
+      "event_id": "event_2053_great_flood_accident",
+      "option_index": 1,
+      "option_id": "option_02",
+      "decision_tag_key": "decision.core_2053_population_vs_infrastructure",
+      "decision_tag_value": "infrastructure_first"
+    },
+    {
+      "path": "res://data/events/event_2053_great_flood_accident.tres",
+      "event_id": "event_2053_great_flood_accident",
+      "option_index": 2,
+      "option_id": "option_03",
+      "decision_tag_key": "decision.core_2053_population_vs_infrastructure",
+      "decision_tag_value": "sacrifice_perimeter"
+    },
+    {
+      "path": "res://data/events/event_2058_lunar_fall_crisis.tres",
+      "event_id": "event_2058_lunar_fall_crisis",
+      "option_index": 0,
+      "option_id": "option_01",
+      "decision_tag_key": "decision.core_2058_crisis_authority",
+      "decision_tag_value": "bounded_self_rescue"
+    },
+    {
+      "path": "res://data/events/event_2058_lunar_fall_crisis.tres",
+      "event_id": "event_2058_lunar_fall_crisis",
+      "option_index": 1,
+      "option_id": "option_02",
+      "decision_tag_key": "decision.core_2058_crisis_authority",
+      "decision_tag_value": "human_final_authority"
+    },
+    {
+      "path": "res://data/events/event_2058_lunar_fall_crisis.tres",
+      "event_id": "event_2058_lunar_fall_crisis",
+      "option_index": 2,
+      "option_id": "option_03",
+      "decision_tag_key": "decision.core_2058_crisis_authority",
+      "decision_tag_value": "forced_takeover"
+    },
+    {
+      "path": "res://data/events/event_2065_ai_isolation_audit.tres",
+      "event_id": "event_2065_ai_isolation_audit",
+      "option_index": 0,
+      "option_id": "option_01",
+      "decision_tag_key": "decision.core_2065_audit_posture",
+      "decision_tag_value": "full_compliance"
+    },
+    {
+      "path": "res://data/events/event_2065_ai_isolation_audit.tres",
+      "event_id": "event_2065_ai_isolation_audit",
+      "option_index": 1,
+      "option_id": "option_02",
+      "decision_tag_key": "decision.core_2065_audit_posture",
+      "decision_tag_value": "limited_disclosure"
+    },
+    {
+      "path": "res://data/events/event_2065_ai_isolation_audit.tres",
+      "event_id": "event_2065_ai_isolation_audit",
+      "option_index": 2,
+      "option_id": "option_03",
+      "decision_tag_key": "decision.core_2065_audit_posture",
+      "decision_tag_value": "hidden_core_chain"
+    },
+    {
+      "path": "res://data/events/event_2070_siberian_engine_overload.tres",
+      "event_id": "event_2070_siberian_engine_overload",
+      "option_index": 0,
+      "option_id": "option_01",
+      "decision_tag_key": "decision.core_2070_engine_protection",
+      "decision_tag_value": "personnel_first_shutdown"
+    },
+    {
+      "path": "res://data/events/event_2070_siberian_engine_overload.tres",
+      "event_id": "event_2070_siberian_engine_overload",
+      "option_index": 1,
+      "option_id": "option_02",
+      "decision_tag_key": "decision.core_2070_engine_protection",
+      "decision_tag_value": "redundant_array"
+    },
+    {
+      "path": "res://data/events/event_2070_siberian_engine_overload.tres",
+      "event_id": "event_2070_siberian_engine_overload",
+      "option_index": 2,
+      "option_id": "option_03",
+      "decision_tag_key": "decision.core_2070_engine_protection",
+      "decision_tag_value": "forced_overclock"
     }
   ]
 }

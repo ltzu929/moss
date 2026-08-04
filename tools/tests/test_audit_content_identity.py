@@ -43,6 +43,8 @@ required_decision_tag_value = ""
 [sub_resource type="Resource" id="Option_1"]
 option_id = "option_01"
 button_text = "第一个方案"
+decision_tag_key = "decision.sample"
+decision_tag_value = "known"
 
 [sub_resource type="Resource" id="Option_2"]
 option_id = "option_02"
@@ -57,6 +59,23 @@ button_text = "第二个方案"
         self.assertEqual(
             [option["option_id"] for option in mapping["events"][0]["options"]],
             ["option_01", "option_02"],
+        )
+        self.assertEqual(
+            mapping["events"][0]["options"][0]["decision_tag_key"],
+            "decision.sample",
+        )
+        self.assertEqual(
+            mapping["decision_tag_writes"],
+            [
+                {
+                    "path": "res://data/events/event_sample.tres",
+                    "event_id": "event_sample",
+                    "option_index": 0,
+                    "option_id": "option_01",
+                    "decision_tag_key": "decision.sample",
+                    "decision_tag_value": "known",
+                }
+            ],
         )
         sectors = {sector["path"]: sector for sector in mapping["sectors"]}
         self.assertEqual(sectors["res://data/sector_asia.tres"]["region_id"], "asia")
@@ -97,6 +116,38 @@ button_text = "第二个方案"
 
         self.assertIn("事件 ID 与资源路径错配", "\n".join(errors))
 
+    def test_validate_mapping_rejects_dangling_decision_tag_key_and_value(self) -> None:
+        event = self.root / "data" / "events" / "event_sample.tres"
+        event.write_text(
+            '[resource]\nevent_id = "event_sample"\nevent_title = "示例事件"\n'
+            'event_region = "亚洲"\n'
+            '\n[sub_resource type="Resource" id="Option_1"]\n'
+            'option_id = "option_01"\nbutton_text = "第一个方案"\n'
+            'decision_tag_key = "decision.sample"\n'
+            'decision_tag_value = "known"\n',
+            encoding="utf-8",
+        )
+
+        cases = (
+            (
+                "decision.missing",
+                "known",
+                "条件分支引用的决策标签键不存在",
+            ),
+            (
+                "decision.sample",
+                "missing",
+                "条件分支引用的决策标签值不存在",
+            ),
+        )
+        for branch_key, branch_value, expected_message in cases:
+            with self.subTest(branch_key=branch_key, branch_value=branch_value):
+                mapping = audit.collect_mapping(self.root)
+                mapping["events"][0]["required_decision_tag_key"] = branch_key
+                mapping["events"][0]["required_decision_tag_value"] = branch_value
+                errors = audit.validate_mapping(mapping)
+                self.assertIn(expected_message, "\n".join(errors))
+
 
 class UsageClassificationTests(unittest.TestCase):
     def test_classifies_the_five_identity_use_categories(self) -> None:
@@ -112,6 +163,28 @@ class UsageClassificationTests(unittest.TestCase):
                 usage = audit.classify_usage(path, line)
                 self.assertIsNotNone(usage)
                 self.assertEqual(usage["category"], category)
+
+    def test_classifies_real_runtime_consumers_by_function_scope(self) -> None:
+        project_root = Path(__file__).resolve().parents[2]
+        usages = audit.scan_usage(project_root)
+        expectations = {
+            "_get_event_trigger_key": "event_title",
+            "_get_event_option_by_prefix": "button_text",
+            "_find_sector_by_region": "region_name",
+        }
+        for function_name, field in expectations.items():
+            with self.subTest(function_name=function_name):
+                matches = [
+                    usage
+                    for usage in usages
+                    if usage["function_scope"] == function_name
+                    and field in usage["fields"]
+                ]
+                self.assertTrue(matches, f"未扫描到 {function_name} 的 {field} 使用")
+                self.assertTrue(
+                    all(usage["category"] == "runtime_identity" for usage in matches),
+                    matches,
+                )
 
 
 if __name__ == "__main__":

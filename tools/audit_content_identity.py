@@ -62,6 +62,16 @@ _RESOURCE_BLOCK_RE = re.compile(
     r"(?ms)^\[sub_resource type=\"Resource\" id=\"[^\"]+\"\]\n"
     r"(.*?)(?=^\[sub_resource|^\[resource\]|\Z)"
 )
+_FUNCTION_DECLARATION_RE = re.compile(
+    r"^\s*func\s+([A-Za-z_][A-Za-z0-9_]*)\s*\("
+)
+RUNTIME_IDENTITY_FUNCTIONS: frozenset[str] = frozenset(
+    {
+        "_get_event_trigger_key",
+        "_get_event_option_by_prefix",
+        "_find_sector_by_region",
+    }
+)
 
 
 def _read_field(text: str, field: str) -> Optional[str]:
@@ -83,9 +93,35 @@ def _parse_options(text: str) -> list[dict[str, Any]]:
                 "index": len(options),
                 "option_id": _read_field(body, "option_id"),
                 "button_text": button_text,
+                "decision_tag_key": _read_field(body, "decision_tag_key") or "",
+                "decision_tag_value": _read_field(body, "decision_tag_value") or "",
             }
         )
     return options
+
+
+def _collect_decision_tag_writes(
+    events: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """收集所有选项实际写入的完整决策标签对。"""
+    writes: list[dict[str, Any]] = []
+    for event in events:
+        for index, option in enumerate(event.get("options", [])):
+            key = str(option.get("decision_tag_key") or "")
+            value = str(option.get("decision_tag_value") or "")
+            if not key and not value:
+                continue
+            writes.append(
+                {
+                    "path": event.get("path", ""),
+                    "event_id": event.get("event_id", ""),
+                    "option_index": option.get("index", index),
+                    "option_id": option.get("option_id", ""),
+                    "decision_tag_key": key,
+                    "decision_tag_value": value,
+                }
+            )
+    return writes
 
 
 def _resource_path(root: Path, path: Path) -> str:
@@ -131,6 +167,7 @@ def collect_mapping(root: Path) -> dict[str, Any]:
         "schema_version": 1,
         "events": events,
         "sectors": sectors,
+        "decision_tag_writes": _collect_decision_tag_writes(events),
     }
 
 
@@ -139,6 +176,23 @@ def validate_mapping(mapping: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     sector_names: set[str] = set()
     sector_ids: set[str] = set()
+
+    events = mapping.get("events", [])
+    decision_tag_pairs: set[tuple[str, str]] = set()
+    decision_tag_keys: set[str] = set()
+    for event in events:
+        event_path = str(event.get("path", ""))
+        for index, option in enumerate(event.get("options", []), start=1):
+            tag_key = str(option.get("decision_tag_key") or "")
+            tag_value = str(option.get("decision_tag_value") or "")
+            if bool(tag_key) != bool(tag_value):
+                errors.append(
+                    "选项决策标签必须同时提供键和值：%s #%d -> %s/%s"
+                    % (event_path, index, tag_key, tag_value)
+                )
+            if tag_key and tag_value:
+                decision_tag_pairs.add((tag_key, tag_value))
+                decision_tag_keys.add(tag_key)
 
     for sector in mapping.get("sectors", []):
         path = str(sector.get("path", ""))
@@ -164,7 +218,7 @@ def validate_mapping(mapping: dict[str, Any]) -> list[str]:
             sector_ids.add(region_id)
 
     event_ids: set[str] = set()
-    for event in mapping.get("events", []):
+    for event in events:
         path = str(event.get("path", ""))
         event_id = event.get("event_id") or ""
         event_title = event.get("event_title") or ""
@@ -193,6 +247,15 @@ def validate_mapping(mapping: dict[str, Any]) -> list[str]:
             errors.append(
                 f"条件分支引用必须同时提供键和值：{path} -> {branch_key}/{branch_value}"
             )
+        elif branch_key and (branch_key, branch_value) not in decision_tag_pairs:
+            if branch_key not in decision_tag_keys:
+                errors.append(
+                    f"条件分支引用的决策标签键不存在：{path} -> {branch_key}"
+                )
+            else:
+                errors.append(
+                    f"条件分支引用的决策标签值不存在：{path} -> {branch_key}/{branch_value}"
+                )
 
         option_ids: set[str] = set()
         for index, option in enumerate(event.get("options", []), start=1):
@@ -219,29 +282,34 @@ def _path_text(root: Path, path: Path) -> str:
     return path.relative_to(root).as_posix()
 
 
-def classify_usage(path: str, line: str) -> Optional[dict[str, Any]]:
+def classify_usage(
+    path: str,
+    line: str,
+    *,
+    function_scope: str = "",
+) -> Optional[dict[str, Any]]:
     """将一行身份相关使用归入计划规定的五类用途。"""
     fields = [field for field in IDENTITY_FIELDS if field in line]
     if not fields:
         return None
 
     lowered = line.lower()
-    if any(
-        marker in line
-        for marker in ("required_", "event_state", "condition", "branch")
-    ):
-        category = "condition"
-    elif any(
+    if function_scope in RUNTIME_IDENTITY_FUNCTIONS or any(
         marker in line
         for marker in (
             "triggered_events",
+            "match event.event_title",
             "_get_event_trigger_key",
             "_get_event_option_by_prefix",
-            "match event.event_title",
             "_find_sector_by_region",
         )
     ):
         category = "runtime_identity"
+    elif any(
+        marker in line
+        for marker in ("required_", "event_state", "condition", "branch")
+    ):
+        category = "condition"
     elif path.startswith("tests/") or "record_" in lowered or "log" in lowered:
         category = "log_or_test"
     elif path.endswith(".tres") and any(
@@ -267,6 +335,7 @@ def classify_usage(path: str, line: str) -> Optional[dict[str, Any]]:
         "line": line.strip(),
         "fields": fields,
         "category": category,
+        "function_scope": function_scope,
     }
 
 
@@ -281,10 +350,19 @@ def scan_usage(root: Path) -> list[dict[str, Any]]:
             if path.suffix not in {".gd", ".tres", ".tscn"}:
                 continue
             relative = _path_text(root, path)
+            function_scope = ""
             for line_number, line in enumerate(
                 path.read_text(encoding="utf-8").splitlines(), start=1
             ):
-                usage = classify_usage(relative, line)
+                if path.suffix == ".gd":
+                    function_match = _FUNCTION_DECLARATION_RE.match(line)
+                    if function_match:
+                        function_scope = function_match.group(1)
+                usage = classify_usage(
+                    relative,
+                    line,
+                    function_scope=function_scope,
+                )
                 if usage is not None:
                     entries.append({"line_number": line_number, **usage})
     return entries

@@ -75,8 +75,11 @@ func _load_sector_resources(baseline: Dictionary) -> Dictionary:
 func _assert_event_resources(baseline: Dictionary, sectors_by_name: Dictionary) -> void:
 	var expected_events: Array = baseline.get("events", [])
 	var event_ids: Dictionary = {}
+	var decision_tag_writes: Dictionary = {}
+	var expected_decision_tag_writes: Array = baseline.get("decision_tag_writes", [])
 	var event_count := 0
 	var branch_count := 0
+	var required_branch_refs: Array[Dictionary] = []
 
 	for entry_variant in expected_events:
 		var entry: Dictionary = entry_variant
@@ -104,12 +107,23 @@ func _assert_event_resources(baseline: Dictionary, sectors_by_name: Dictionary) 
 			str(entry.get("required_decision_tag_value", "")),
 			"条件分支值不得漂移"
 		)
+		_assert_true(
+			event.required_decision_tag_key.is_empty() == event.required_decision_tag_value.is_empty(),
+			"条件分支必须同时声明键和值：%s" % event.event_id
+		)
 		_assert_true(sectors_by_name.has(event.event_region), "事件区域必须引用真实区域：%s" % event.event_id)
 		if not event.required_decision_tag_key.is_empty():
 			branch_count += 1
 			_assert_true(
 				not event.required_decision_tag_value.is_empty(),
 				"条件分支必须有触发值：%s" % event.event_id
+			)
+			required_branch_refs.append(
+				{
+					"event_id": event.event_id,
+					"key": event.required_decision_tag_key,
+					"value": event.required_decision_tag_value,
+				}
 			)
 
 		var expected_options: Array = entry.get("options", [])
@@ -126,10 +140,50 @@ func _assert_event_resources(baseline: Dictionary, sectors_by_name: Dictionary) 
 			_assert_eq(option.option_id, "option_%02d" % (index + 1), "选项 ID 应按固定顺序编号")
 			_assert_eq(option.option_id, str(expected_option.get("option_id", "")), "选项 ID 不得漂移")
 			_assert_eq(option.button_text, str(expected_option.get("button_text", "")), "选项文字不得漂移")
+			_assert_eq(
+				option.decision_tag_key,
+				str(expected_option.get("decision_tag_key", "")),
+				"选项决策标签键不得漂移"
+			)
+			_assert_eq(
+				option.decision_tag_value,
+				str(expected_option.get("decision_tag_value", "")),
+				"选项决策标签值不得漂移"
+			)
+			_assert_true(
+				option.decision_tag_key.is_empty() == option.decision_tag_value.is_empty(),
+				"选项决策标签必须同时声明键和值：%s/%s" % [event.event_id, option.option_id]
+			)
+			if not option.decision_tag_key.is_empty():
+				decision_tag_writes[
+					"%s|%s" % [option.decision_tag_key, option.decision_tag_value]
+				] = true
 			option_ids[option.option_id] = true
 
 	_assert_eq(event_count, 25, "应覆盖全部 25 个事件资源")
 	_assert_eq(branch_count, 2, "应保留两个条件分支事件")
+	_assert_eq(
+		decision_tag_writes.size(),
+		expected_decision_tag_writes.size(),
+		"决策标签写入数量不得漂移"
+	)
+	for write_variant in expected_decision_tag_writes:
+		var write: Dictionary = write_variant
+		var write_key := str(write.get("decision_tag_key", ""))
+		var write_value := str(write.get("decision_tag_value", ""))
+		var write_pair := "%s|%s" % [write_key, write_value]
+		_assert_true(
+			decision_tag_writes.has(write_pair),
+			"身份基线中的决策标签写入必须来自真实选项：%s" % write_pair
+		)
+
+	for required_variant in required_branch_refs:
+		var required: Dictionary = required_variant
+		var required_pair := "%s|%s" % [required.get("key", ""), required.get("value", "")]
+		_assert_true(
+			decision_tag_writes.has(required_pair),
+			"条件分支引用必须命中真实选项写入：%s -> %s" % [required.get("event_id", ""), required_pair]
+		)
 
 
 func _assert_sector_resources(baseline: Dictionary) -> void:
