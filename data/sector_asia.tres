@@ -4,6 +4,7 @@
 
 [resource]
 script = ExtResource("1_42bf4")
+region_id = "asia"
 region_name = "亚洲"
 description = "人口与工业核心区，动员潜力巨大，但民生压力同样最高。"
 order = 46

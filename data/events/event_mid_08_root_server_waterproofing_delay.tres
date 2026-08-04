@@ -7,6 +7,7 @@
 
 [sub_resource type="Resource" id="Option_1"]
 script = ExtResource("2_option")
+option_id = "option_01"
 button_text = "优先改造根服务器"
 order_delta = 5
 hope_delta = -4
@@ -17,6 +18,7 @@ event_state_value = "server_first"
 
 [sub_resource type="Resource" id="Option_2"]
 script = ExtResource("2_option")
+option_id = "option_02"
 button_text = "先修复地下城排水"
 order_delta = -2
 hope_delta = 6
@@ -27,6 +29,7 @@ event_state_value = "drainage_first"
 
 [sub_resource type="Resource" id="Option_3"]
 script = ExtResource("2_option")
+option_id = "option_03"
 button_text = "MOSS 接管工程排期"
 order_delta = 6
 hope_delta = -3
@@ -36,6 +39,7 @@ event_state_value = "moss_schedule"
 
 [resource]
 script = ExtResource("1_event")
+event_id = "event_mid_08_root_server_waterproofing_delay"
 event_title = "根服务器防水改造延期"
 event_time = 2055
 event_month = 1

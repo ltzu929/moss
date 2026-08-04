@@ -4,6 +4,7 @@
 
 [resource]
 script = ExtResource("1_africa")
+region_id = "africa"
 region_name = "非洲"
 description = "太空电梯与前线工程区，士气高昂，但基础秩序最不稳定。"
 order = 38

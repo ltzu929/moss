@@ -7,6 +7,7 @@
 
 [sub_resource type="Resource" id="Option_1"]
 script = ExtResource("2_option")
+option_id = "option_01"
 button_text = "排除数字生命样本"
 order_delta = 4
 hope_delta = -2
@@ -16,6 +17,7 @@ event_state_value = "exclude_samples"
 
 [sub_resource type="Resource" id="Option_2"]
 script = ExtResource("2_option")
+option_id = "option_02"
 button_text = "列入受限档案"
 order_delta = 2
 hope_delta = 2
@@ -26,6 +28,7 @@ event_state_value = "restricted_archive"
 
 [sub_resource type="Resource" id="Option_3"]
 script = ExtResource("2_option")
+option_id = "option_03"
 button_text = "MOSS 管理备份优先级"
 order_delta = 6
 hope_delta = -4
@@ -35,6 +38,7 @@ event_state_value = "moss_managed_priority"
 
 [resource]
 script = ExtResource("1_event")
+event_id = "event_mid_16_civilization_backup_ethics_hearing"
 event_title = "文明备份伦理听证"
 event_time = 2073
 event_region = "欧洲"

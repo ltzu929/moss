@@ -7,6 +7,7 @@
 
 [sub_resource type="Resource" id="Option_1"]
 script = ExtResource("2_option")
+option_id = "option_01"
 button_text = "完整归还接口"
 order_delta = -3
 hope_delta = 5
@@ -16,6 +17,7 @@ event_state_value = "full_return"
 
 [sub_resource type="Resource" id="Option_2"]
 script = ExtResource("2_option")
+option_id = "option_02"
 button_text = "保留应急后门"
 order_delta = 6
 hope_delta = -5
@@ -25,6 +27,7 @@ event_state_value = "emergency_backdoor"
 
 [sub_resource type="Resource" id="Option_3"]
 script = ExtResource("2_option")
+option_id = "option_03"
 button_text = "公开协商长期授权"
 order_delta = 2
 hope_delta = -1
@@ -35,6 +38,7 @@ event_state_value = "negotiated_long_term"
 
 [resource]
 script = ExtResource("1_event")
+event_id = "event_mid_10_crisis_authorization_return_dispute"
 event_title = "危机授权归还争议"
 event_time = 2059
 event_month = 1

@@ -6,6 +6,7 @@
 
 [sub_resource type="Resource" id="Option_1"]
 script = ExtResource("2_option")
+option_id = "option_01"
 button_text = "公开复核申诉"
 order_delta = -3
 hope_delta = 7
@@ -16,6 +17,7 @@ event_state_value = "public_claims_review"
 
 [sub_resource type="Resource" id="Option_2"]
 script = ExtResource("2_option")
+option_id = "option_02"
 button_text = "设置工程家庭配额"
 order_delta = 4
 hope_delta = -3
@@ -26,6 +28,7 @@ event_state_value = "engineering_quota"
 
 [sub_resource type="Resource" id="Option_3"]
 script = ExtResource("2_option")
+option_id = "option_03"
 button_text = "由 MOSS 归档排序"
 order_delta = 6
 hope_delta = -7
@@ -35,6 +38,7 @@ event_state_value = "moss_archive"
 
 [resource]
 script = ExtResource("1_event")
+event_id = "event_branch_01_perimeter_compensation_appeal"
 event_title = "外围地下城补偿申诉"
 event_time = 2054
 event_month = 6

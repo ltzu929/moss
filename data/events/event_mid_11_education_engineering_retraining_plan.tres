@@ -7,6 +7,7 @@
 
 [sub_resource type="Resource" id="Option_1"]
 script = ExtResource("2_option")
+option_id = "option_01"
 button_text = "培养地方自治运维"
 order_delta = -3
 hope_delta = 6
@@ -17,6 +18,7 @@ event_state_value = "autonomous_training"
 
 [sub_resource type="Resource" id="Option_2"]
 script = ExtResource("2_option")
+option_id = "option_02"
 button_text = "压缩课程转入工程岗位"
 order_delta = 5
 hope_delta = -4
@@ -26,6 +28,7 @@ event_state_value = "engineering_assignment"
 
 [sub_resource type="Resource" id="Option_3"]
 script = ExtResource("2_option")
+option_id = "option_03"
 button_text = "MOSS 个体化分配职业路径"
 order_delta = 6
 hope_delta = -3
@@ -35,6 +38,7 @@ event_state_value = "moss_personalized"
 
 [resource]
 script = ExtResource("1_event")
+event_id = "event_mid_11_education_engineering_retraining_plan"
 event_title = "教育与工程转岗方案"
 event_time = 2061
 event_month = 1

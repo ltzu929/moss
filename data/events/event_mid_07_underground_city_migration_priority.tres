@@ -7,6 +7,7 @@
 
 [sub_resource type="Resource" id="Option_1"]
 script = ExtResource("2_option")
+option_id = "option_01"
 button_text = "按人道风险迁移"
 order_delta = -3
 hope_delta = 6
@@ -17,6 +18,7 @@ event_state_value = "humanitarian"
 
 [sub_resource type="Resource" id="Option_2"]
 script = ExtResource("2_option")
+option_id = "option_02"
 button_text = "按工程岗位迁移"
 order_delta = 5
 hope_delta = -4
@@ -26,6 +28,7 @@ event_state_value = "engineering_role"
 
 [sub_resource type="Resource" id="Option_3"]
 script = ExtResource("2_option")
+option_id = "option_03"
 button_text = "按 MOSS 预测存续价值迁移"
 order_delta = 6
 hope_delta = -5
@@ -35,6 +38,7 @@ event_state_value = "moss_survival_value"
 
 [resource]
 script = ExtResource("1_event")
+event_id = "event_mid_07_underground_city_migration_priority"
 event_title = "地下城迁移优先级"
 event_time = 2054
 event_month = 1

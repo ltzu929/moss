@@ -4,6 +4,7 @@
 
 [resource]
 script = ExtResource("1_oceania")
+region_id = "oceania"
 region_name = "大洋洲"
 description = "孤立但韧性强的后备区域，整体均衡，适合承担恢复型操作。"
 order = 55

@@ -4,6 +4,7 @@
 
 [resource]
 script = ExtResource("1_southam")
+region_id = "south_america"
 region_name = "南美"
 description = "资源与农业保障区，民心基础较好，但秩序与控制权都偏弱。"
 order = 48

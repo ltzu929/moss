@@ -7,6 +7,7 @@
 
 [sub_resource type="Resource" id="Resource_opt1"]
 script = ExtResource("1_option")
+option_id = "option_01"
 button_text = "分段停机"
 order_delta = -15
 hope_delta = 8
@@ -20,6 +21,7 @@ metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [sub_resource type="Resource" id="Resource_opt2"]
 script = ExtResource("1_option")
+option_id = "option_02"
 button_text = "启动备用阵列"
 order_delta = 12
 hope_delta = -4
@@ -33,6 +35,7 @@ metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [sub_resource type="Resource" id="Resource_opt3"]
 script = ExtResource("1_option")
+option_id = "option_03"
 button_text = "强制超频点火"
 order_delta = 26
 hope_delta = -22
@@ -46,6 +49,7 @@ metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [resource]
 script = ExtResource("1_event")
+event_id = "event_2070_siberian_engine_overload"
 event_title = "西伯利亚发动机群过载"
 event_time = 2070
 event_month = 1

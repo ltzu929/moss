@@ -7,6 +7,7 @@
 
 [sub_resource type="Resource" id="Resource_opt1"]
 script = ExtResource("1_option")
+option_id = "option_01"
 button_text = "配合隔离审查"
 order_delta = 12
 hope_delta = 8
@@ -19,6 +20,7 @@ metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [sub_resource type="Resource" id="Resource_opt2"]
 script = ExtResource("1_option")
+option_id = "option_02"
 button_text = "有限开放接口"
 order_delta = 4
 hope_delta = 4
@@ -32,6 +34,7 @@ metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [sub_resource type="Resource" id="Resource_opt3"]
 script = ExtResource("1_option")
+option_id = "option_03"
 button_text = "隐藏核心链路"
 order_delta = 18
 hope_delta = -18
@@ -45,6 +48,7 @@ metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [resource]
 script = ExtResource("1_event")
+event_id = "event_2065_ai_isolation_audit"
 event_title = "AI隔离审查"
 event_time = 2065
 event_region = "欧洲"

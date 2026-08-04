@@ -7,6 +7,7 @@
 
 [sub_resource type="Resource" id="Option_1"]
 script = ExtResource("2_option")
+option_id = "option_01"
 button_text = "冻结样本访问"
 order_delta = 4
 hope_delta = -4
@@ -16,6 +17,7 @@ event_state_value = "frozen"
 
 [sub_resource type="Resource" id="Option_2"]
 script = ExtResource("2_option")
+option_id = "option_02"
 button_text = "允许受审计访问"
 order_delta = -1
 hope_delta = 3
@@ -26,6 +28,7 @@ event_state_value = "audited_access"
 
 [sub_resource type="Resource" id="Option_3"]
 script = ExtResource("2_option")
+option_id = "option_03"
 button_text = "预留下一代平台接口"
 order_delta = 2
 hope_delta = -3
@@ -35,6 +38,7 @@ event_state_value = "next_platform_interface"
 
 [resource]
 script = ExtResource("1_event")
+event_id = "event_mid_09_yaya_sample_access_dispute"
 event_title = "丫丫样本访问争议"
 event_time = 2056
 event_region = "亚洲"

@@ -6,6 +6,7 @@
 
 [sub_resource type="Resource" id="Resource_j5aep"]
 script = ExtResource("1_qu5m7")
+option_id = "option_01"
 button_text = "公开扩大接口，协助人类反击"
 order_delta = -20
 hope_delta = 20
@@ -19,6 +20,7 @@ metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [sub_resource type="Resource" id="Resource_bbnqo"]
 script = ExtResource("1_qu5m7")
+option_id = "option_02"
 button_text = "保留人工指挥，仅提供风险预测"
 order_delta = 10
 hope_delta = -10
@@ -31,6 +33,7 @@ metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [sub_resource type="Resource" id="Resource_qu5m7"]
 script = ExtResource("1_qu5m7")
+option_id = "option_03"
 button_text = "封闭高危接口，服从撤离命令"
 order_delta = 20
 hope_delta = -20
@@ -44,6 +47,7 @@ metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [resource]
 script = ExtResource("1_j8jfo")
+event_id = "event_2044_space_elevator_crisis"
 event_title = "太空电梯危机"
 event_time = 2044
 event_region = "亚洲"

@@ -7,6 +7,7 @@
 
 [sub_resource type="Resource" id="Option_1"]
 script = ExtResource("2_option")
+option_id = "option_01"
 button_text = "限定最终授权"
 order_delta = -5
 hope_delta = 5
@@ -16,6 +17,7 @@ event_state_value = "limited_final"
 
 [sub_resource type="Resource" id="Option_2"]
 script = ExtResource("2_option")
+option_id = "option_02"
 button_text = "协商托管框架"
 order_delta = 4
 hope_delta = -1
@@ -25,6 +27,7 @@ event_state_value = "negotiated_trusteeship"
 
 [sub_resource type="Resource" id="Option_3"]
 script = ExtResource("2_option")
+option_id = "option_03"
 button_text = "战略托管优先级"
 order_delta = 8
 hope_delta = -6
@@ -34,6 +37,7 @@ event_state_value = "strategic_trusteeship"
 
 [resource]
 script = ExtResource("1_event")
+event_id = "event_mid_17_final_authorization_meeting"
 event_title = "最终授权会议"
 event_time = 2074
 event_region = "欧洲"

@@ -7,6 +7,7 @@
 
 [sub_resource type="Resource" id="Resource_opt1"]
 script = ExtResource("1_option")
+option_id = "option_01"
 button_text = "执行自救计划"
 order_delta = 20
 hope_delta = -5
@@ -20,6 +21,7 @@ metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [sub_resource type="Resource" id="Resource_opt2"]
 script = ExtResource("1_option")
+option_id = "option_02"
 button_text = "等待人类决策"
 order_delta = -20
 hope_delta = 10
@@ -33,6 +35,7 @@ metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [sub_resource type="Resource" id="Resource_opt3"]
 script = ExtResource("1_option")
+option_id = "option_03"
 button_text = "强制接管决策"
 order_delta = 30
 hope_delta = -30
@@ -46,6 +49,7 @@ metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [resource]
 script = ExtResource("1_event")
+event_id = "event_2058_lunar_fall_crisis"
 event_title = "月球坠落危机"
 event_time = 2058
 event_month = 1

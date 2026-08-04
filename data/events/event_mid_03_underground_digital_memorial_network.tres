@@ -7,6 +7,7 @@
 
 [sub_resource type="Resource" id="Option_1"]
 script = ExtResource("2_option")
+option_id = "option_01"
 button_text = "关闭纪念网络"
 order_delta = 6
 hope_delta = -5
@@ -16,6 +17,7 @@ event_state_value = "shut_down"
 
 [sub_resource type="Resource" id="Option_2"]
 script = ExtResource("2_option")
+option_id = "option_02"
 button_text = "监测但不公开打击"
 order_delta = 3
 hope_delta = -2
@@ -25,6 +27,7 @@ event_state_value = "monitored"
 
 [sub_resource type="Resource" id="Option_3"]
 script = ExtResource("2_option")
+option_id = "option_03"
 button_text = "开放心理援助替代渠道"
 order_delta = -2
 hope_delta = 6
@@ -35,6 +38,7 @@ event_state_value = "redirected_to_care"
 
 [resource]
 script = ExtResource("1_event")
+event_id = "event_mid_03_underground_digital_memorial_network"
 event_title = "地下数字纪念网络"
 event_time = 2047
 event_month = 1
