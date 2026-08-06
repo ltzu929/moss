@@ -4,12 +4,12 @@ extends "res://tests/support/moss_test_case.gd"
 
 const MAIN_SCENE: PackedScene = preload("res://scenes/main_os.tscn")
 const VALID_REGIONS: Array[String] = [
-	"亚洲",
-	"欧洲",
-	"非洲",
-	"北美",
-	"南美",
-	"大洋洲",
+	"asia",
+	"europe",
+	"africa",
+	"north_america",
+	"south_america",
+	"oceania",
 ]
 const MID_EVENT_SPECS := {
 	"event_state.mid_01_lottery_ordering": [2045, ["manual_review", "moss_optimized", "security_lockdown"]],

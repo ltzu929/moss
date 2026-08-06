@@ -71,7 +71,7 @@ Resource 生命周期、输入和生命周期边界。GDScript 书写风格见 `
 当前地图选择流程是本项目的推荐模式：
 
 ```text
-WorldMapView 发出 region_selected(region_name)
+WorldMapView 发出 region_selected(region_id)
         ↓
 main_os.gd 查找对应 SectorInfo
         ↓

@@ -4,7 +4,7 @@ extends Control
 
 signal approach_requested(instance_id: String, approach_id: String)
 signal node_option_requested(instance_id: String, option_id: String)
-signal focus_region_requested(region_name: String)
+signal focus_region_requested(region_id: String)
 
 const MOSS_THEME := preload("res://scripts/ui/moss_ui_theme.gd")
 
@@ -296,7 +296,7 @@ func _on_node_option_pressed(instance_id: String, option_id: String) -> void:
 func _on_focus_region_pressed() -> void:
 	var snapshot := _get_snapshot(_selected_id)
 	if not snapshot.is_empty():
-		focus_region_requested.emit(str(snapshot.get("region_name", "")))
+		focus_region_requested.emit(str(snapshot.get("region_id", "")))
 
 
 func _has_snapshot(instance_id: String) -> bool:

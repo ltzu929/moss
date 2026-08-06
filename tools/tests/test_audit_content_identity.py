@@ -36,7 +36,7 @@ class MappingTests(unittest.TestCase):
         event = """[resource]
 event_id = "event_sample"
 event_title = "示例事件"
-event_region = "亚洲"
+event_region = "asia"
 required_decision_tag_key = ""
 required_decision_tag_value = ""
 
@@ -84,7 +84,7 @@ button_text = "第二个方案"
     def test_cli_writes_and_compares_mapping_baseline(self) -> None:
         (self.root / "data" / "events" / "event_sample.tres").write_text(
             '[resource]\nevent_id = "event_sample"\nevent_title = "示例事件"\n'
-            'event_region = "亚洲"\n',
+            'event_region = "asia"\n',
             encoding="utf-8",
         )
         baseline = self.root / "fixtures" / "content_identity_baseline.json"
@@ -106,7 +106,7 @@ button_text = "第二个方案"
         event = self.root / "data" / "events" / "event_sample.tres"
         event.write_text(
             '[resource]\nevent_id = "event_sample"\nevent_title = "示例事件"\n'
-            'event_region = "亚洲"\n',
+            'event_region = "asia"\n',
             encoding="utf-8",
         )
         mapping = audit.collect_mapping(self.root)
@@ -120,7 +120,7 @@ button_text = "第二个方案"
         event = self.root / "data" / "events" / "event_sample.tres"
         event.write_text(
             '[resource]\nevent_id = "event_sample"\nevent_title = "示例事件"\n'
-            'event_region = "亚洲"\n'
+            'event_region = "asia"\n'
             '\n[sub_resource type="Resource" id="Option_1"]\n'
             'option_id = "option_01"\nbutton_text = "第一个方案"\n'
             'decision_tag_key = "decision.sample"\n'
@@ -168,9 +168,9 @@ class UsageClassificationTests(unittest.TestCase):
         project_root = Path(__file__).resolve().parents[2]
         usages = audit.scan_usage(project_root)
         expectations = {
-            "_get_event_trigger_key": "event_title",
-            "_get_event_option_by_prefix": "button_text",
-            "_find_sector_by_region": "region_name",
+            "_get_event_trigger_key": "event_id",
+            "_get_event_option": "option_id",
+            "_find_sector_by_id": "region_id",
         }
         for function_name, field in expectations.items():
             with self.subTest(function_name=function_name):

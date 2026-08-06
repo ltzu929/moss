@@ -11,6 +11,7 @@ signal option_selected(index: int)
 # ============================================================
 
 const MOSS_THEME := preload("res://scripts/ui/moss_ui_theme.gd")
+const REGION_IDENTITY := preload("res://scripts/resources/region_identity.gd")
 const FALLBACK_EVENT_IMAGE: Texture2D = preload(
 	"res://assets/ui/event_fallback_flood.png"
 )
@@ -33,10 +34,11 @@ func _process(_delta: float) -> void:
 
 func popup_event(event: GameEvent, current_energy: int) -> void:
 	_ensure_affordable_option(event, current_energy)
+	var region_name := REGION_IDENTITY.display_name(event.event_region)
 	%EventTitle.text = event.event_title
 	%EventLevelLabel.text = event.event_level
 	%EventMetaLabel.text = "影响区域：%s  /  记录时间：%04d.%02d  /  MOSS 自动归档" % [
-		event.event_region,
+		region_name,
 		event.event_time,
 		event.event_month,
 	]
@@ -46,7 +48,7 @@ func popup_event(event: GameEvent, current_energy: int) -> void:
 		else FALLBACK_EVENT_IMAGE
 	)
 	%RichTextLabel.text = "[color=#73C9D3]影响板块：%s[/color]\n%s" % [
-		event.event_region,
+		region_name,
 		event.event_description,
 	]
 
@@ -58,7 +60,7 @@ func popup_event(event: GameEvent, current_energy: int) -> void:
 		var option: EventOption = event.options[i]
 		add_custom_button(
 			option,
-			event.event_region,
+			region_name,
 			i if option.energy_cost <= current_energy else -1,
 			i + 1
 		)

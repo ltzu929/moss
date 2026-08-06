@@ -202,11 +202,7 @@ func _assert_timer_branch_resolution(
 
 	_main_os._on_timer_timeout()
 	await get_tree().process_frame
-	var trigger_key := "%04d.%02d:%s" % [
-		branch_event.event_time,
-		branch_event.event_month,
-		branch_event.event_title,
-	]
+	var trigger_key := branch_event.event_id
 	_assert_true(_event_popup.visible, "%s 应通过真实时间循环打开弹窗" % branch_event.event_title)
 	_assert_true(
 		trigger_key in _main_os.triggered_events,

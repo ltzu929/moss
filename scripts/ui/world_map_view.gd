@@ -2,28 +2,36 @@
 class_name WorldMapView
 extends Control
 
-signal region_selected(region_name: String)
+signal region_selected(region_id: String)
 
 ## MOSS 界面主题工具
 const MOSS_THEME := preload("res://scripts/ui/moss_ui_theme.gd")
+const REGION_IDENTITY := preload("res://scripts/resources/region_identity.gd")
 const WORLD_OUTLINE_PATH := "res://assets/ui/world-map/world_outline_gray.png"
-const REGION_ORDER := ["北美", "南美", "欧洲", "非洲", "亚洲", "大洋洲"]
+const REGION_ORDER := [
+	"north_america",
+	"south_america",
+	"europe",
+	"africa",
+	"asia",
+	"oceania",
+]
 const MASK_ALPHA_THRESHOLD := 0.35
 const REGION_TEXTURE_PATHS := {
-	"北美": "res://assets/ui/world-map/mask_north_america.png",
-	"南美": "res://assets/ui/world-map/mask_south_america.png",
-	"欧洲": "res://assets/ui/world-map/mask_europe_reference.png",
-	"非洲": "res://assets/ui/world-map/mask_africa.png",
-	"亚洲": "res://assets/ui/world-map/mask_asia.png",
-	"大洋洲": "res://assets/ui/world-map/mask_oceania.png",
+	"north_america": "res://assets/ui/world-map/mask_north_america.png",
+	"south_america": "res://assets/ui/world-map/mask_south_america.png",
+	"europe": "res://assets/ui/world-map/mask_europe_reference.png",
+	"africa": "res://assets/ui/world-map/mask_africa.png",
+	"asia": "res://assets/ui/world-map/mask_asia.png",
+	"oceania": "res://assets/ui/world-map/mask_oceania.png",
 }
 const EDITOR_PREVIEW_SECTOR_PATHS := {
-	"北美": "res://data/sector_na.tres",
-	"南美": "res://data/sector_south_america.tres",
-	"欧洲": "res://data/sector_europe.tres",
-	"非洲": "res://data/sector_africa.tres",
-	"亚洲": "res://data/sector_asia.tres",
-	"大洋洲": "res://data/sector_oceania.tres",
+	"north_america": "res://data/sector_na.tres",
+	"south_america": "res://data/sector_south_america.tres",
+	"europe": "res://data/sector_europe.tres",
+	"africa": "res://data/sector_africa.tres",
+	"asia": "res://data/sector_asia.tres",
+	"oceania": "res://data/sector_oceania.tres",
 }
 
 @export_group("编辑器标签位置")
@@ -90,23 +98,23 @@ func _process(delta: float) -> void:
 
 func _sync_label_positions() -> void:
 	_label_positions = {
-		"北美": north_america_label_position,
-		"南美": south_america_label_position,
-		"欧洲": europe_label_position,
-		"非洲": africa_label_position,
-		"亚洲": asia_label_position,
-		"大洋洲": oceania_label_position,
+		"north_america": north_america_label_position,
+		"south_america": south_america_label_position,
+		"europe": europe_label_position,
+		"africa": africa_label_position,
+		"asia": asia_label_position,
+		"oceania": oceania_label_position,
 	}
 	queue_redraw()
 
 
 func _load_editor_preview_states() -> void:
 	var preview_states: Dictionary = {}
-	for region_name in EDITOR_PREVIEW_SECTOR_PATHS:
-		var sector := load(EDITOR_PREVIEW_SECTOR_PATHS[region_name]) as SectorData
+	for region_id in EDITOR_PREVIEW_SECTOR_PATHS:
+		var sector := load(EDITOR_PREVIEW_SECTOR_PATHS[region_id]) as SectorData
 		if sector == null:
 			continue
-		preview_states[region_name] = {
+		preview_states[region_id] = {
 			"order": sector.order,
 			"hope": sector.hope,
 			"authority": sector.authority,
@@ -121,15 +129,15 @@ func set_region_states(states: Dictionary) -> void:
 	queue_redraw()
 
 
-func set_selected_region(region_name: String) -> void:
-	_selected_region = region_name
+func set_selected_region(region_id: String) -> void:
+	_selected_region = region_id
 	queue_redraw()
 
 
 func get_region_names() -> Array[String]:
 	var result: Array[String] = []
-	for region_name in REGION_ORDER:
-		result.append(region_name)
+	for region_id in REGION_ORDER:
+		result.append(REGION_IDENTITY.display_name(region_id))
 	return result
 
 
@@ -139,28 +147,28 @@ func _load_map_textures() -> void:
 		push_warning("世界地图底图缺失：%s" % WORLD_OUTLINE_PATH)
 
 	_region_textures.clear()
-	for region_name in REGION_ORDER:
-		var texture_path := str(REGION_TEXTURE_PATHS.get(region_name, ""))
+	for region_id in REGION_ORDER:
+		var texture_path := str(REGION_TEXTURE_PATHS.get(region_id, ""))
 		var texture := load(texture_path) as Texture2D
 		if texture == null:
-			push_warning("世界地图遮罩缺失：%s" % region_name)
+			push_warning("世界地图遮罩缺失：%s" % REGION_IDENTITY.display_name(region_id))
 			continue
-		_region_textures[region_name] = texture
+		_region_textures[region_id] = texture
 
 
 func _cache_mask_images() -> void:
 	_mask_images.clear()
-	for region_name in REGION_ORDER:
-		var texture: Texture2D = _region_textures.get(region_name)
+	for region_id in REGION_ORDER:
+		var texture: Texture2D = _region_textures.get(region_id)
 		if texture == null:
 			continue
 
 		var image: Image = texture.get_image()
 		if image == null or image.is_empty():
-			push_warning("世界地图遮罩无法读取：%s" % region_name)
+			push_warning("世界地图遮罩无法读取：%s" % REGION_IDENTITY.display_name(region_id))
 			continue
 
-		_mask_images[region_name] = image
+		_mask_images[region_id] = image
 
 
 func _get_map_rect() -> Rect2:
@@ -191,11 +199,11 @@ func _draw() -> void:
 			Color(1.0, 1.0, 1.0, 0.78)
 		)
 
-	for region_name in REGION_ORDER:
-		_draw_region(region_name, map_rect)
+	for region_id in REGION_ORDER:
+		_draw_region(region_id, map_rect)
 
-	for region_name in REGION_ORDER:
-		_draw_region_label(region_name, map_rect)
+	for region_id in REGION_ORDER:
+		_draw_region_label(region_id, map_rect)
 
 	var scan_y := size.y * _scan_progress
 	draw_line(
@@ -221,20 +229,20 @@ func _draw_grid() -> void:
 		y += grid_size
 
 
-func _draw_region(region_name: String, map_rect: Rect2) -> void:
-	var texture: Texture2D = _region_textures.get(region_name)
+func _draw_region(region_id: String, map_rect: Rect2) -> void:
+	var texture: Texture2D = _region_textures.get(region_id)
 	if texture == null:
 		return
 
-	draw_texture_rect(texture, map_rect, false, _region_fill_color(region_name))
+	draw_texture_rect(texture, map_rect, false, _region_fill_color(region_id))
 
 
-func _draw_region_label(region_name: String, map_rect: Rect2) -> void:
-	var state: Dictionary = _region_states.get(region_name, {})
+func _draw_region_label(region_id: String, map_rect: Rect2) -> void:
+	var state: Dictionary = _region_states.get(region_id, {})
 	var authority := int(state.get("authority", 50))
 	var situation_count := int(state.get("situation_count", 0))
-	var label_position := _normalized_to_map(_label_positions[region_name], map_rect)
-	var marker_color := _region_marker_color(region_name)
+	var label_position := _normalized_to_map(_label_positions[region_id], map_rect)
+	var marker_color := _region_marker_color(region_id)
 
 	draw_circle(label_position, 4.0, marker_color)
 	draw_circle(label_position, 9.0, Color(marker_color, 0.16), false, 1.0)
@@ -250,7 +258,7 @@ func _draw_region_label(region_name: String, map_rect: Rect2) -> void:
 			Color(1.0, 0.42, 0.34, 1.0)
 		)
 
-	var label_text := region_name
+	var label_text := REGION_IDENTITY.display_name(region_id)
 	if not state.is_empty():
 		label_text += "  %d%%" % authority
 	draw_string(
@@ -264,8 +272,8 @@ func _draw_region_label(region_name: String, map_rect: Rect2) -> void:
 	)
 
 
-func _region_fill_color(region_name: String) -> Color:
-	var state: Dictionary = _region_states.get(region_name, {})
+func _region_fill_color(region_id: String) -> Color:
+	var state: Dictionary = _region_states.get(region_id, {})
 	var authority := int(state.get("authority", 50))
 	var fill_color := Color(0.075, 0.17, 0.22, 0.66)
 
@@ -274,23 +282,23 @@ func _region_fill_color(region_name: String) -> Color:
 	elif authority < 40:
 		fill_color = Color(0.08, 0.12, 0.16, 0.72)
 
-	if region_name == _hovered_region:
+	if region_id == _hovered_region:
 		fill_color = fill_color.lightened(0.12)
 		fill_color = fill_color.lerp(Color(0.12, 0.46, 0.50, fill_color.a), 0.28)
 
-	if region_name == _selected_region:
+	if region_id == _selected_region:
 		fill_color = Color(0.28, 0.235, 0.115, 0.72)
 
 	return fill_color
 
 
-func _region_marker_color(region_name: String) -> Color:
-	if region_name == _selected_region:
+func _region_marker_color(region_id: String) -> Color:
+	if region_id == _selected_region:
 		return MOSS_THEME.ACCENT_GOLD
-	if region_name == _hovered_region:
+	if region_id == _hovered_region:
 		return MOSS_THEME.ACCENT_CYAN
 
-	var state: Dictionary = _region_states.get(region_name, {})
+	var state: Dictionary = _region_states.get(region_id, {})
 	var authority := int(state.get("authority", 50))
 	if authority < 20:
 		return MOSS_THEME.DANGER
@@ -310,8 +318,8 @@ func _gui_input(event: InputEvent) -> void:
 
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-			var region_name := _region_at_position(event.position)
-			region_selected.emit(region_name)
+			var region_id := _region_at_position(event.position)
+			region_selected.emit(region_id)
 			accept_event()
 
 
@@ -325,8 +333,8 @@ func _region_at_position(local_position: Vector2) -> String:
 		(local_position.y - map_rect.position.y) / map_rect.size.y
 	)
 
-	for region_name in REGION_ORDER:
-		var image: Image = _mask_images.get(region_name)
+	for region_id in REGION_ORDER:
+		var image: Image = _mask_images.get(region_id)
 		if image == null or image.is_empty():
 			continue
 
@@ -341,7 +349,7 @@ func _region_at_position(local_position: Vector2) -> String:
 			image.get_height() - 1
 		)
 		if image.get_pixel(pixel_x, pixel_y).a > MASK_ALPHA_THRESHOLD:
-			return region_name
+			return region_id
 
 	return ""
 

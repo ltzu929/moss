@@ -236,9 +236,9 @@ func _assert_representative_event_states_change_main_event_options() -> void:
 	var moon_event := load("res://data/events/event_2058_lunar_fall_crisis.tres") as GameEvent
 	_assert_true(moon_event != null, "应能加载真实 2058 主事件资源")
 	if moon_event != null:
-		var original_energy := _get_option_by_prefix(moon_event, "执行自救计划").energy_cost
+		var original_energy := _get_option_by_id(moon_event, "option_01").energy_cost
 		var display_moon_event: GameEvent = _main_os.build_display_event(moon_event)
-		var adjusted_option := _get_option_by_prefix(display_moon_event, "执行自救计划")
+		var adjusted_option := _get_option_by_id(display_moon_event, "option_01")
 		_assert_eq(
 			adjusted_option.energy_cost,
 			60,
@@ -249,13 +249,13 @@ func _assert_representative_event_states_change_main_event_options() -> void:
 			"2058 调整后的选项文案应说明前序状态来源"
 		)
 		_assert_eq(
-			_get_option_by_prefix(moon_event, "执行自救计划").energy_cost,
+			_get_option_by_id(moon_event, "option_01").energy_cost,
 			original_energy,
 			"2058 原始事件资源选项代价不应被运行时副本污染"
 		)
 		_main_os.set_event_state("event_state.mid_08_root_server_retrofit", "drainage_first")
 		display_moon_event = _main_os.build_display_event(moon_event)
-		adjusted_option = _get_option_by_prefix(display_moon_event, "执行自救计划")
+		adjusted_option = _get_option_by_id(display_moon_event, "option_01")
 		_assert_eq(
 			adjusted_option.energy_cost,
 			95,
@@ -267,7 +267,7 @@ func _assert_representative_event_states_change_main_event_options() -> void:
 		)
 		_main_os.set_event_state("event_state.mid_08_root_server_retrofit", "moss_schedule")
 		display_moon_event = _main_os.build_display_event(moon_event)
-		adjusted_option = _get_option_by_prefix(display_moon_event, "强制接管决策")
+		adjusted_option = _get_option_by_id(display_moon_event, "option_03")
 		_assert_eq(
 			adjusted_option.energy_cost,
 			20,
@@ -282,9 +282,9 @@ func _assert_representative_event_states_change_main_event_options() -> void:
 	var audit_event := load("res://data/events/event_2065_ai_isolation_audit.tres") as GameEvent
 	_assert_true(audit_event != null, "应能加载真实 2065 主事件资源")
 	if audit_event != null:
-		var original_energy := _get_option_by_prefix(audit_event, "有限开放接口").energy_cost
+		var original_energy := _get_option_by_id(audit_event, "option_02").energy_cost
 		var display_audit_event: GameEvent = _main_os.build_display_event(audit_event)
-		var adjusted_option := _get_option_by_prefix(display_audit_event, "有限开放接口")
+		var adjusted_option := _get_option_by_id(display_audit_event, "option_02")
 		_assert_eq(
 			adjusted_option.energy_cost,
 			20,
@@ -295,13 +295,13 @@ func _assert_representative_event_states_change_main_event_options() -> void:
 			"2065 调整后的选项文案应说明前序授权状态"
 		)
 		_assert_eq(
-			_get_option_by_prefix(audit_event, "有限开放接口").energy_cost,
+			_get_option_by_id(audit_event, "option_02").energy_cost,
 			original_energy,
 			"2065 原始事件资源选项代价不应被运行时副本污染"
 		)
 		_main_os.set_event_state("event_state.mid_10_authorization_return", "full_return")
 		display_audit_event = _main_os.build_display_event(audit_event)
-		adjusted_option = _get_option_by_prefix(display_audit_event, "配合隔离审查")
+		adjusted_option = _get_option_by_id(display_audit_event, "option_01")
 		_assert_eq(
 			adjusted_option.authority_delta,
 			-10,
@@ -313,7 +313,7 @@ func _assert_representative_event_states_change_main_event_options() -> void:
 		)
 		_main_os.set_event_state("event_state.mid_10_authorization_return", "emergency_backdoor")
 		display_audit_event = _main_os.build_display_event(audit_event)
-		adjusted_option = _get_option_by_prefix(display_audit_event, "隐藏核心链路")
+		adjusted_option = _get_option_by_id(display_audit_event, "option_03")
 		_assert_eq(
 			adjusted_option.authority_delta,
 			16,
@@ -328,9 +328,9 @@ func _assert_representative_event_states_change_main_event_options() -> void:
 	var overload_event := load("res://data/events/event_2070_siberian_engine_overload.tres") as GameEvent
 	_assert_true(overload_event != null, "应能加载真实 2070 主事件资源")
 	if overload_event != null:
-		var original_energy := _get_option_by_prefix(overload_event, "启动备用阵列").energy_cost
+		var original_energy := _get_option_by_id(overload_event, "option_02").energy_cost
 		var display_overload_event: GameEvent = _main_os.build_display_event(overload_event)
-		var adjusted_option := _get_option_by_prefix(display_overload_event, "启动备用阵列")
+		var adjusted_option := _get_option_by_id(display_overload_event, "option_02")
 		_assert_eq(
 			adjusted_option.energy_cost,
 			25,
@@ -341,13 +341,13 @@ func _assert_representative_event_states_change_main_event_options() -> void:
 			"2070 调整后的选项文案应说明热屏蔽短缺处置来源"
 		)
 		_assert_eq(
-			_get_option_by_prefix(overload_event, "启动备用阵列").energy_cost,
+			_get_option_by_id(overload_event, "option_02").energy_cost,
 			original_energy,
 			"2070 原始事件资源选项代价不应被运行时副本污染"
 		)
 		_main_os.set_event_state("event_state.mid_14_heat_shield_shortage", "load_reduction")
 		display_overload_event = _main_os.build_display_event(overload_event)
-		adjusted_option = _get_option_by_prefix(display_overload_event, "分段停机")
+		adjusted_option = _get_option_by_id(display_overload_event, "option_01")
 		_assert_eq(
 			adjusted_option.order_delta,
 			-10,
@@ -359,7 +359,7 @@ func _assert_representative_event_states_change_main_event_options() -> void:
 		)
 		_main_os.set_event_state("event_state.mid_14_heat_shield_shortage", "moss_supply_reorder")
 		display_overload_event = _main_os.build_display_event(overload_event)
-		adjusted_option = _get_option_by_prefix(display_overload_event, "强制超频点火")
+		adjusted_option = _get_option_by_id(display_overload_event, "option_03")
 		_assert_eq(
 			adjusted_option.energy_cost,
 			15,
@@ -371,9 +371,9 @@ func _assert_representative_event_states_change_main_event_options() -> void:
 		)
 
 
-func _get_option_by_prefix(event: GameEvent, button_prefix: String) -> EventOption:
+func _get_option_by_id(event: GameEvent, option_id: String) -> EventOption:
 	for option in event.options:
-		if option.button_text.begins_with(button_prefix):
+		if option.option_id == option_id:
 			return option
 	return null
 
@@ -388,7 +388,10 @@ func _assert_adjusted_main_event_options_are_used_for_resolution() -> void:
 	if moon_event == null:
 		return
 
-	_main_os.all_events = [moon_event] as Array[GameEvent]
+	var renamed_event := moon_event.duplicate(true) as GameEvent
+	renamed_event.event_title = "改名后的 2058 事件"
+	renamed_event.options[0].button_text = "改名后的执行方案"
+	_main_os.all_events = [renamed_event] as Array[GameEvent]
 	_main_os.triggered_events.clear()
 	_main_os.current_year = 2058
 	_main_os.current_month = 1
@@ -403,10 +406,15 @@ func _assert_adjusted_main_event_options_are_used_for_resolution() -> void:
 	_assert_eq(
 		_main_os.current_energy,
 		40,
-		"真实事件结算应使用运行时副本调整后的 60 能源代价"
+		"修改标题和按钮文字后仍应使用稳定 ID 对应的 60 能源代价"
 	)
 	_assert_eq(
-		_get_option_by_prefix(moon_event, "执行自救计划").energy_cost,
+		_main_os.triggered_events[0],
+		"event_2058_lunar_fall_crisis",
+		"修改标题后触发记录仍应使用事件 ID"
+	)
+	_assert_eq(
+		_get_option_by_id(moon_event, "option_01").energy_cost,
 		80,
 		"真实事件结算后原始 2058 资源能源代价仍不应被污染"
 	)
@@ -414,10 +422,11 @@ func _assert_adjusted_main_event_options_are_used_for_resolution() -> void:
 
 func _create_state_event() -> GameEvent:
 	var event := GameEvent.new()
+	event.event_id = "event_test_state"
 	event.event_title = "事件状态测试"
 	event.event_time = 2045
 	event.event_month = 1
-	event.event_region = "亚洲"
+	event.event_region = "asia"
 	event.event_description = "测试事件状态写入"
 	event.options = [
 		_create_option("人工复核", "manual_review"),
@@ -428,10 +437,14 @@ func _create_state_event() -> GameEvent:
 
 func _create_named_event(title: String, year: int, description: String) -> GameEvent:
 	var event := GameEvent.new()
+	event.event_id = {
+		"大淹没事故": "event_2053_great_flood_accident",
+		"木星引力危机": "event_2075_jupiter_gravity_crisis",
+	}.get(title, "event_test_%s" % year)
 	event.event_title = title
 	event.event_time = year
 	event.event_month = 1
-	event.event_region = "欧洲"
+	event.event_region = "europe"
 	event.event_description = description
 	return event
 

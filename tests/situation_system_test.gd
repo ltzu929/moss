@@ -12,6 +12,7 @@ const SITUATION_PATHS: Array[String] = [
 	"res://data/situations/underground_geological_stress.tres",
 	"res://data/situations/underground_life_support_fault.tres",
 ]
+const REGION_IDENTITY: GDScript = preload("res://scripts/resources/region_identity.gd")
 
 var _templates: Array[SituationData] = []
 
@@ -87,16 +88,16 @@ func _assert_content_contract() -> void:
 func _assert_concurrency_and_approach_switching() -> void:
 	var system := _new_system(20260714)
 	var first := system.start_situation_for_test(
-		"regional_power_instability", "亚洲", 2044, 7
+		"regional_power_instability", "asia", 2044, 7
 	)
 	var duplicate_region := system.start_situation_for_test(
-		"emergency_communication_congestion", "亚洲", 2044, 7
+		"emergency_communication_congestion", "asia", 2044, 7
 	)
 	var second := system.start_situation_for_test(
-		"emergency_communication_congestion", "北美", 2044, 7
+		"emergency_communication_congestion", "north_america", 2044, 7
 	)
 	var third := system.start_situation_for_test(
-		"underground_life_support_fault", "非洲", 2044, 7
+		"underground_life_support_fault", "africa", 2044, 7
 	)
 	_assert_true(not first.is_empty(), "第一项局势应能启动")
 	_assert_true(duplicate_region.is_empty(), "同一地区同时最多一项局势")
@@ -129,11 +130,11 @@ func _assert_concurrency_and_approach_switching() -> void:
 func _assert_unfunded_growth_and_stage_pause() -> void:
 	var system := _new_system(17)
 	var started := system.start_situation_for_test(
-		"underground_life_support_fault", "非洲", 2045, 3
+		"underground_life_support_fault", "africa", 2045, 3
 	)
 	var instance_id := str(started.get("instance_id", ""))
 	system.set_approach(instance_id, "automated_trusteeship", 20)
-	var sector := _create_sector("非洲")
+	var sector := _create_sector("africa")
 	var sectors: Array[SectorData] = [sector]
 	var result := system.process_month(sectors, 0, 0, false, 2045, 4)
 	var snapshots: Array = result.get("situations", [])
@@ -154,10 +155,10 @@ func _assert_unfunded_growth_and_stage_pause() -> void:
 
 func _assert_node_resolution_and_history() -> void:
 	var system := _new_system(29)
-	var sector := _create_sector("亚洲")
+	var sector := _create_sector("asia")
 	var sectors: Array[SectorData] = [sector]
 	var started := system.start_situation_for_test(
-		"underground_geological_stress", "亚洲", 2055, 3
+		"underground_geological_stress", "asia", 2055, 3
 	)
 	var instance_id := str(started.get("instance_id", ""))
 	system.process_month(sectors, 0, 0, false, 2055, 4)
@@ -171,7 +172,7 @@ func _assert_node_resolution_and_history() -> void:
 		pending_severity,
 		"待处理节点存在时领域层不得继续推进或抽取局势"
 	)
-	system.apply_command_intervention("technology_aid", "亚洲", sectors)
+	system.apply_command_intervention("technology_aid", "asia", sectors)
 	_assert_eq(
 		int(system.get_active_snapshots()[0].get("severity", -1)),
 		pending_severity,
@@ -194,11 +195,11 @@ func _assert_node_resolution_and_history() -> void:
 		"staged_evacuation",
 		"节点选择应写入局势运行态"
 	)
-	system.apply_command_intervention("technology_aid", "亚洲", sectors)
-	system.apply_command_intervention("technology_aid", "亚洲", sectors)
+	system.apply_command_intervention("technology_aid", "asia", sectors)
+	system.apply_command_intervention("technology_aid", "asia", sectors)
 	_assert_eq(system.get_active_count(), 0, "局势解决后应离开活跃列表")
 	var repeated := system.start_situation_for_test(
-		"underground_geological_stress", "亚洲", 2061, 2
+		"underground_geological_stress", "asia", 2061, 2
 	)
 	_assert_true(
 		"分段人工撤离" in str(repeated.get("history_echo", "")),
@@ -218,9 +219,9 @@ func _assert_node_resolution_and_history() -> void:
 	)
 	system.set_approach(repeated_id, "local_survey", 20)
 	var repeated_notifications: Array = []
-	var repeated_result := system.apply_command_intervention("technology_aid", "亚洲", sectors)
+	var repeated_result := system.apply_command_intervention("technology_aid", "asia", sectors)
 	repeated_notifications.append_array(repeated_result.get("notifications", []))
-	repeated_result = system.apply_command_intervention("technology_aid", "亚洲", sectors)
+	repeated_result = system.apply_command_intervention("technology_aid", "asia", sectors)
 	repeated_notifications.append_array(repeated_result.get("notifications", []))
 	var repeated_messages := _notification_messages(repeated_notifications)
 	_assert_true(
@@ -264,12 +265,12 @@ func _assert_conditional_opportunity_contract() -> void:
 		"不匹配的历史值不得错误解锁条件型机会"
 	)
 	var started := system.start_situation_for_test(
-		"regional_mutual_aid_window", "南美", 2056, 6
+		"regional_mutual_aid_window", "south_america", 2056, 6
 	)
 	_assert_eq(str(started.get("stage_name", "")), "收窄", "机会型局势应使用专属阶段文案")
 	_assert_true(bool(started.get("node", {}).get("pending", false)), "机会出现时应立即等待利用方式")
 	var opportunity_id := str(started.get("instance_id", ""))
-	var opportunity_sector := _create_sector("南美")
+	var opportunity_sector := _create_sector("south_america")
 	var opportunity_sectors: Array[SectorData] = [opportunity_sector]
 	system.resolve_node(opportunity_id, "local_compact", 0, 0, opportunity_sectors)
 	system._active[0]["severity"] = 97
@@ -281,7 +282,7 @@ func _assert_conditional_opportunity_contract() -> void:
 		"机会型局势关闭时应使用窗口语义"
 	)
 	var repeated_opportunity := system.start_situation_for_test(
-		"regional_mutual_aid_window", "南美", 2062, 4
+		"regional_mutual_aid_window", "south_america", 2062, 4
 	)
 	_assert_true(
 		"协作窗口关闭" in str(repeated_opportunity.get("history_echo", "")),
@@ -291,16 +292,16 @@ func _assert_conditional_opportunity_contract() -> void:
 
 func _assert_command_intervention_and_outcome() -> void:
 	var system := _new_system(31)
-	var sector := _create_sector("亚洲")
+	var sector := _create_sector("asia")
 	var sectors: Array[SectorData] = [sector]
 	var started := system.start_situation_for_test(
-		"regional_power_instability", "亚洲", 2046, 1
+		"regional_power_instability", "asia", 2046, 1
 	)
 	var instance_id := str(started.get("instance_id", ""))
 	system.set_approach(instance_id, "local_repair", 20)
-	var first := system.apply_command_intervention("energy_convert", "亚洲", sectors)
+	var first := system.apply_command_intervention("energy_convert", "asia", sectors)
 	_assert_eq(int(first["situations"][0].get("severity", -1)), 18, "现有指令应一次性降低局势严重度")
-	var second := system.apply_command_intervention("energy_convert", "亚洲", sectors)
+	var second := system.apply_command_intervention("energy_convert", "asia", sectors)
 	_assert_eq(system.get_active_count(), 0, "严重度降至 0 后局势应结算并移除")
 	_assert_true("resolved" in _notification_types(second.get("notifications", [])), "安全结算应生成记录")
 	_assert_eq(sector.order, 53, "成功结算应叠加局势与所选方针的秩序恢复")
@@ -327,9 +328,10 @@ func _get_template(situation_id: String) -> SituationData:
 	return null
 
 
-func _create_sector(region_name: String) -> SectorData:
+func _create_sector(region_id: String) -> SectorData:
 	var sector := SectorData.new()
-	sector.region_name = region_name
+	sector.region_id = region_id
+	sector.region_name = REGION_IDENTITY.display_name(region_id)
 	sector.order = 50
 	sector.hope = 50
 	sector.authority = 50

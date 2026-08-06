@@ -41,7 +41,7 @@ func _assert_hud_entry() -> void:
 
 func _assert_situation_details_and_approach() -> void:
 	var snapshot: Dictionary = _main_os.start_situation_for_test(
-		"regional_power_instability", "亚洲", 2044, 7
+		"regional_power_instability", "asia", 2044, 7
 	)
 	await get_tree().process_frame
 	_assert_true(not snapshot.is_empty(), "测试局势应能从主场景启动")
