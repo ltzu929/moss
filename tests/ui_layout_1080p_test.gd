@@ -54,7 +54,7 @@ func _assert_europe_selection_keeps_geometry(main_os: Control) -> void:
 	var before_content_rect := content_row.get_global_rect()
 	var before_map_rect := world_map.get_global_rect()
 
-	world_map.region_selected.emit("欧洲")
+	world_map.region_selected.emit("europe")
 	await get_tree().process_frame
 	await get_tree().process_frame
 

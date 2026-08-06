@@ -14,7 +14,7 @@ extends Resource
 @export var event_time: int = 0
 ## 触发月份
 @export_range(1, 12, 1) var event_month: int = 1
-## 事件影响区域
+## 事件影响区域稳定 ID；显示层通过 RegionIdentity 恢复区域名称
 @export var event_region: String = "事件地区"
 ## 事件正文
 @export var event_description: String = "事件描述"

@@ -34,7 +34,7 @@ func _assert_initial_date_and_no_opening_recovery() -> void:
 
 
 func _assert_non_january_event_triggers_once() -> void:
-	var events: Array[GameEvent] = [_create_event("二月测试事件", 2044, 2)]
+	var events: Array[GameEvent] = [_create_event("event_test_february", "二月测试事件", 2044, 2)]
 	_main_os.all_events = events
 	_main_os.triggered_events.clear()
 
@@ -47,8 +47,8 @@ func _assert_non_january_event_triggers_once() -> void:
 	_assert_eq(_main_os.triggered_events.size(), 1, "2044.02 事件应触发一次")
 	_assert_eq(
 		_main_os.triggered_events[0],
-		"2044.02:二月测试事件",
-		"触发事件键应包含年月和标题"
+		"event_test_february",
+		"触发事件键应使用稳定事件 ID"
 	)
 
 	_main_os.current_year = 2044
@@ -58,7 +58,7 @@ func _assert_non_january_event_triggers_once() -> void:
 
 
 func _assert_year_boundary_settlement_before_end_event() -> void:
-	var events: Array[GameEvent] = [_create_event("木星测试事件", 2075, 1)]
+	var events: Array[GameEvent] = [_create_event("event_test_jupiter", "木星测试事件", 2075, 1)]
 	_main_os.all_events = events
 	_main_os.triggered_events.clear()
 	_main_os.current_year = 2074
@@ -105,12 +105,13 @@ func _tick_and_choose_event() -> void:
 	await get_tree().process_frame
 
 
-func _create_event(title: String, year: int, month: int) -> GameEvent:
+func _create_event(event_id: String, title: String, year: int, month: int) -> GameEvent:
 	var event := GameEvent.new()
+	event.event_id = event_id
 	event.event_title = title
 	event.event_time = year
 	event.event_month = month
-	event.event_region = "亚洲"
+	event.event_region = "asia"
 	event.event_description = "测试事件"
 	event.options = [_create_option()]
 	return event

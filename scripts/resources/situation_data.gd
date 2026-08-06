@@ -6,6 +6,7 @@ extends Resource
 @export var situation_id: String = ""
 @export var title: String = "未命名局势"
 @export_multiline var description: String = ""
+## 稳定区域 ID 白名单；空数组表示所有区域
 @export var eligible_regions: Array[String] = []
 @export var region_descriptions: Dictionary = {}
 @export_range(2044, 2075, 1) var min_year: int = 2044
@@ -60,8 +61,8 @@ func get_approach(approach_id: String) -> SituationApproachData:
 	return null
 
 
-func get_region_description(region_name: String) -> String:
-	return str(region_descriptions.get(region_name, description))
+func get_region_description(region_id: String) -> String:
+	return str(region_descriptions.get(region_id, description))
 
 
 func get_stage_name(stage: int) -> String:

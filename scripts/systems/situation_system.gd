@@ -143,14 +143,14 @@ func set_approach(
 
 func apply_command_intervention(
 	command_id: String,
-	region_name: String,
+	region_id: String,
 	sectors: Array[SectorData]
 ) -> Dictionary:
 	var notifications: Array[Dictionary] = []
 	var affected: Array[Dictionary] = []
 	for index in range(_active.size() - 1, -1, -1):
 		var state: Dictionary = _active[index]
-		if region_name != "" and state["region_name"] != region_name:
+		if region_id != "" and state["region_id"] != region_id:
 			continue
 		if bool(state.get("node_pending", false)):
 			continue
@@ -165,7 +165,8 @@ func apply_command_intervention(
 			{
 				"instance_id": state["instance_id"],
 				"title": data.title,
-				"region_name": state["region_name"],
+				"region_id": state["region_id"],
+				"region_name": RegionIdentity.display_name(str(state["region_id"])),
 				"reduction": reduction,
 			}
 		)
@@ -201,7 +202,7 @@ func resolve_node(
 	if current_cpu < option.cpu_cost or current_energy < option.energy_cost:
 		return _node_result(false, current_cpu, current_energy, "资源不足，无法执行该方案")
 
-	var sector := _find_sector_data(sectors, str(state["region_name"]))
+	var sector := _find_sector_data(sectors, str(state["region_id"]))
 	var new_cpu := current_cpu - option.cpu_cost
 	var new_energy := current_energy - option.energy_cost
 	state["severity"] = clampi(int(state["severity"]) + option.severity_delta, 0, 100)
@@ -237,14 +238,14 @@ func resolve_node(
 
 func start_situation_for_test(
 	situation_id: String,
-	region_name: String,
+	region_id: String,
 	year: int,
 	month: int
 ) -> Dictionary:
 	var data := _get_template(situation_id)
-	if data == null or _active.size() >= MAX_ACTIVE or has_active_region(region_name):
+	if data == null or _active.size() >= MAX_ACTIVE or has_active_region(region_id):
 		return {}
-	var state := _create_state(data, region_name, year, month)
+	var state := _create_state(data, region_id, year, month)
 	_active.append(state)
 	return _snapshot(state)
 
@@ -271,16 +272,16 @@ func get_active_count() -> int:
 	return _active.size()
 
 
-func get_active_count_by_region(region_name: String) -> int:
+func get_active_count_by_region(region_id: String) -> int:
 	var count := 0
 	for state in _active:
-		if state["region_name"] == region_name:
+		if state["region_id"] == region_id:
 			count += 1
 	return count
 
 
-func has_active_region(region_name: String) -> bool:
-	return get_active_count_by_region(region_name) > 0
+func has_active_region(region_id: String) -> bool:
+	return get_active_count_by_region(region_id) > 0
 
 
 func has_pending_node() -> bool:
@@ -387,18 +388,18 @@ func _try_start_random(
 		if not _is_template_eligible(data, year, facts):
 			continue
 		for sector in sectors:
-			if sector == null or not _is_region_eligible(data, sector.region_name):
+			if sector == null or not _is_region_eligible(data, sector.region_id):
 				continue
 			if sector.order < data.minimum_region_order or sector.hope < data.minimum_region_hope:
 				continue
-			if has_active_region(sector.region_name):
+			if has_active_region(sector.region_id):
 				continue
-			var cooldown_key := _cooldown_key(data.situation_id, sector.region_name)
+			var cooldown_key := _cooldown_key(data.situation_id, sector.region_id)
 			if int(_repeat_cooldowns.get(cooldown_key, 0)) > 0:
 				continue
 			var weight := data.base_weight + _risk_weight(data, sector, current_cpu, current_energy)
 			weight = maxi(1, weight)
-			candidates.append({"data": data, "region_name": sector.region_name, "weight": weight})
+			candidates.append({"data": data, "region_id": sector.region_id, "weight": weight})
 			total_weight += weight
 
 	if candidates.is_empty() or total_weight <= 0:
@@ -410,7 +411,7 @@ func _try_start_random(
 		cursor += int(candidate["weight"])
 		if roll > cursor:
 			continue
-		var state := _create_state(candidate["data"], candidate["region_name"], year, month)
+		var state := _create_state(candidate["data"], candidate["region_id"], year, month)
 		_active.append(state)
 		_spawn_cooldown_months = SPAWN_COOLDOWN_MONTHS
 		notifications.append(
@@ -428,7 +429,7 @@ func _finish_situation(
 	var state: Dictionary = _active[index]
 	var data: SituationData = state["data"]
 	_apply_outcome(state, sectors, success)
-	_repeat_cooldowns[_cooldown_key(data.situation_id, state["region_name"])] = (
+	_repeat_cooldowns[_cooldown_key(data.situation_id, state["region_id"])] = (
 		REPEAT_COOLDOWN_MONTHS
 	)
 	var message := "局势已经恢复到安全边界。" if success else "局势失控并造成区域损失。"
@@ -443,7 +444,7 @@ func _finish_situation(
 
 
 func _apply_outcome(state: Dictionary, sectors: Array[SectorData], success: bool) -> void:
-	var sector := _find_sector_data(sectors, str(state["region_name"]))
+	var sector := _find_sector_data(sectors, str(state["region_id"]))
 	if sector == null:
 		return
 	var data: SituationData = state["data"]
@@ -468,15 +469,15 @@ func _apply_outcome(state: Dictionary, sectors: Array[SectorData], success: bool
 
 func _create_state(
 	data: SituationData,
-	region_name: String,
+	region_id: String,
 	year: int,
 	month: int
 ) -> Dictionary:
 	_instance_counter += 1
 	var state := {
-		"instance_id": "%s:%s:%d" % [data.situation_id, region_name, _instance_counter],
+		"instance_id": "%s:%s:%d" % [data.situation_id, region_id, _instance_counter],
 		"data": data,
-		"region_name": region_name,
+		"region_id": region_id,
 		"severity": data.initial_severity,
 		"stage": _stage_for_severity(data.initial_severity),
 		"approach_id": "",
@@ -529,12 +530,14 @@ func _snapshot(
 		else:
 			expected_delta += data.unfunded_growth_penalty
 		approach_name = active_approach.display_name
+	var region_id := str(state["region_id"])
 	return {
 		"instance_id": state["instance_id"],
 		"situation_id": data.situation_id,
 		"title": data.title,
-		"description": data.get_region_description(str(state["region_name"])),
-		"region_name": state["region_name"],
+		"description": data.get_region_description(region_id),
+		"region_id": region_id,
+		"region_name": RegionIdentity.display_name(region_id),
 		"severity": state["severity"],
 		"stage": state["stage"],
 		"stage_name": data.get_stage_name(int(state["stage"])),
@@ -552,7 +555,7 @@ func _snapshot(
 		"started_month": state["started_month"],
 		"approaches": approaches,
 		"node": _build_node_snapshot(state),
-		"history_echo": _build_history_echo(data.situation_id, str(state["region_name"])),
+		"history_echo": _build_history_echo(data.situation_id, region_id),
 	}
 
 
@@ -586,14 +589,15 @@ func _build_notification(
 ) -> Dictionary:
 	var data: SituationData = state["data"]
 	if type in ["started", "resolved", "failed"]:
-		var history_echo := _build_history_echo(data.situation_id, str(state["region_name"]))
+		var history_echo := _build_history_echo(data.situation_id, str(state["region_id"]))
 		if history_echo != "":
 			message += "\n历史回声：" + history_echo
 	return {
 		"type": type,
 		"instance_id": state["instance_id"],
 		"title": data.title,
-		"region_name": state["region_name"],
+		"region_id": state["region_id"],
+		"region_name": RegionIdentity.display_name(str(state["region_id"])),
 		"message": message,
 		"pause": pause,
 	}
@@ -643,15 +647,15 @@ func _get_template(situation_id: String) -> SituationData:
 	return null
 
 
-func _find_sector_data(sectors: Array[SectorData], region_name: String) -> SectorData:
+func _find_sector_data(sectors: Array[SectorData], region_id: String) -> SectorData:
 	for sector in sectors:
-		if sector != null and sector.region_name == region_name:
+		if sector != null and sector.region_id == region_id:
 			return sector
 	return null
 
 
-func _is_region_eligible(data: SituationData, region_name: String) -> bool:
-	return data.eligible_regions.is_empty() or region_name in data.eligible_regions
+func _is_region_eligible(data: SituationData, region_id: String) -> bool:
+	return data.eligible_regions.is_empty() or region_id in data.eligible_regions
 
 
 func _is_template_eligible(data: SituationData, year: int, facts: Dictionary) -> bool:
@@ -743,7 +747,7 @@ func _build_node_snapshot(state: Dictionary) -> Dictionary:
 
 func _record_history(state: Dictionary, success: bool) -> void:
 	var data: SituationData = state["data"]
-	var key := _cooldown_key(data.situation_id, str(state["region_name"]))
+	var key := _cooldown_key(data.situation_id, str(state["region_id"]))
 	var previous: Dictionary = _history.get(key, {})
 	_history[key] = {
 		"occurrences": int(previous.get("occurrences", 0)) + 1,
@@ -757,8 +761,8 @@ func _record_history(state: Dictionary, success: bool) -> void:
 	}
 
 
-func _build_history_echo(situation_id: String, region_name: String) -> String:
-	var key := _cooldown_key(situation_id, region_name)
+func _build_history_echo(situation_id: String, region_id: String) -> String:
+	var key := _cooldown_key(situation_id, region_id)
 	var history: Dictionary = _history.get(key, {})
 	if history.is_empty():
 		return ""
@@ -769,6 +773,7 @@ func _build_history_echo(situation_id: String, region_name: String) -> String:
 	else:
 		result_text = "协作窗口关闭" if is_opportunity else "处置失控"
 	var choice_name := str(history.get("last_node_choice_name", ""))
+	var region_name := RegionIdentity.display_name(region_id)
 	if choice_name != "":
 		return "上次在%s选择“%s”，最终%s。" % [region_name, choice_name, result_text]
 	return "上次在%s的同类局势最终%s。" % [region_name, result_text]
@@ -800,5 +805,5 @@ func _stage_name(stage: int) -> String:
 	return "预警"
 
 
-func _cooldown_key(situation_id: String, region_name: String) -> String:
-	return "%s|%s" % [situation_id, region_name]
+func _cooldown_key(situation_id: String, region_id: String) -> String:
+	return "%s|%s" % [situation_id, region_id]

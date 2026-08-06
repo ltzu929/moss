@@ -5,7 +5,7 @@
 
 * 从真实 ``.tres`` 资源生成或比对身份映射基线；
 * 扫描 ``.gd``、``.tres`` 和 ``.tscn`` 中的身份相关字段，输出五类用途清单，
-  为后续 PR 1c 的运行时身份替换提供可复核的事实基线。
+  为运行时身份替换和后续解耦批次提供可复核的事实基线。
 
 工具只使用 Python 标准库，不修改生产资源。只有显式传入
 ``--write-baseline`` 时才会写入指定的基线文件。
@@ -68,8 +68,8 @@ _FUNCTION_DECLARATION_RE = re.compile(
 RUNTIME_IDENTITY_FUNCTIONS: frozenset[str] = frozenset(
     {
         "_get_event_trigger_key",
-        "_get_event_option_by_prefix",
-        "_find_sector_by_region",
+        "_get_event_option",
+        "_find_sector_by_id",
     }
 )
 
@@ -238,8 +238,8 @@ def validate_mapping(mapping: dict[str, Any]) -> list[str]:
             errors.append(f"事件标题缺失：{path}")
         if not event_region:
             errors.append(f"事件区域缺失：{path}")
-        elif event_region not in sector_names:
-            errors.append(f"事件区域未映射到真实区域：{path} -> {event_region}")
+        elif event_region not in sector_ids:
+            errors.append(f"事件区域 ID 未映射到真实区域：{path} -> {event_region}")
 
         branch_key = event.get("required_decision_tag_key") or ""
         branch_value = event.get("required_decision_tag_value") or ""
@@ -298,10 +298,10 @@ def classify_usage(
         marker in line
         for marker in (
             "triggered_events",
-            "match event.event_title",
+            "match event.event_id",
             "_get_event_trigger_key",
-            "_get_event_option_by_prefix",
-            "_find_sector_by_region",
+            "_get_event_option",
+            "_find_sector_by_id",
         )
     ):
         category = "runtime_identity"

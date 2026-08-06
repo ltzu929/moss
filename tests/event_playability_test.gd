@@ -4,12 +4,12 @@ extends "res://tests/support/moss_test_case.gd"
 const EVENT_DIRECTORY := "res://data/events/"
 const EVENT_POPUP_SCENE: PackedScene = preload("res://scenes/event_popup.tscn")
 const VALID_EVENT_REGIONS: Array[String] = [
-	"北美",
-	"南美",
-	"欧洲",
-	"非洲",
-	"亚洲",
-	"大洋洲",
+	"north_america",
+	"south_america",
+	"europe",
+	"africa",
+	"asia",
+	"oceania",
 ]
 const EVENT_DESCRIPTION_CONTRACTS: Dictionary = {
 	"event_2065_ai_isolation_audit.tres": {
@@ -107,11 +107,8 @@ func _assert_all_events_have_safe_choices() -> void:
 			"强制事件必须提供零能源保底方案：%s" % event.event_title
 		)
 
-		var trigger_key := "%04d.%02d:%s" % [
-			event.event_time,
-			event.event_month,
-			event.event_title,
-		]
+		var trigger_key := event.event_id
+		_assert_true(not trigger_key.is_empty(), "事件触发键不得为空：%s" % file_name)
 		_assert_true(not trigger_keys.has(trigger_key), "事件触发键不得重复：%s" % trigger_key)
 		trigger_keys[trigger_key] = true
 	_assert_true(event_count >= 25, "应覆盖全部现有事件资源")
@@ -123,9 +120,10 @@ func _assert_runtime_emergency_fallback() -> void:
 	add_child(popup)
 	await get_tree().process_frame
 	var event := GameEvent.new()
+	event.event_id = "event_test_playability_fallback"
 	event.event_title = "防软锁测试"
 	event.event_time = 2050
-	event.event_region = "欧洲"
+	event.event_region = "europe"
 	event.event_description = "所有配置方案都超过当前能源。"
 	event.options = [
 		_create_option("高成本方案", 20),

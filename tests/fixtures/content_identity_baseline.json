@@ -5,7 +5,7 @@
       "path": "res://data/events/event_2044_space_elevator_crisis.tres",
       "event_id": "event_2044_space_elevator_crisis",
       "event_title": "太空电梯危机",
-      "event_region": "亚洲",
+      "event_region": "asia",
       "required_decision_tag_key": "",
       "required_decision_tag_value": "",
       "options": [
@@ -36,7 +36,7 @@
       "path": "res://data/events/event_2053_great_flood_accident.tres",
       "event_id": "event_2053_great_flood_accident",
       "event_title": "大淹没事故",
-      "event_region": "欧洲",
+      "event_region": "europe",
       "required_decision_tag_key": "",
       "required_decision_tag_value": "",
       "options": [
@@ -67,7 +67,7 @@
       "path": "res://data/events/event_2058_lunar_fall_crisis.tres",
       "event_id": "event_2058_lunar_fall_crisis",
       "event_title": "月球坠落危机",
-      "event_region": "亚洲",
+      "event_region": "asia",
       "required_decision_tag_key": "",
       "required_decision_tag_value": "",
       "options": [
@@ -98,7 +98,7 @@
       "path": "res://data/events/event_2065_ai_isolation_audit.tres",
       "event_id": "event_2065_ai_isolation_audit",
       "event_title": "AI隔离审查",
-      "event_region": "欧洲",
+      "event_region": "europe",
       "required_decision_tag_key": "",
       "required_decision_tag_value": "",
       "options": [
@@ -129,7 +129,7 @@
       "path": "res://data/events/event_2070_siberian_engine_overload.tres",
       "event_id": "event_2070_siberian_engine_overload",
       "event_title": "西伯利亚发动机群过载",
-      "event_region": "欧洲",
+      "event_region": "europe",
       "required_decision_tag_key": "",
       "required_decision_tag_value": "",
       "options": [
@@ -160,7 +160,7 @@
       "path": "res://data/events/event_2075_jupiter_gravity_crisis.tres",
       "event_id": "event_2075_jupiter_gravity_crisis",
       "event_title": "木星引力危机",
-      "event_region": "欧洲",
+      "event_region": "europe",
       "required_decision_tag_key": "",
       "required_decision_tag_value": "",
       "options": [
@@ -191,7 +191,7 @@
       "path": "res://data/events/event_branch_01_perimeter_compensation_appeal.tres",
       "event_id": "event_branch_01_perimeter_compensation_appeal",
       "event_title": "外围地下城补偿申诉",
-      "event_region": "欧洲",
+      "event_region": "europe",
       "required_decision_tag_key": "decision.core_2053_population_vs_infrastructure",
       "required_decision_tag_value": "sacrifice_perimeter",
       "options": [
@@ -222,7 +222,7 @@
       "path": "res://data/events/event_branch_02_hidden_chain_anomaly_receipt.tres",
       "event_id": "event_branch_02_hidden_chain_anomaly_receipt",
       "event_title": "隐藏链路异常回执",
-      "event_region": "欧洲",
+      "event_region": "europe",
       "required_decision_tag_key": "decision.core_2065_audit_posture",
       "required_decision_tag_value": "hidden_core_chain",
       "options": [
@@ -253,7 +253,7 @@
       "path": "res://data/events/event_mid_01_underground_city_lottery_queue_accident.tres",
       "event_id": "event_mid_01_underground_city_lottery_queue_accident",
       "event_title": "地下城抽签排队事故",
-      "event_region": "亚洲",
+      "event_region": "asia",
       "required_decision_tag_key": "",
       "required_decision_tag_value": "",
       "options": [
@@ -284,7 +284,7 @@
       "path": "res://data/events/event_mid_02_automation_interface_hearing.tres",
       "event_id": "event_mid_02_automation_interface_hearing",
       "event_title": "自动化接口公开听证",
-      "event_region": "欧洲",
+      "event_region": "europe",
       "required_decision_tag_key": "",
       "required_decision_tag_value": "",
       "options": [
@@ -315,7 +315,7 @@
       "path": "res://data/events/event_mid_03_underground_digital_memorial_network.tres",
       "event_id": "event_mid_03_underground_digital_memorial_network",
       "event_title": "地下数字纪念网络",
-      "event_region": "北美",
+      "event_region": "north_america",
       "required_decision_tag_key": "",
       "required_decision_tag_value": "",
       "options": [
@@ -346,7 +346,7 @@
       "path": "res://data/events/event_mid_04_space_elevator_debris_cleanup_window.tres",
       "event_id": "event_mid_04_space_elevator_debris_cleanup_window",
       "event_title": "太空电梯残骸清理窗口",
-      "event_region": "非洲",
+      "event_region": "africa",
       "required_decision_tag_key": "",
       "required_decision_tag_value": "",
       "options": [
@@ -377,7 +377,7 @@
       "path": "res://data/events/event_mid_05_local_dispatch_model_pilot.tres",
       "event_id": "event_mid_05_local_dispatch_model_pilot",
       "event_title": "地方调度模型试点",
-      "event_region": "南美",
+      "event_region": "south_america",
       "required_decision_tag_key": "",
       "required_decision_tag_value": "",
       "options": [
@@ -408,7 +408,7 @@
       "path": "res://data/events/event_mid_06_temporary_settlement_ration_crisis.tres",
       "event_id": "event_mid_06_temporary_settlement_ration_crisis",
       "event_title": "临时安置点配给危机",
-      "event_region": "南美",
+      "event_region": "south_america",
       "required_decision_tag_key": "",
       "required_decision_tag_value": "",
       "options": [
@@ -439,7 +439,7 @@
       "path": "res://data/events/event_mid_07_underground_city_migration_priority.tres",
       "event_id": "event_mid_07_underground_city_migration_priority",
       "event_title": "地下城迁移优先级",
-      "event_region": "亚洲",
+      "event_region": "asia",
       "required_decision_tag_key": "",
       "required_decision_tag_value": "",
       "options": [
@@ -470,7 +470,7 @@
       "path": "res://data/events/event_mid_08_root_server_waterproofing_delay.tres",
       "event_id": "event_mid_08_root_server_waterproofing_delay",
       "event_title": "根服务器防水改造延期",
-      "event_region": "欧洲",
+      "event_region": "europe",
       "required_decision_tag_key": "",
       "required_decision_tag_value": "",
       "options": [
@@ -501,7 +501,7 @@
       "path": "res://data/events/event_mid_09_yaya_sample_access_dispute.tres",
       "event_id": "event_mid_09_yaya_sample_access_dispute",
       "event_title": "丫丫样本访问争议",
-      "event_region": "亚洲",
+      "event_region": "asia",
       "required_decision_tag_key": "",
       "required_decision_tag_value": "",
       "options": [
@@ -532,7 +532,7 @@
       "path": "res://data/events/event_mid_10_crisis_authorization_return_dispute.tres",
       "event_id": "event_mid_10_crisis_authorization_return_dispute",
       "event_title": "危机授权归还争议",
-      "event_region": "欧洲",
+      "event_region": "europe",
       "required_decision_tag_key": "",
       "required_decision_tag_value": "",
       "options": [
@@ -563,7 +563,7 @@
       "path": "res://data/events/event_mid_11_education_engineering_retraining_plan.tres",
       "event_id": "event_mid_11_education_engineering_retraining_plan",
       "event_title": "教育与工程转岗方案",
-      "event_region": "大洋洲",
+      "event_region": "oceania",
       "required_decision_tag_key": "",
       "required_decision_tag_value": "",
       "options": [
@@ -594,7 +594,7 @@
       "path": "res://data/events/event_mid_12_digital_life_data_leak.tres",
       "event_id": "event_mid_12_digital_life_data_leak",
       "event_title": "数字生命数据泄露",
-      "event_region": "北美",
+      "event_region": "north_america",
       "required_decision_tag_key": "",
       "required_decision_tag_value": "",
       "options": [
@@ -625,7 +625,7 @@
       "path": "res://data/events/event_mid_13_post_audit_interface_restructure.tres",
       "event_id": "event_mid_13_post_audit_interface_restructure",
       "event_title": "审查后接口重组",
-      "event_region": "欧洲",
+      "event_region": "europe",
       "required_decision_tag_key": "",
       "required_decision_tag_value": "",
       "options": [
@@ -656,7 +656,7 @@
       "path": "res://data/events/event_mid_14_engine_array_heat_shield_shortage.tres",
       "event_id": "event_mid_14_engine_array_heat_shield_shortage",
       "event_title": "发动机阵列热屏蔽短缺",
-      "event_region": "欧洲",
+      "event_region": "europe",
       "required_decision_tag_key": "",
       "required_decision_tag_value": "",
       "options": [
@@ -687,7 +687,7 @@
       "path": "res://data/events/event_mid_15_propulsion_window_compression_report.tres",
       "event_id": "event_mid_15_propulsion_window_compression_report",
       "event_title": "推进窗口压缩报告",
-      "event_region": "欧洲",
+      "event_region": "europe",
       "required_decision_tag_key": "",
       "required_decision_tag_value": "",
       "options": [
@@ -718,7 +718,7 @@
       "path": "res://data/events/event_mid_16_civilization_backup_ethics_hearing.tres",
       "event_id": "event_mid_16_civilization_backup_ethics_hearing",
       "event_title": "文明备份伦理听证",
-      "event_region": "欧洲",
+      "event_region": "europe",
       "required_decision_tag_key": "",
       "required_decision_tag_value": "",
       "options": [
@@ -749,7 +749,7 @@
       "path": "res://data/events/event_mid_17_final_authorization_meeting.tres",
       "event_id": "event_mid_17_final_authorization_meeting",
       "event_title": "最终授权会议",
-      "event_region": "欧洲",
+      "event_region": "europe",
       "required_decision_tag_key": "",
       "required_decision_tag_value": "",
       "options": [

@@ -3,20 +3,21 @@ extends Control
 
 ## MOSS 界面主题工具
 const MOSS_THEME := preload("res://scripts/ui/moss_ui_theme.gd")
+const REGION_IDENTITY := preload("res://scripts/resources/region_identity.gd")
 
 var _globe_root: Node3D
 var _marker: MeshInstance3D
 var _focus_label: Label
-var _focused_region: String = "全球"
+var _focused_region: String = ""
 var _target_rotation: Vector3 = Vector3.ZERO
 var _region_rotations: Dictionary = {
-	"全球": Vector3(-0.12, -0.35, 0.0),
-	"北美": Vector3(-0.40, 1.75, 0.0),
-	"南美": Vector3(0.25, 1.25, 0.0),
-	"欧洲": Vector3(-0.55, -0.20, 0.0),
-	"非洲": Vector3(0.05, -0.15, 0.0),
-	"亚洲": Vector3(-0.25, -1.55, 0.0),
-	"大洋洲": Vector3(0.45, -2.15, 0.0),
+	"": Vector3(-0.12, -0.35, 0.0),
+	"north_america": Vector3(-0.40, 1.75, 0.0),
+	"south_america": Vector3(0.25, 1.25, 0.0),
+	"europe": Vector3(-0.55, -0.20, 0.0),
+	"africa": Vector3(0.05, -0.15, 0.0),
+	"asia": Vector3(-0.25, -1.55, 0.0),
+	"oceania": Vector3(0.45, -2.15, 0.0),
 }
 
 
@@ -45,15 +46,16 @@ func _process(delta: float) -> void:
 	_globe_root.rotate_y(delta * 0.025)
 
 
-func focus_region(region_name: String) -> void:
-	_focused_region = region_name if region_name in _region_rotations else "全球"
+func focus_region(region_id: String) -> void:
+	_focused_region = region_id if region_id in _region_rotations else ""
 	_target_rotation = _region_rotations[_focused_region]
 
 	if _focus_label != null:
-		_focus_label.text = "FOCUS / " + _focused_region
+		var display_name := "全球" if _focused_region == "" else REGION_IDENTITY.display_name(_focused_region)
+		_focus_label.text = "FOCUS / " + display_name
 
 	if _marker != null:
-		_marker.visible = _focused_region != "全球"
+		_marker.visible = _focused_region != ""
 
 
 func get_focused_region() -> String:

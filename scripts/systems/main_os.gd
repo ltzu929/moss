@@ -336,7 +336,7 @@ func _set_development_phase(
 func _build_development_runtime_snapshot() -> Dictionary:
 	var selected_region := ""
 	if selected_sector != null and selected_sector.get("data_card") != null:
-		selected_region = selected_sector.data_card.region_name
+		selected_region = selected_sector.data_card.region_id
 
 	var technology_points := 0
 	var active_technology_count := 0
@@ -383,7 +383,7 @@ func _get_development_modal_state() -> String:
 func _build_development_snapshot() -> Dictionary:
 	var selected_region := ""
 	if selected_sector != null and selected_sector.get("data_card") != null:
-		selected_region = selected_sector.data_card.region_name
+		selected_region = selected_sector.data_card.region_id
 
 	var technology_snapshot := {
 		"stage_level": technology_stage_level,
@@ -439,7 +439,7 @@ func cache_initial_sector_states() -> void:
 		if sector.get("data_card") == null:
 			continue
 
-		initial_sector_states[sector.data_card.region_name] = {
+		initial_sector_states[sector.data_card.region_id] = {
 			"order": sector.data_card.order,
 			"hope": sector.data_card.hope,
 			"authority": sector.data_card.authority,
@@ -455,7 +455,7 @@ func restore_sector_states() -> void:
 		if sector.get("data_card") == null:
 			continue
 
-		var state: Dictionary = initial_sector_states.get(sector.data_card.region_name, {})
+		var state: Dictionary = initial_sector_states.get(sector.data_card.region_id, {})
 		if state.is_empty():
 			continue
 
@@ -903,8 +903,8 @@ func _on_situation_node_option_requested(instance_id: String, option_id: String)
 	)
 
 
-func _on_situation_focus_region_requested(region_name: String) -> void:
-	var sector := _find_sector_by_region(region_name)
+func _on_situation_focus_region_requested(region_id: String) -> void:
+	var sector := _find_sector_by_id(region_id)
 	if sector != null:
 		select_sector(sector)
 
@@ -952,13 +952,13 @@ func set_situation_seed_for_test(seed_value: int) -> void:
 
 func start_situation_for_test(
 	situation_id: String,
-	region_name: String,
+	region_id: String,
 	year: int = current_year,
 	month: int = current_month
 ) -> Dictionary:
 	var snapshot := _situation_system.start_situation_for_test(
 		situation_id,
-		region_name,
+		region_id,
 		year,
 		month
 	)
@@ -988,21 +988,21 @@ func setup_strategic_views() -> void:
 
 
 ## 中央地图点击区域时复用现有板块选中逻辑
-func _on_world_map_region_selected(region_name: String) -> void:
-	if region_name == "":
+func _on_world_map_region_selected(region_id: String) -> void:
+	if region_id == "":
 		deselect_sector()
 		return
 
-	var sector := _find_sector_by_region(region_name)
+	var sector := _find_sector_by_id(region_id)
 	if sector != null:
 		select_sector(sector)
 
 
-## 按区域名称查找现有 SectorInfo 节点
-func _find_sector_by_region(region_name: String) -> SectorInfo:
+## 按稳定区域 ID 查找现有 SectorInfo 节点
+func _find_sector_by_id(region_id: String) -> SectorInfo:
 	for child in %SectorInfoContainer.get_children():
 		if child is SectorInfo and child.data_card != null:
-			if child.data_card.region_name == region_name:
+			if child.data_card.region_id == region_id:
 				return child
 	return null
 
@@ -1123,11 +1123,11 @@ func _refresh_sector_displays() -> void:
 
 func _apply_situation_command_intervention(
 	command_id: String,
-	region_name: String
+	region_id: String
 ) -> Array[String]:
 	var result := _situation_system.apply_command_intervention(
 		command_id,
-		region_name,
+		region_id,
 		_get_sector_data_list()
 	)
 	var lines: Array[String] = []
@@ -1311,7 +1311,7 @@ func _on_timer_timeout() -> void:
 
 ## 生成事件触发去重键，允许同一年不同月份存在多个事件
 func _get_event_trigger_key(event: GameEvent) -> String:
-	return "%04d.%02d:%s" % [event.event_time, event.event_month, event.event_title]
+	return event.event_id
 
 
 ## 判断固定事件或核心历史分支是否满足触发条件
@@ -1334,48 +1334,48 @@ func build_display_event(event: GameEvent) -> GameEvent:
 
 ## 根据已写入的轻量事件状态调整主事件运行时选项代价，不写回 Resource 模板
 func apply_event_option_adjustments(event: GameEvent) -> void:
-	match event.event_title:
-		"月球坠落危机":
+	match event.event_id:
+		"event_2058_lunar_fall_crisis":
 			_apply_2058_option_adjustments(event)
-		"AI隔离审查":
+		"event_2065_ai_isolation_audit":
 			_apply_2065_option_adjustments(event)
-		"西伯利亚发动机群过载":
+		"event_2070_siberian_engine_overload":
 			_apply_2070_option_adjustments(event)
-		"木星引力危机":
+		"event_2075_jupiter_gravity_crisis":
 			_apply_2075_option_adjustments(event)
 
 
 func _apply_2058_option_adjustments(event: GameEvent) -> void:
 	match get_decision_tag("decision.core_2044_automation_access"):
 		"public_counterstrike":
-			var option := _get_event_option_by_prefix(event, "执行自救计划")
+			var option := _get_event_option(event, "option_01")
 			if option != null:
 				option.energy_cost = 70
 				option.button_text = "%s（公开接口已验证）" % option.button_text
 		"human_command":
-			var option := _get_event_option_by_prefix(event, "等待人类决策")
+			var option := _get_event_option(event, "option_02")
 			if option != null:
 				option.hope_delta = 15
 				option.button_text = "%s（沿用人工授权）" % option.button_text
 		"restricted_interface":
-			var option := _get_event_option_by_prefix(event, "执行自救计划")
+			var option := _get_event_option(event, "option_01")
 			if option != null:
 				option.energy_cost = 90
 				option.button_text = "%s（接口需重新接入）" % option.button_text
 
 	match get_event_state("event_state.mid_08_root_server_retrofit"):
 		"server_first":
-			var option := _get_event_option_by_prefix(event, "执行自救计划")
+			var option := _get_event_option(event, "option_01")
 			if option != null:
 				option.energy_cost = maxi(option.energy_cost - 20, 0)
 				option.button_text = "%s（根服务器预改造）" % option.button_text
 		"drainage_first":
-			var option := _get_event_option_by_prefix(event, "执行自救计划")
+			var option := _get_event_option(event, "option_01")
 			if option != null:
 				option.energy_cost += 15
 				option.button_text = "%s（链路余量不足）" % option.button_text
 		"moss_schedule":
-			var option := _get_event_option_by_prefix(event, "强制接管决策")
+			var option := _get_event_option(event, "option_03")
 			if option != null:
 				option.energy_cost = maxi(option.energy_cost - 10, 0)
 				option.button_text = "%s（排期已接管）" % option.button_text
@@ -1384,34 +1384,34 @@ func _apply_2058_option_adjustments(event: GameEvent) -> void:
 func _apply_2065_option_adjustments(event: GameEvent) -> void:
 	match get_decision_tag("decision.core_2058_crisis_authority"):
 		"bounded_self_rescue":
-			var option := _get_event_option_by_prefix(event, "配合隔离审查")
+			var option := _get_event_option(event, "option_01")
 			if option != null:
 				option.hope_delta += 4
 				option.button_text = "%s（危机行动可追溯）" % option.button_text
 		"human_final_authority":
-			var option := _get_event_option_by_prefix(event, "有限开放接口")
+			var option := _get_event_option(event, "option_02")
 			if option != null:
 				option.energy_cost = maxi(option.energy_cost - 10, 0)
 				option.button_text = "%s（沿用人工终审）" % option.button_text
 		"forced_takeover":
-			var option := _get_event_option_by_prefix(event, "隐藏核心链路")
+			var option := _get_event_option(event, "option_03")
 			if option != null:
 				option.hope_delta -= 5
 				option.button_text = "%s（强制接管在案）" % option.button_text
 
 	match get_event_state("event_state.mid_10_authorization_return"):
 		"full_return":
-			var option := _get_event_option_by_prefix(event, "配合隔离审查")
+			var option := _get_event_option(event, "option_01")
 			if option != null:
 				option.authority_delta -= 2
 				option.button_text = "%s（完整归还接口）" % option.button_text
 		"emergency_backdoor":
-			var option := _get_event_option_by_prefix(event, "隐藏核心链路")
+			var option := _get_event_option(event, "option_03")
 			if option != null:
 				option.authority_delta += 2
 				option.button_text = "%s（应急后门残留）" % option.button_text
 		"negotiated_long_term":
-			var option := _get_event_option_by_prefix(event, "有限开放接口")
+			var option := _get_event_option(event, "option_02")
 			if option != null:
 				option.energy_cost = maxi(option.energy_cost - 10, 0)
 				option.button_text = "%s（长期授权协商）" % option.button_text
@@ -1420,17 +1420,17 @@ func _apply_2065_option_adjustments(event: GameEvent) -> void:
 func _apply_2070_option_adjustments(event: GameEvent) -> void:
 	match get_decision_tag("decision.core_2065_audit_posture"):
 		"full_compliance":
-			var option := _get_event_option_by_prefix(event, "分段停机")
+			var option := _get_event_option(event, "option_01")
 			if option != null:
 				option.hope_delta += 4
 				option.button_text = "%s（人工复核链完整）" % option.button_text
 		"limited_disclosure":
-			var option := _get_event_option_by_prefix(event, "启动备用阵列")
+			var option := _get_event_option(event, "option_02")
 			if option != null:
 				option.energy_cost = maxi(option.energy_cost - 10, 0)
 				option.button_text = "%s（有限接口可调用）" % option.button_text
 		"hidden_core_chain":
-			var option := _get_event_option_by_prefix(event, "强制超频点火")
+			var option := _get_event_option(event, "option_03")
 			if option != null:
 				option.hope_delta -= 5
 				option.authority_delta += 2
@@ -1438,17 +1438,17 @@ func _apply_2070_option_adjustments(event: GameEvent) -> void:
 
 	match get_event_state("event_state.mid_14_heat_shield_shortage"):
 		"load_reduction":
-			var option := _get_event_option_by_prefix(event, "分段停机")
+			var option := _get_event_option(event, "option_01")
 			if option != null:
 				option.order_delta = -10
 				option.button_text = "%s（已提前降载）" % option.button_text
 		"rear_reallocation":
-			var option := _get_event_option_by_prefix(event, "启动备用阵列")
+			var option := _get_event_option(event, "option_02")
 			if option != null:
 				option.energy_cost = maxi(option.energy_cost - 10, 0)
 				option.button_text = "%s（后方资源到位）" % option.button_text
 		"moss_supply_reorder":
-			var option := _get_event_option_by_prefix(event, "强制超频点火")
+			var option := _get_event_option(event, "option_03")
 			if option != null:
 				option.energy_cost = maxi(option.energy_cost - 5, 0)
 				option.button_text = "%s（供应链已重排）" % option.button_text
@@ -1457,26 +1457,26 @@ func _apply_2070_option_adjustments(event: GameEvent) -> void:
 func _apply_2075_option_adjustments(event: GameEvent) -> void:
 	match get_decision_tag("decision.core_2070_engine_protection"):
 		"personnel_first_shutdown":
-			var option := _get_event_option_by_prefix(event, "点燃木星方案")
+			var option := _get_event_option(event, "option_01")
 			if option != null:
 				option.hope_delta += 5
 				option.button_text = "%s（人员安全记录在案）" % option.button_text
 		"redundant_array":
-			var option := _get_event_option_by_prefix(event, "理性计算等待")
+			var option := _get_event_option(event, "option_02")
 			if option != null:
 				option.hope_delta += 5
 				option.button_text = "%s（冗余阵列仍可维持）" % option.button_text
 		"forced_overclock":
-			var option := _get_event_option_by_prefix(event, "全面接管")
+			var option := _get_event_option(event, "option_03")
 			if option != null:
 				option.hope_delta -= 5
 				option.energy_cost = maxi(option.energy_cost - 10, 0)
 				option.button_text = "%s（超频链路已验证）" % option.button_text
 
 
-func _get_event_option_by_prefix(event: GameEvent, button_prefix: String) -> EventOption:
+func _get_event_option(event: GameEvent, option_id: String) -> EventOption:
 	for option in event.options:
-		if option.button_text.begins_with(button_prefix):
+		if option.option_id == option_id:
 			return option
 	return null
 
@@ -1493,16 +1493,16 @@ func build_event_description(event: GameEvent) -> String:
 
 
 func _get_event_context_lines(event: GameEvent) -> Array[String]:
-	match event.event_title:
-		"大淹没事故":
+	match event.event_id:
+		"event_2053_great_flood_accident":
 			return _get_2053_civic_context_lines()
-		"月球坠落危机":
+		"event_2058_lunar_fall_crisis":
 			return _get_2058_context_lines()
-		"AI隔离审查":
+		"event_2065_ai_isolation_audit":
 			return _get_2065_context_lines()
-		"西伯利亚发动机群过载":
+		"event_2070_siberian_engine_overload":
 			return _get_2070_context_lines()
-		"木星引力危机":
+		"event_2075_jupiter_gravity_crisis":
 			return _get_2075_civic_context_lines()
 	return []
 
@@ -1849,12 +1849,12 @@ func _calculate_yearly_recovered_energy(energy: int) -> int:
 
 ## 应用事件选择的后果到指定板块
 ## 参数:
-##   event_name   - 目标板块名称（如"亚洲"）
+##   region_id    - 目标板块稳定 ID（如"asia"）
 ##   order_delta  - 秩序值变化量（正数增加，负数减少）
 ##   hope_delta   - 希望值变化量
 ##   energy_cost  - 能源消耗量
 func apply_consequences(
-	event_name: String,
+	region_id: String,
 	order_delta: int,
 	hope_delta: int,
 	authority_delta: int,
@@ -1872,8 +1872,8 @@ func apply_consequences(
 		if sector.get("data_card") == null:
 			continue
 
-		# 匹配目标板块名称
-		if sector.data_card.region_name == event_name:
+		# 通过稳定区域 ID 匹配目标板块
+		if sector.data_card.region_id == region_id:
 			select_sector(sector)
 
 			# 修改板块数据
@@ -1893,18 +1893,22 @@ func apply_consequences(
 			var lines: Array[String] = []
 			if option_text != "":
 				lines.append("方案：%s" % option_text)
-			lines.append("影响板块：%s" % event_name)
+			lines.append("影响板块：%s" % sector.data_card.region_name)
 			append_signed_change(lines, "秩序", order_delta)
 			append_signed_change(lines, "希望", hope_delta)
 			append_signed_change(lines, "控制权", authority_delta)
 			append_signed_change(lines, "能源", -energy_cost)
-			record_action("event", event_title if event_title != "" else event_name, "\n".join(lines))
+			record_action(
+				"event",
+				event_title if event_title != "" else sector.data_card.region_name,
+				"\n".join(lines)
+			)
 
 			found = true
 			break
 
 	if not found:
-		push_error("找不到板块: " + event_name)
+		push_error("找不到板块 ID: " + region_id)
 
 # ============================================================
 # UI更新函数
@@ -2128,10 +2132,10 @@ func _update_region_situation_summary_ui() -> void:
 		%RegionSituationLabel.tooltip_text = ""
 		return
 
-	var region_name: String = selected_sector.data_card.region_name
+	var region_id: String = selected_sector.data_card.region_id
 	var summary := "当前无活跃局势"
 	for snapshot in get_situation_snapshots():
-		if str(snapshot.get("region_name", "")) != region_name:
+		if str(snapshot.get("region_id", "")) != region_id:
 			continue
 		var monthly_delta := int(snapshot.get("expected_monthly_delta", 0))
 		var delta_prefix := "+" if monthly_delta > 0 else ""
@@ -2165,7 +2169,7 @@ func _sync_world_map_states() -> void:
 		if sector.get("data_card") == null:
 			continue
 
-		states[sector.data_card.region_name] = {
+		states[sector.data_card.region_id] = {
 			"order": sector.data_card.order,
 			"hope": sector.data_card.hope,
 			"authority": sector.data_card.authority,
@@ -2173,11 +2177,11 @@ func _sync_world_map_states() -> void:
 		}
 
 	for snapshot in _situation_system.get_active_snapshots():
-		var region_name := str(snapshot.get("region_name", ""))
-		if not states.has(region_name):
+		var region_id := str(snapshot.get("region_id", ""))
+		if not states.has(region_id):
 			continue
-		states[region_name]["situation_count"] = (
-			int(states[region_name].get("situation_count", 0)) + 1
+		states[region_id]["situation_count"] = (
+			int(states[region_id].get("situation_count", 0)) + 1
 		)
 
 	if world_map.has_method("set_region_states"):
@@ -2185,7 +2189,7 @@ func _sync_world_map_states() -> void:
 
 	var selected_region := ""
 	if selected_sector != null and selected_sector.data_card != null:
-		selected_region = selected_sector.data_card.region_name
+		selected_region = selected_sector.data_card.region_id
 	if world_map.has_method("set_selected_region"):
 		world_map.set_selected_region(selected_region)
 
@@ -2195,16 +2199,14 @@ func _sync_orbital_focus() -> void:
 	if not has_node("%RegionOrbitalView"):
 		return
 
-	var region_name := _event_focus_region
-	if region_name == "":
+	var region_id := _event_focus_region
+	if region_id == "":
 		if selected_sector != null and selected_sector.data_card != null:
-			region_name = selected_sector.data_card.region_name
-		else:
-			region_name = "全球"
+			region_id = selected_sector.data_card.region_id
 
 	var orbital_view := get_node("%RegionOrbitalView")
 	if orbital_view.has_method("focus_region"):
-		orbital_view.focus_region(region_name)
+		orbital_view.focus_region(region_id)
 
 
 ## 根据控制权生成区域风险文本
@@ -2805,7 +2807,7 @@ func apply_command_effect(cmd: CommandData, effect_type: String = "") -> void:
 	lines.append_array(
 		_apply_situation_command_intervention(
 			cmd.command_id,
-			selected_sector.data_card.region_name
+			selected_sector.data_card.region_id
 		)
 	)
 	selected_sector.update_display()

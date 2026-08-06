@@ -45,7 +45,7 @@ func _load_baseline() -> Dictionary:
 
 
 func _load_sector_resources(baseline: Dictionary) -> Dictionary:
-	var sectors_by_name: Dictionary = {}
+	var sectors_by_id: Dictionary = {}
 	var expected_sectors: Array = baseline.get("sectors", [])
 	for entry_variant in expected_sectors:
 		var entry: Dictionary = entry_variant
@@ -65,14 +65,14 @@ func _load_sector_resources(baseline: Dictionary) -> Dictionary:
 			"区域显示名应匹配映射基线：%s" % resource_path
 		)
 		_assert_true(not sector.region_id.is_empty(), "区域 ID 不得为空：%s" % resource_path)
-		_assert_true(not sectors_by_name.has(sector.region_name), "区域显示名不得重复")
-		sectors_by_name[sector.region_name] = sector
+		_assert_true(not sectors_by_id.has(sector.region_id), "区域 ID 不得重复")
+		sectors_by_id[sector.region_id] = sector
 
-	_assert_eq(sectors_by_name.size(), 6, "应加载六个唯一区域")
-	return sectors_by_name
+	_assert_eq(sectors_by_id.size(), 6, "应加载六个唯一区域")
+	return sectors_by_id
 
 
-func _assert_event_resources(baseline: Dictionary, sectors_by_name: Dictionary) -> void:
+func _assert_event_resources(baseline: Dictionary, sectors_by_id: Dictionary) -> void:
 	var expected_events: Array = baseline.get("events", [])
 	var event_ids: Dictionary = {}
 	var decision_tag_writes: Dictionary = {}
@@ -111,7 +111,7 @@ func _assert_event_resources(baseline: Dictionary, sectors_by_name: Dictionary) 
 			event.required_decision_tag_key.is_empty() == event.required_decision_tag_value.is_empty(),
 			"条件分支必须同时声明键和值：%s" % event.event_id
 		)
-		_assert_true(sectors_by_name.has(event.event_region), "事件区域必须引用真实区域：%s" % event.event_id)
+		_assert_true(sectors_by_id.has(event.event_region), "事件区域必须引用真实区域 ID：%s" % event.event_id)
 		if not event.required_decision_tag_key.is_empty():
 			branch_count += 1
 			_assert_true(
