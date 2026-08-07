@@ -113,8 +113,7 @@ func _assert_situation_details_and_approach() -> void:
 		"跨年面板应显示年度恢复后的供给状态"
 	)
 
-	_main_os._on_timer_timeout()
-	await get_tree().process_frame
+	await _main_os.process_month_tick()
 	active = _main_os.get_situation_snapshots()
 	_assert_eq(_main_os.current_year, 2045, "十二月推进后应进入下一年")
 	_assert_eq(_main_os.current_month, 1, "十二月推进后应进入一月")
@@ -132,10 +131,8 @@ func _assert_inline_node() -> void:
 	_main_os.current_month = 2
 	_main_os.current_cpu = 0
 	_main_os.current_energy = 0
-	_main_os._on_timer_timeout()
-	await get_tree().process_frame
-	_main_os._on_timer_timeout()
-	await get_tree().process_frame
+	await _main_os.process_month_tick()
+	await _main_os.process_month_tick()
 	var active: Array[Dictionary] = _main_os.get_situation_snapshots()
 	var node: Dictionary = active[0].get("node", {})
 	_assert_true(bool(node.get("pending", false)), "局势首次进入恶化时应生成待处理节点")

@@ -200,16 +200,10 @@ func _assert_timer_branch_resolution(
 	_main_os.current_month = branch_event.event_month
 	_main_os.current_energy = 100
 
-	_main_os._on_timer_timeout()
-	await get_tree().process_frame
-	var trigger_key := branch_event.event_id
-	_assert_true(_event_popup.visible, "%s 应通过真实时间循环打开弹窗" % branch_event.event_title)
-	_assert_true(
-		trigger_key in _main_os.triggered_events,
-		"%s 应写入唯一真实触发键" % branch_event.event_title
+	get_tree().create_timer(0.05).timeout.connect(
+		_emit_event_choice.bind(choice_index, branch_event)
 	)
-	_event_popup.option_selected.emit(choice_index)
-	await get_tree().process_frame
+	await _main_os.process_month_tick()
 	await get_tree().process_frame
 	_main_os.get_node("Timer").stop()
 
@@ -222,6 +216,16 @@ func _assert_timer_branch_resolution(
 		_main_os.has_decision_tag(expected_core_key, expected_core_value),
 		"%s 结算后应保留原核心事实" % branch_event.event_title
 	)
+
+
+func _emit_event_choice(index: int, branch_event: GameEvent) -> void:
+	var trigger_key := branch_event.event_id
+	_assert_true(_event_popup.visible, "%s 应通过真实时间循环打开弹窗" % branch_event.event_title)
+	_assert_true(
+		trigger_key in _main_os.triggered_events,
+		"%s 应写入唯一真实触发键" % branch_event.event_title
+	)
+	_event_popup.option_selected.emit(index)
 
 
 func _assert_branch_state_readback_and_core_coexistence() -> void:

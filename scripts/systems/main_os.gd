@@ -932,6 +932,11 @@ func get_situation_snapshots() -> Array[Dictionary]:
 	)
 
 
+## 返回局势自动暂停状态，只读暴露给 HUD 与测试编排。
+func is_situation_auto_paused() -> bool:
+	return _situation_auto_paused
+
+
 ## 预演下一次局势结算可用资源；十二月先应用进入一月的年度恢复。
 func _get_next_situation_resource_forecast() -> Dictionary:
 	var forecast_cpu := current_cpu
@@ -1173,14 +1178,12 @@ func get_command_unavailable_reason(cmd: CommandData) -> String:
 # 时间推进系统
 # ============================================================
 
-## 计时器回调函数 - 游戏核心循环
-## 每秒触发一次（Timer节点配置），负责：
-##   1. 当前年月事件触发检查
-##   2. 终局日期结算
-##   3. 月份推进
-##   4. 年度恢复、科技研究、月冷却和 UI 更新
-##   5. 胜负判定
-func _on_timer_timeout() -> void:
+## 公开的完整月度编排接口。
+##
+## 该协程按固定顺序执行事件检查、终局检查、月份推进、年度结算、
+## 冷却、局势、UI 刷新和失败检查。测试或其他编排方可等待此接口，
+## 不应调用 Timer 信号回调。
+func process_month_tick() -> void:
 	# 游戏已结束，禁止任何操作
 	if is_game_over:
 		return
@@ -1307,6 +1310,11 @@ func _on_timer_timeout() -> void:
 	_check_game_failure()
 	if not is_game_over:
 		_set_development_phase("idle", {}, true)
+
+
+## Timer 信号转发到公开的完整月度编排接口。
+func _on_timer_timeout() -> void:
+	await process_month_tick()
 
 
 ## 生成事件触发去重键，允许同一年不同月份存在多个事件
