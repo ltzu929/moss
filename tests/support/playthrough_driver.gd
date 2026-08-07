@@ -153,7 +153,7 @@ func drive_route_command() -> void:
 		_main_os.apply_command_effect(command)
 	else:
 		_main_os.apply_special_command_effect(command)
-		_main_os.update_command_buttons()
+	_main_os.update_command_buttons()
 	_route_command_count += 1
 	_reporter.write_log(
 		"  [COMMAND] 路线 %s 第%d次执行 %s"
