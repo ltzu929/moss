@@ -94,15 +94,16 @@ func _assert_restart_resets_month() -> void:
 
 
 func _tick_without_event_choice() -> void:
-	_main_os._on_timer_timeout()
-	await get_tree().process_frame
+	await _main_os.process_month_tick()
 
 
 func _tick_and_choose_event() -> void:
-	_main_os._on_timer_timeout()
-	await get_tree().process_frame
-	_event_popup.option_selected.emit(0)
-	await get_tree().process_frame
+	get_tree().create_timer(0.05).timeout.connect(_emit_event_choice.bind(0))
+	await _main_os.process_month_tick()
+
+
+func _emit_event_choice(index: int) -> void:
+	_event_popup.option_selected.emit(index)
 
 
 func _create_event(event_id: String, title: String, year: int, month: int) -> GameEvent:

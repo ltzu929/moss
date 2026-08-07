@@ -58,10 +58,8 @@ func _assert_event_choice_writes_queryable_state() -> void:
 		"MainOS 应提供 has_event_state 查询接口"
 	)
 
-	_main_os._on_timer_timeout()
-	await get_tree().process_frame
-	_event_popup.option_selected.emit(1)
-	await get_tree().process_frame
+	get_tree().create_timer(0.05).timeout.connect(_emit_event_choice.bind(1))
+	await _main_os.process_month_tick()
 
 	_assert_eq(
 		_main_os.get_event_state("event_state.mid_test_choice"),
@@ -398,10 +396,8 @@ func _assert_adjusted_main_event_options_are_used_for_resolution() -> void:
 	_main_os.current_energy = 100
 	_main_os.set_event_state("event_state.mid_08_root_server_retrofit", "server_first")
 
-	_main_os._on_timer_timeout()
-	await get_tree().process_frame
-	_event_popup.option_selected.emit(0)
-	await get_tree().process_frame
+	get_tree().create_timer(0.05).timeout.connect(_emit_event_choice.bind(0))
+	await _main_os.process_month_tick()
 
 	_assert_eq(
 		_main_os.current_energy,
@@ -418,6 +414,10 @@ func _assert_adjusted_main_event_options_are_used_for_resolution() -> void:
 		80,
 		"真实事件结算后原始 2058 资源能源代价仍不应被污染"
 	)
+
+
+func _emit_event_choice(index: int) -> void:
+	_event_popup.option_selected.emit(index)
 
 
 func _create_state_event() -> GameEvent:

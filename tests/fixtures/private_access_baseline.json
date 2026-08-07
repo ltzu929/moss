@@ -30,12 +30,6 @@
     "count": 1
   },
   {
-    "path": "branch_event_test.gd",
-    "member": "_on_timer_timeout",
-    "kind": "engine_callback",
-    "count": 1
-  },
-  {
     "path": "decision_history_test.gd",
     "member": "_unhandled_input",
     "kind": "engine_callback",
@@ -64,12 +58,6 @@
     "member": "_set_development_phase",
     "kind": "direct_member",
     "count": 1
-  },
-  {
-    "path": "event_state_test.gd",
-    "member": "_on_timer_timeout",
-    "kind": "engine_callback",
-    "count": 2
   },
   {
     "path": "resource_isolation_test.gd",
@@ -104,12 +92,6 @@
   {
     "path": "situation_ui_test.gd",
     "member": "_on_time_control_button_pressed",
-    "kind": "engine_callback",
-    "count": 3
-  },
-  {
-    "path": "situation_ui_test.gd",
-    "member": "_on_timer_timeout",
     "kind": "engine_callback",
     "count": 3
   },
@@ -172,18 +154,6 @@
     "member": "_on_time_control_button_pressed",
     "kind": "engine_callback",
     "count": 1
-  },
-  {
-    "path": "test_runner.gd",
-    "member": "_situation_auto_paused",
-    "kind": "dynamic_get",
-    "count": 2
-  },
-  {
-    "path": "time_system_test.gd",
-    "member": "_on_timer_timeout",
-    "kind": "engine_callback",
-    "count": 2
   },
   {
     "path": "world_map_view_test.gd",
