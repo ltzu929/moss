@@ -1,0 +1,49 @@
+{
+	"empty_messages": {
+		"coexistence": "MOSS 与人类保持有限协作。\n文明在控制与自主之间继续前进。",
+		"failed": "文明系统未能维持稳定。\nMOSS 协议终止运行。",
+		"human_autonomy": "人类文明获得独立存续能力。\nMOSS 完成使命并退出控制核心。",
+		"managed": "人类文明进入 MOSS 全域托管。\n存续效率取代了自主决策。"
+	},
+	"history_case": {
+		"decision_tags": {
+			"decision.core_2044_automation_access": "public_counterstrike",
+			"decision.core_2053_population_vs_infrastructure": "population_first",
+			"decision.core_2058_crisis_authority": "bounded_self_rescue",
+			"decision.core_2065_audit_posture": "full_compliance",
+			"decision.core_2070_engine_protection": "personnel_first_shutdown"
+		},
+		"event_states": {
+			"event_state.branch_01_perimeter_compensation": "public_claims_review",
+			"event_state.branch_02_hidden_chain_receipt": "public_disclosure",
+			"event_state.mid_01_lottery_ordering": "manual_review",
+			"event_state.mid_02_public_hearing": "open_audit",
+			"event_state.mid_03_memorial_network": "monitored",
+			"event_state.mid_04_elevator_cleanup": "delayed",
+			"event_state.mid_05_dispatch_pilot": "moss_direct",
+			"event_state.mid_06_ration_priority": "family_baseline",
+			"event_state.mid_07_migration_priority": "humanitarian",
+			"event_state.mid_08_root_server_retrofit": "server_first",
+			"event_state.mid_09_yaa_sample_access": "audited_access",
+			"event_state.mid_10_authorization_return": "emergency_backdoor",
+			"event_state.mid_11_education_shift": "autonomous_training",
+			"event_state.mid_12_digital_life_leak": "technical_disclosure",
+			"event_state.mid_13_interface_restructure": "emergency_bypass",
+			"event_state.mid_14_heat_shield_shortage": "rear_reallocation",
+			"event_state.mid_15_launch_window_report": "public_risk",
+			"event_state.mid_16_backup_ethics": "restricted_archive",
+			"event_state.mid_17_final_authorization": "negotiated_trusteeship"
+		},
+		"messages": {
+			"coexistence": "MOSS 与人类保持有限协作。\n文明在控制与自主之间继续前进。\n\n历史回顾\n- 2044 年公开扩大的自动化接口成为后来危机调度的起点，MOSS 的权限从一开始就处于公共记录中。\n- 2053 年优先撤离人口的记录让终局仍能解释民生优先的治理承诺，共存协议因此不只来自数值稳定，也来自可回看的治理经验。\n- 2058 年危机授权内的自救行动证明 MOSS 能在可追溯边界内承担高风险调度，共存协议因此不只来自数值稳定，也来自可回看的治理经验。\n- 2065 年完整接受隔离审查，MOSS 的核心权限仍能由公开记录追溯。\n- 2070 年分段停机优先保护工程人员，终局仍保留效率不能覆盖生命阈值的记录。\n- 外围地下城补偿申诉曾被公开复核，普通人仍能追问长期牺牲顺序。\n- 隐藏链路的异常回执最终被公开，终局仍保留一次主动纠正审计空白的记录。\n- 人道迁移记录让普通家庭的优先级进入终局解释，共存协议因此不只来自数值稳定，也来自可回看的治理经验。\n- 丫丫样本的受审计访问记录保留到终局，数字生命样本被视为争议资产而非确定答案。\n- 有限技术说明让 2065 年审查留下可追溯材料，终局仍避免把数字保存写成永生承诺。\n- 热屏蔽短缺曾挪用后方资源，后方资源代价成为文明延续前的工程回顾。\n- 最终授权会议形成协商托管框架，MOSS 权限在终局前已有公开制度来源。",
+			"failed": "文明系统未能维持稳定。\nMOSS 协议终止运行。\n\n历史回顾\n- 2044 年公开扩大的自动化接口成为后来危机调度的起点，MOSS 的权限从一开始就处于公共记录中。\n- 2053 年优先撤离人口的记录让终局仍能解释民生优先的治理承诺，即使系统失败，民生优先事实仍保留为最后的治理证据。\n- 2058 年危机授权内的自救行动证明 MOSS 能在可追溯边界内承担高风险调度，即使系统失败，民生优先事实仍保留为最后的治理证据。\n- 2065 年完整接受隔离审查，MOSS 的核心权限仍能由公开记录追溯。\n- 2070 年分段停机优先保护工程人员，终局仍保留效率不能覆盖生命阈值的记录。\n- 外围地下城补偿申诉曾被公开复核，普通人仍能追问长期牺牲顺序。\n- 隐藏链路的异常回执最终被公开，终局仍保留一次主动纠正审计空白的记录。\n- 人道迁移记录让普通家庭的优先级进入终局解释，即使系统失败，民生优先事实仍保留为最后的治理证据。\n- 丫丫样本的受审计访问记录保留到终局，数字生命样本被视为争议资产而非确定答案。\n- 有限技术说明让 2065 年审查留下可追溯材料，终局仍避免把数字保存写成永生承诺。\n- 热屏蔽短缺曾挪用后方资源，后方资源代价成为文明延续前的工程回顾。\n- 最终授权会议形成协商托管框架，MOSS 权限在终局前已有公开制度来源。",
+			"human_autonomy": "人类文明获得独立存续能力。\nMOSS 完成使命并退出控制核心。\n\n历史回顾\n- 2044 年公开扩大的自动化接口成为后来危机调度的起点，MOSS 的权限从一开始就处于公共记录中。\n- 2053 年优先撤离人口的记录让终局仍能解释民生优先的治理承诺，MOSS 退出控制核心时仍能说明人类自治的社会基础。\n- 2058 年危机授权内的自救行动证明 MOSS 能在可追溯边界内承担高风险调度，MOSS 退出控制核心时仍能说明人类自治的社会基础。\n- 2065 年完整接受隔离审查，MOSS 的核心权限仍能由公开记录追溯。\n- 2070 年分段停机优先保护工程人员，终局仍保留效率不能覆盖生命阈值的记录。\n- 外围地下城补偿申诉曾被公开复核，普通人仍能追问长期牺牲顺序。\n- 隐藏链路的异常回执最终被公开，终局仍保留一次主动纠正审计空白的记录。\n- 人道迁移记录让普通家庭的优先级进入终局解释，MOSS 退出控制核心时仍能说明人类自治的社会基础。\n- 丫丫样本的受审计访问记录保留到终局，数字生命样本被视为争议资产而非确定答案。\n- 有限技术说明让 2065 年审查留下可追溯材料，终局仍避免把数字保存写成永生承诺。\n- 热屏蔽短缺曾挪用后方资源，后方资源代价成为文明延续前的工程回顾。\n- 最终授权会议形成协商托管框架，MOSS 权限在终局前已有公开制度来源。",
+			"managed": "人类文明进入 MOSS 全域托管。\n存续效率取代了自主决策。\n\n历史回顾\n- 2044 年公开扩大的自动化接口成为后来危机调度的起点，MOSS 的权限从一开始就处于公共记录中。\n- 2053 年优先撤离人口的记录让终局仍能解释民生优先的治理承诺，托管不是突然覆盖民生记录，而是在这些记录之后继续排序。\n- 2058 年危机授权内的自救行动证明 MOSS 能在可追溯边界内承担高风险调度，托管不是突然覆盖民生记录，而是在这些记录之后继续排序。\n- 2065 年完整接受隔离审查，MOSS 的核心权限仍能由公开记录追溯。\n- 2070 年分段停机优先保护工程人员，终局仍保留效率不能覆盖生命阈值的记录。\n- 外围地下城补偿申诉曾被公开复核，普通人仍能追问长期牺牲顺序。\n- 隐藏链路的异常回执最终被公开，终局仍保留一次主动纠正审计空白的记录。\n- 人道迁移记录让普通家庭的优先级进入终局解释，托管不是突然覆盖民生记录，而是在这些记录之后继续排序。\n- 丫丫样本的受审计访问记录保留到终局，数字生命样本被视为争议资产而非确定答案。\n- 有限技术说明让 2065 年审查留下可追溯材料，终局仍避免把数字保存写成永生承诺。\n- 热屏蔽短缺曾挪用后方资源，后方资源代价成为文明延续前的工程回顾。\n- 最终授权会议形成协商托管框架，MOSS 权限在终局前已有公开制度来源。"
+		}
+	},
+	"schema_version": 1,
+	"source": "拆分前 MainOS（2026-08-07）",
+	"technology_summaries": {
+		"empty": "托管 0  核心 0  人类 0\n核心：无核心协议"
+	}
+}

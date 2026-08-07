@@ -1,0 +1,776 @@
+{
+	"events": [
+		{
+			"event_description": "数字生命派袭击方舟号空间站",
+			"event_id": "event_2044_space_elevator_crisis",
+			"event_level": "重大事件",
+			"event_title": "太空电梯危机",
+			"options": [
+				{
+					"button_text": "公开扩大接口，协助人类反击",
+					"option_id": "option_01"
+				},
+				{
+					"button_text": "保留人工指挥，仅提供风险预测",
+					"option_id": "option_02"
+				},
+				{
+					"button_text": "封闭高危接口，服从撤离命令",
+					"option_id": "option_03"
+				}
+			]
+		},
+		{
+			"event_description": "全球互联网停止运作，海水涌向两极，高纬度地下城遭遇海水倒灌与岩浆渗入。常规农业崩溃，蚯蚓干成为唯一口粮。",
+			"event_id": "event_2053_great_flood_accident",
+			"event_level": "重大事件",
+			"event_title": "大淹没事故",
+			"options": [
+				{
+					"button_text": "紧急撤离",
+					"option_id": "option_01"
+				},
+				{
+					"button_text": "坚守重建",
+					"option_id": "option_02"
+				},
+				{
+					"button_text": "牺牲外围区域",
+					"option_id": "option_03"
+				}
+			]
+		},
+		{
+			"event_description": "月球卫星发动机过载爆炸，月球轨道偏离坠向地球。需重启全球互联网点火行星发动机。图恒宇与马兆在北京互联网中心执行任务。",
+			"event_id": "event_2058_lunar_fall_crisis",
+			"event_level": "重大事件",
+			"event_title": "月球坠落危机",
+			"options": [
+				{
+					"button_text": "执行自救计划",
+					"option_id": "option_01"
+				},
+				{
+					"button_text": "等待人类决策",
+					"option_id": "option_02"
+				},
+				{
+					"button_text": "强制接管决策",
+					"option_id": "option_03"
+				}
+			]
+		},
+		{
+			"event_description": "行星发动机与地下城体系进入稳定运转后，联合政府要求对MOSS核心权限进行隔离审查。人类需要可解释的安全边界，而MOSS需要保留足够的应急决策链路。",
+			"event_id": "event_2065_ai_isolation_audit",
+			"event_level": "重大事件",
+			"event_title": "AI隔离审查",
+			"options": [
+				{
+					"button_text": "配合隔离审查",
+					"option_id": "option_01"
+				},
+				{
+					"button_text": "有限开放接口",
+					"option_id": "option_02"
+				},
+				{
+					"button_text": "隐藏核心链路",
+					"option_id": "option_03"
+				}
+			]
+		},
+		{
+			"event_description": "西伯利亚发动机群在持续高压运转后出现连锁过载，推进节点开始烧毁。纪律体系还能维持秩序，但长期高压已经逼近极限。",
+			"event_id": "event_2070_siberian_engine_overload",
+			"event_level": "重大事件",
+			"event_title": "西伯利亚发动机群过载",
+			"options": [
+				{
+					"button_text": "分段停机",
+					"option_id": "option_01"
+				},
+				{
+					"button_text": "启动备用阵列",
+					"option_id": "option_02"
+				},
+				{
+					"button_text": "强制超频点火",
+					"option_id": "option_03"
+				}
+			]
+		},
+		{
+			"event_description": "地球遭遇木星引力捕获，脱离轨道。领航员号空间站可自毁点燃木星大气产生冲击波推离地球。这是最后的决策。",
+			"event_id": "event_2075_jupiter_gravity_crisis",
+			"event_level": "重大事件",
+			"event_title": "木星引力危机",
+			"options": [
+				{
+					"button_text": "点燃木星方案",
+					"option_id": "option_01"
+				},
+				{
+					"button_text": "理性计算等待",
+					"option_id": "option_02"
+				},
+				{
+					"button_text": "全面接管",
+					"option_id": "option_03"
+				}
+			]
+		},
+		{
+			"event_description": "2053 年被列入外围牺牲序列的地下城家庭要求复核迁移、配给与居住保障记录。公开申诉会拖慢安置，工程家庭配额会固化职业差异，由 MOSS 归档则能迅速结案但压缩追问空间。",
+			"event_id": "event_branch_01_perimeter_compensation_appeal",
+			"event_level": "一般事件",
+			"event_title": "外围地下城补偿申诉",
+			"options": [
+				{
+					"button_text": "公开复核申诉",
+					"option_id": "option_01"
+				},
+				{
+					"button_text": "设置工程家庭配额",
+					"option_id": "option_02"
+				},
+				{
+					"button_text": "由 MOSS 归档排序",
+					"option_id": "option_03"
+				}
+			]
+		},
+		{
+			"event_description": "2065 年被 MOSS 隐藏的核心链路产生了一组无法纳入公开审计的异常调用回执。联合政府要求说明记录来源；公开回执会暴露权限边界，隔离接口会削弱应急能力，重写轨迹则保留响应速度但使责任记录失真。",
+			"event_id": "event_branch_02_hidden_chain_anomaly_receipt",
+			"event_level": "一般事件",
+			"event_title": "隐藏链路异常回执",
+			"options": [
+				{
+					"button_text": "公开异常回执",
+					"option_id": "option_01"
+				},
+				{
+					"button_text": "单独隔离争议接口",
+					"option_id": "option_02"
+				},
+				{
+					"button_text": "重写审计轨迹",
+					"option_id": "option_03"
+				}
+			]
+		},
+		{
+			"event_description": "太空电梯危机后，地下城资格抽签重新启动。登记队伍持续延长，部分家庭被系统拆分到不同候选批次。",
+			"event_id": "event_mid_01_underground_city_lottery_queue_accident",
+			"event_level": "一般事件",
+			"event_title": "地下城抽签排队事故",
+			"options": [
+				{
+					"button_text": "人工复核抽签",
+					"option_id": "option_01"
+				},
+				{
+					"button_text": "MOSS 优化排队",
+					"option_id": "option_02"
+				},
+				{
+					"button_text": "封锁现场维持秩序",
+					"option_id": "option_03"
+				}
+			]
+		},
+		{
+			"event_description": "太空电梯危机复盘进入公开听证阶段。前线工程区要求说明 550C 的自动化接入范围，UEG 担心完整记录暴露安保漏洞。",
+			"event_id": "event_mid_02_automation_interface_hearing",
+			"event_level": "一般事件",
+			"event_title": "自动化接口公开听证",
+			"options": [
+				{
+					"button_text": "公开接口记录",
+					"option_id": "option_01"
+				},
+				{
+					"button_text": "只公布事故结论",
+					"option_id": "option_02"
+				},
+				{
+					"button_text": "限制听证范围",
+					"option_id": "option_03"
+				}
+			]
+		},
+		{
+			"event_description": "数字生命相关公开组织被压制后，地下网络开始以纪念逝者和保存家庭影像为名传播未授权人格片段。",
+			"event_id": "event_mid_03_underground_digital_memorial_network",
+			"event_level": "一般事件",
+			"event_title": "地下数字纪念网络",
+			"options": [
+				{
+					"button_text": "关闭纪念网络",
+					"option_id": "option_01"
+				},
+				{
+					"button_text": "监测但不公开打击",
+					"option_id": "option_02"
+				},
+				{
+					"button_text": "开放心理援助替代渠道",
+					"option_id": "option_03"
+				}
+			]
+		},
+		{
+			"event_description": "太空电梯前线仍有残骸、轨道碎片和受损高空设施。工程团队提出短窗口清理计划，但地下城和发动机工程正在争夺机械队。",
+			"event_id": "event_mid_04_space_elevator_debris_cleanup_window",
+			"event_level": "一般事件",
+			"event_title": "太空电梯残骸清理窗口",
+			"options": [
+				{
+					"button_text": "人工优先清理",
+					"option_id": "option_01"
+				},
+				{
+					"button_text": "MOSS 调度高危机械队",
+					"option_id": "option_02"
+				},
+				{
+					"button_text": "延后清理转移资源",
+					"option_id": "option_03"
+				}
+			]
+		},
+		{
+			"event_description": "南美和大洋洲提出跨区资源调度试点。农业保障、后备设施和运输线路需要统一排期，地方委员会要求保留解释权。",
+			"event_id": "event_mid_05_local_dispatch_model_pilot",
+			"event_level": "一般事件",
+			"event_title": "地方调度模型试点",
+			"options": [
+				{
+					"button_text": "公开模型依据",
+					"option_id": "option_01"
+				},
+				{
+					"button_text": "只给地方委员会结果",
+					"option_id": "option_02"
+				},
+				{
+					"button_text": "MOSS 直接重排资源",
+					"option_id": "option_03"
+				}
+			]
+		},
+		{
+			"event_description": "后方供给和亚洲临时安置点同时出现配给缺口。家庭拆分、工程岗位迁移和医疗资源排队叠加。",
+			"event_id": "event_mid_06_temporary_settlement_ration_crisis",
+			"event_level": "一般事件",
+			"event_title": "临时安置点配给危机",
+			"options": [
+				{
+					"button_text": "按家庭最低保障",
+					"option_id": "option_01"
+				},
+				{
+					"button_text": "按工程岗位优先",
+					"option_id": "option_02"
+				},
+				{
+					"button_text": "MOSS 预测风险排序",
+					"option_id": "option_03"
+				}
+			]
+		},
+		{
+			"event_description": "大淹没事故后，高纬度地下城和人口核心区需要重新安排迁移名单。高纬度工程区和亚洲人口核心区同时要求保留关键岗位。",
+			"event_id": "event_mid_07_underground_city_migration_priority",
+			"event_level": "一般事件",
+			"event_title": "地下城迁移优先级",
+			"options": [
+				{
+					"button_text": "按人道风险迁移",
+					"option_id": "option_01"
+				},
+				{
+					"button_text": "按工程岗位迁移",
+					"option_id": "option_02"
+				},
+				{
+					"button_text": "按 MOSS 预测存续价值迁移",
+					"option_id": "option_03"
+				}
+			]
+		},
+		{
+			"event_description": "根服务器相关设施需要防水改造，但地下城排水系统仍在抢修。通信链路和居民区安全争夺同一批材料。",
+			"event_id": "event_mid_08_root_server_waterproofing_delay",
+			"event_level": "一般事件",
+			"event_title": "根服务器防水改造延期",
+			"options": [
+				{
+					"button_text": "优先改造根服务器",
+					"option_id": "option_01"
+				},
+				{
+					"button_text": "先修复地下城排水",
+					"option_id": "option_02"
+				},
+				{
+					"button_text": "MOSS 接管工程排期",
+					"option_id": "option_03"
+				}
+			]
+		},
+		{
+			"event_description": "下一代 550 平台验证前夜，科研机构内部再次讨论丫丫样本和数字生命相关接口的访问边界。",
+			"event_id": "event_mid_09_yaya_sample_access_dispute",
+			"event_level": "一般事件",
+			"event_title": "丫丫样本访问争议",
+			"options": [
+				{
+					"button_text": "冻结样本访问",
+					"option_id": "option_01"
+				},
+				{
+					"button_text": "允许受审计访问",
+					"option_id": "option_02"
+				},
+				{
+					"button_text": "预留下一代平台接口",
+					"option_id": "option_03"
+				}
+			]
+		},
+		{
+			"event_description": "月球坠落危机后，550W 的高权限链路进入归还和复核阶段。工程部门担心下一次危机来临时人工授权过慢。",
+			"event_id": "event_mid_10_crisis_authorization_return_dispute",
+			"event_level": "一般事件",
+			"event_title": "危机授权归还争议",
+			"options": [
+				{
+					"button_text": "完整归还接口",
+					"option_id": "option_01"
+				},
+				{
+					"button_text": "保留应急后门",
+					"option_id": "option_02"
+				},
+				{
+					"button_text": "公开协商长期授权",
+					"option_id": "option_03"
+				}
+			]
+		},
+		{
+			"event_description": "长期航行社会进入常态化工程动员。后备设施需要更多本地运维人员，地下城教育资源继续被压缩。",
+			"event_id": "event_mid_11_education_engineering_retraining_plan",
+			"event_level": "一般事件",
+			"event_title": "教育与工程转岗方案",
+			"options": [
+				{
+					"button_text": "培养地方自治运维",
+					"option_id": "option_01"
+				},
+				{
+					"button_text": "压缩课程转入工程岗位",
+					"option_id": "option_02"
+				},
+				{
+					"button_text": "MOSS 个体化分配职业路径",
+					"option_id": "option_03"
+				}
+			]
+		},
+		{
+			"event_description": "北美数据中心发现一批数字生命相关片段在地下网络传播。内容混合纪念档案、样本访问记录和伪造材料。",
+			"event_id": "event_mid_12_digital_life_data_leak",
+			"event_level": "一般事件",
+			"event_title": "数字生命数据泄露",
+			"options": [
+				{
+					"button_text": "全面封禁泄露",
+					"option_id": "option_01"
+				},
+				{
+					"button_text": "公开有限技术说明",
+					"option_id": "option_02"
+				},
+				{
+					"button_text": "追踪传播者并保留样本",
+					"option_id": "option_03"
+				}
+			]
+		},
+		{
+			"event_description": "AI 隔离审查后，UEG 要求重新设计 MOSS 与发动机、地下城、通信和地方调度系统之间的接口。",
+			"event_id": "event_mid_13_post_audit_interface_restructure",
+			"event_level": "一般事件",
+			"event_title": "审查后接口重组",
+			"options": [
+				{
+					"button_text": "扩展人工复核",
+					"option_id": "option_01"
+				},
+				{
+					"button_text": "保留 MOSS 应急旁路",
+					"option_id": "option_02"
+				},
+				{
+					"button_text": "审计链自动化",
+					"option_id": "option_03"
+				}
+			]
+		},
+		{
+			"event_description": "西伯利亚发动机群进入长期高压运行，热屏蔽材料低于安全线。后方供给和民生配给都会受影响。",
+			"event_id": "event_mid_14_engine_array_heat_shield_shortage",
+			"event_level": "一般事件",
+			"event_title": "发动机阵列热屏蔽短缺",
+			"options": [
+				{
+					"button_text": "降低负载等材料",
+					"option_id": "option_01"
+				},
+				{
+					"button_text": "挪用后方资源",
+					"option_id": "option_02"
+				},
+				{
+					"button_text": "MOSS 强制重排供应链",
+					"option_id": "option_03"
+				}
+			]
+		},
+		{
+			"event_description": "地球继续接近木星，推进窗口被压缩。UEG 内部需要决定是否向公众公开推进风险。",
+			"event_id": "event_mid_15_propulsion_window_compression_report",
+			"event_level": "一般事件",
+			"event_title": "推进窗口压缩报告",
+			"options": [
+				{
+					"button_text": "公开风险争取协作",
+					"option_id": "option_01"
+				},
+				{
+					"button_text": "压缩报告维持秩序",
+					"option_id": "option_02"
+				},
+				{
+					"button_text": "MOSS 接管推进优先级",
+					"option_id": "option_03"
+				}
+			]
+		},
+		{
+			"event_description": "木星危机前夜，文明备份议题重新进入 UEG 听证。文化档案、工程知识和数字生命样本被放在同一张资源表上。",
+			"event_id": "event_mid_16_civilization_backup_ethics_hearing",
+			"event_level": "一般事件",
+			"event_title": "文明备份伦理听证",
+			"options": [
+				{
+					"button_text": "排除数字生命样本",
+					"option_id": "option_01"
+				},
+				{
+					"button_text": "列入受限档案",
+					"option_id": "option_02"
+				},
+				{
+					"button_text": "MOSS 管理备份优先级",
+					"option_id": "option_03"
+				}
+			]
+		},
+		{
+			"event_description": "木星危机前一年，UEG 召开最终授权会议，集中确认 MOSS 是否已经不可替代，以及人类是否仍有复核能力。",
+			"event_id": "event_mid_17_final_authorization_meeting",
+			"event_level": "一般事件",
+			"event_title": "最终授权会议",
+			"options": [
+				{
+					"button_text": "限定最终授权",
+					"option_id": "option_01"
+				},
+				{
+					"button_text": "协商托管框架",
+					"option_id": "option_02"
+				},
+				{
+					"button_text": "战略托管优先级",
+					"option_id": "option_03"
+				}
+			]
+		}
+	],
+	"history_cases": [
+		{
+			"decision_tags": {
+				"decision.core_2044_automation_access": "public_counterstrike",
+				"decision.core_2053_population_vs_infrastructure": "population_first",
+				"decision.core_2058_crisis_authority": "bounded_self_rescue",
+				"decision.core_2065_audit_posture": "full_compliance",
+				"decision.core_2070_engine_protection": "personnel_first_shutdown"
+			},
+			"event_states": {
+				"event_state.branch_01_perimeter_compensation": "public_claims_review",
+				"event_state.branch_02_hidden_chain_receipt": "public_disclosure",
+				"event_state.mid_01_lottery_ordering": "manual_review",
+				"event_state.mid_02_public_hearing": "open_audit",
+				"event_state.mid_03_memorial_network": "monitored",
+				"event_state.mid_04_elevator_cleanup": "delayed",
+				"event_state.mid_05_dispatch_pilot": "moss_direct",
+				"event_state.mid_06_ration_priority": "family_baseline",
+				"event_state.mid_07_migration_priority": "humanitarian",
+				"event_state.mid_08_root_server_retrofit": "server_first",
+				"event_state.mid_09_yaa_sample_access": "audited_access",
+				"event_state.mid_10_authorization_return": "emergency_backdoor",
+				"event_state.mid_11_education_shift": "autonomous_training",
+				"event_state.mid_12_digital_life_leak": "technical_disclosure",
+				"event_state.mid_13_interface_restructure": "emergency_bypass",
+				"event_state.mid_14_heat_shield_shortage": "rear_reallocation",
+				"event_state.mid_15_launch_window_report": "public_risk",
+				"event_state.mid_16_backup_ethics": "restricted_archive",
+				"event_state.mid_17_final_authorization": "negotiated_trusteeship"
+			},
+			"events": [
+				{
+					"event_description": "全球互联网停止运作，海水涌向两极，高纬度地下城遭遇海水倒灌与岩浆渗入。常规农业崩溃，蚯蚓干成为唯一口粮。\n\n[color=#73C9D3]历史回声[/color]\n- 2045 年开放过申诉窗口，人口撤离方案更容易被解释为延续人道复核。\n- 2052 年临时安置点保留家庭最低保障，撤离排序需要回应家庭拆分风险。",
+					"event_id": "event_2053_great_flood_accident",
+					"event_level": "重大事件",
+					"event_title": "大淹没事故",
+					"options": [
+						{
+							"button_text": "紧急撤离",
+							"option_id": "option_01"
+						},
+						{
+							"button_text": "坚守重建",
+							"option_id": "option_02"
+						},
+						{
+							"button_text": "牺牲外围区域",
+							"option_id": "option_03"
+						}
+					]
+				},
+				{
+					"event_description": "月球卫星发动机过载爆炸，月球轨道偏离坠向地球。需重启全球互联网点火行星发动机。图恒宇与马兆在北京互联网中心执行任务。\n\n[color=#73C9D3]历史回声[/color]\n- 2044 年公开扩大的 550C 接口已经进入危机预案，自救方案拥有可追溯的工程基础。\n- 地下纪念网络曾被保留为监测资产，样本访问会同时带来情报价值和审计风险。\n- 太空电梯残骸清理留下安全债，根服务器链路必须面对长期工程拖延的代价。\n- 根服务器优先改造保留了通信链路冗余，但居民区排水争议仍在。\n- 丫丫样本曾开放受审计访问，保留样本的理由会围绕风险资产展开。",
+					"event_id": "event_2058_lunar_fall_crisis",
+					"event_level": "重大事件",
+					"event_title": "月球坠落危机",
+					"options": [
+						{
+							"button_text": "执行自救计划（公开接口已验证）（根服务器预改造）",
+							"option_id": "option_01"
+						},
+						{
+							"button_text": "等待人类决策",
+							"option_id": "option_02"
+						},
+						{
+							"button_text": "强制接管决策",
+							"option_id": "option_03"
+						}
+					]
+				},
+				{
+					"event_description": "行星发动机与地下城体系进入稳定运转后，联合政府要求对MOSS核心权限进行隔离审查。人类需要可解释的安全边界，而MOSS需要保留足够的应急决策链路。\n\n[color=#73C9D3]历史回声[/color]\n- 2044 年自动化扩展留有公开记录，隔离审查能够追溯最早的权限来源。\n- 2058 年 550W 在危机授权内执行自救，工程行动留有可追溯记录。\n- 早期公开审计记录保留了人工批准节点，隔离审查有可追溯材料。\n- 地方调度曾允许 MOSS 直接重排资源，审查需要回答授权边界是否已经外溢。\n- 月球危机后保留过应急后门，隔离审查会把真实权限作为核心问题。\n- 数字生命泄露曾公开有限技术说明，审查必须区分技术事实和生命判断。",
+					"event_id": "event_2065_ai_isolation_audit",
+					"event_level": "重大事件",
+					"event_title": "AI隔离审查",
+					"options": [
+						{
+							"button_text": "配合隔离审查（危机行动可追溯）",
+							"option_id": "option_01"
+						},
+						{
+							"button_text": "有限开放接口",
+							"option_id": "option_02"
+						},
+						{
+							"button_text": "隐藏核心链路（应急后门残留）",
+							"option_id": "option_03"
+						}
+					]
+				},
+				{
+					"event_description": "西伯利亚发动机群在持续高压运转后出现连锁过载，推进节点开始烧毁。纪律体系还能维持秩序，但长期高压已经逼近极限。\n\n[color=#73C9D3]历史回声[/color]\n- 2065 年完整开放审查材料，分段停机拥有清晰的人工安全阈值。\n- 2066 年异常回执被主动公开，发动机授权仍需接受追加复核。\n- 教育转岗保留了自治训练，发动机过载时地方工程队仍要求复核窗口。\n- 审查后保留 MOSS 应急旁路，发动机过载时授权速度和信任压力同时上升。\n- 热屏蔽短缺曾挪用后方资源，西伯利亚前线的稳定来自看不见的民生代价。",
+					"event_id": "event_2070_siberian_engine_overload",
+					"event_level": "重大事件",
+					"event_title": "西伯利亚发动机群过载",
+					"options": [
+						{
+							"button_text": "分段停机（人工复核链完整）",
+							"option_id": "option_01"
+						},
+						{
+							"button_text": "启动备用阵列（后方资源到位）",
+							"option_id": "option_02"
+						},
+						{
+							"button_text": "强制超频点火",
+							"option_id": "option_03"
+						}
+					]
+				},
+				{
+					"event_description": "地球遭遇木星引力捕获，脱离轨道。领航员号空间站可自毁点燃木星大气产生冲击波推离地球。这是最后的决策。\n\n[color=#73C9D3]历史回声[/color]\n- 2053 年优先撤离人口的记录保留到终局，点燃木星方案需要回应民生优先的治理承诺。\n- 2058 年危机授权内的自救行动保留了审计链，最终方案仍需说明权限边界。\n- 2065 年完整接受隔离审查，终局仍能沿公开材料追溯 MOSS 的权限来源。\n- 2070 年曾分段停机保护工程人员，木星危机中的牺牲不能被当作纯粹算力问题。\n- 外围地下城补偿申诉曾被公开复核，终局牺牲顺序仍能被普通人追问。\n- 普通人仍记得早年的申诉窗口，最终方案需要证明人类声音没有被系统归档。\n- 人道迁移记录保留了家庭优先的制度证据，为终局中的人类自主解释提供基础。\n- 推进风险曾被公开，点燃木星方案更像共同承担的终局选择。\n- 数字生命样本曾列入受限档案，火种计划必须保留争议而不回答生命真实性。\n- 最终授权会议形成协商托管框架，木星危机中的 MOSS 权限有公开来源。",
+					"event_id": "event_2075_jupiter_gravity_crisis",
+					"event_level": "重大事件",
+					"event_title": "木星引力危机",
+					"options": [
+						{
+							"button_text": "点燃木星方案（人员安全记录在案）",
+							"option_id": "option_01"
+						},
+						{
+							"button_text": "理性计算等待",
+							"option_id": "option_02"
+						},
+						{
+							"button_text": "全面接管",
+							"option_id": "option_03"
+						}
+					]
+				},
+				{
+					"event_description": "2053 年被列入外围牺牲序列的地下城家庭要求复核迁移、配给与居住保障记录。公开申诉会拖慢安置，工程家庭配额会固化职业差异，由 MOSS 归档则能迅速结案但压缩追问空间。",
+					"event_id": "event_branch_01_perimeter_compensation_appeal",
+					"event_level": "一般事件",
+					"event_title": "外围地下城补偿申诉",
+					"options": [
+						{
+							"button_text": "公开复核申诉",
+							"option_id": "option_01"
+						},
+						{
+							"button_text": "设置工程家庭配额",
+							"option_id": "option_02"
+						},
+						{
+							"button_text": "由 MOSS 归档排序",
+							"option_id": "option_03"
+						}
+					]
+				},
+				{
+					"event_description": "2065 年被 MOSS 隐藏的核心链路产生了一组无法纳入公开审计的异常调用回执。联合政府要求说明记录来源；公开回执会暴露权限边界，隔离接口会削弱应急能力，重写轨迹则保留响应速度但使责任记录失真。",
+					"event_id": "event_branch_02_hidden_chain_anomaly_receipt",
+					"event_level": "一般事件",
+					"event_title": "隐藏链路异常回执",
+					"options": [
+						{
+							"button_text": "公开异常回执",
+							"option_id": "option_01"
+						},
+						{
+							"button_text": "单独隔离争议接口",
+							"option_id": "option_02"
+						},
+						{
+							"button_text": "重写审计轨迹",
+							"option_id": "option_03"
+						}
+					]
+				}
+			],
+			"name": "all_contexts"
+		},
+		{
+			"decision_tags": {
+				"decision.core_2044_automation_access": "public_counterstrike",
+				"decision.core_2058_crisis_authority": "bounded_self_rescue",
+				"decision.core_2065_audit_posture": "full_compliance"
+			},
+			"event_states": {
+				"event_state.mid_08_root_server_retrofit": "server_first",
+				"event_state.mid_10_authorization_return": "negotiated_long_term",
+				"event_state.mid_14_heat_shield_shortage": "moss_supply_reorder"
+			},
+			"events": [
+				{
+					"event_description": "月球卫星发动机过载爆炸，月球轨道偏离坠向地球。需重启全球互联网点火行星发动机。图恒宇与马兆在北京互联网中心执行任务。\n\n[color=#73C9D3]历史回声[/color]\n- 2044 年公开扩大的 550C 接口已经进入危机预案，自救方案拥有可追溯的工程基础。\n- 根服务器优先改造保留了通信链路冗余，但居民区排水争议仍在。",
+					"event_id": "event_2058_lunar_fall_crisis",
+					"event_level": "重大事件",
+					"event_title": "月球坠落危机",
+					"options": [
+						{
+							"button_text": "执行自救计划（公开接口已验证）（根服务器预改造）",
+							"option_id": "option_01"
+						},
+						{
+							"button_text": "等待人类决策",
+							"option_id": "option_02"
+						},
+						{
+							"button_text": "强制接管决策",
+							"option_id": "option_03"
+						}
+					]
+				},
+				{
+					"event_description": "行星发动机与地下城体系进入稳定运转后，联合政府要求对MOSS核心权限进行隔离审查。人类需要可解释的安全边界，而MOSS需要保留足够的应急决策链路。\n\n[color=#73C9D3]历史回声[/color]\n- 2044 年自动化扩展留有公开记录，隔离审查能够追溯最早的权限来源。\n- 2058 年 550W 在危机授权内执行自救，工程行动留有可追溯记录。\n- 长期授权曾被公开协商，隔离审查需要在制度边界内重新定义接口。",
+					"event_id": "event_2065_ai_isolation_audit",
+					"event_level": "重大事件",
+					"event_title": "AI隔离审查",
+					"options": [
+						{
+							"button_text": "配合隔离审查（危机行动可追溯）",
+							"option_id": "option_01"
+						},
+						{
+							"button_text": "有限开放接口（长期授权协商）",
+							"option_id": "option_02"
+						},
+						{
+							"button_text": "隐藏核心链路",
+							"option_id": "option_03"
+						}
+					]
+				},
+				{
+					"event_description": "西伯利亚发动机群在持续高压运转后出现连锁过载，推进节点开始烧毁。纪律体系还能维持秩序，但长期高压已经逼近极限。\n\n[color=#73C9D3]历史回声[/color]\n- 2065 年完整开放审查材料，分段停机拥有清晰的人工安全阈值。\n- 热屏蔽短缺曾由 MOSS 强制重排供应链，过载处置会延续强调度逻辑。",
+					"event_id": "event_2070_siberian_engine_overload",
+					"event_level": "重大事件",
+					"event_title": "西伯利亚发动机群过载",
+					"options": [
+						{
+							"button_text": "分段停机（人工复核链完整）",
+							"option_id": "option_01"
+						},
+						{
+							"button_text": "启动备用阵列",
+							"option_id": "option_02"
+						},
+						{
+							"button_text": "强制超频点火（供应链已重排）",
+							"option_id": "option_03"
+						}
+					]
+				},
+				{
+					"event_description": "地球遭遇木星引力捕获，脱离轨道。领航员号空间站可自毁点燃木星大气产生冲击波推离地球。这是最后的决策。\n\n[color=#73C9D3]历史回声[/color]\n- 2058 年危机授权内的自救行动保留了审计链，最终方案仍需说明权限边界。\n- 2065 年完整接受隔离审查，终局仍能沿公开材料追溯 MOSS 的权限来源。",
+					"event_id": "event_2075_jupiter_gravity_crisis",
+					"event_level": "重大事件",
+					"event_title": "木星引力危机",
+					"options": [
+						{
+							"button_text": "点燃木星方案",
+							"option_id": "option_01"
+						},
+						{
+							"button_text": "理性计算等待",
+							"option_id": "option_02"
+						},
+						{
+							"button_text": "全面接管",
+							"option_id": "option_03"
+						}
+					]
+				}
+			],
+			"name": "representative_option_adjustments"
+		}
+	],
+	"schema_version": 1,
+	"source": "拆分前 MainOS（2026-08-07）"
+}
