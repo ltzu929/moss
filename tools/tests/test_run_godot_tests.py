@@ -12,7 +12,7 @@ class TestSelectionTests(unittest.TestCase):
     def test_all_suite_contains_each_registered_scene_once(self) -> None:
         selected = run_godot_tests.select_test_specs("all")
 
-        self.assertEqual(len(selected), 27)
+        self.assertEqual(len(selected), 28)
         self.assertEqual(
             len({spec.scene for spec in selected}),
             len(selected),
