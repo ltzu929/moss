@@ -1,5 +1,5 @@
 ## 主控制器脚本 - MOSS模拟器核心系统
-## 负责游戏的时间推进、事件触发、胜负判定和结局显示
+## 负责游戏的时间推进、事件协调、胜负判定和结局显示
 extends Control
 
 # ============================================================
@@ -37,6 +37,8 @@ const DECISION_HISTORY_SCRIPT := preload("res://scripts/systems/decision_history
 const EVENT_STATE_STORE_SCRIPT := preload("res://scripts/systems/event_state_store.gd")
 ## 事件历史回声与选项显示文案服务
 const EVENT_NARRATIVE_SCRIPT := preload("res://scripts/systems/event_narrative_system.gd")
+## 事件选项数值调整与结算服务
+const EVENT_RESOLUTION_SCRIPT := preload("res://scripts/systems/event_resolution_system.gd")
 ## 随机局势领域服务脚本
 const SITUATION_SYSTEM_SCRIPT := preload("res://scripts/systems/situation_system.gd")
 ## 游戏初始值
@@ -135,6 +137,8 @@ var _decision_history: DecisionHistory = DECISION_HISTORY_SCRIPT.new()
 var _event_state_store: EventStateStore = EVENT_STATE_STORE_SCRIPT.new()
 ## 事件叙事服务，不访问场景树、资源模板或运行时数值
 var _event_narrative_system: EventNarrativeSystem = EVENT_NARRATIVE_SCRIPT.new()
+## 事件数值服务，不访问场景树、资源模板或写回对象
+var _event_resolution_system: EventResolutionSystem = EVENT_RESOLUTION_SCRIPT.new()
 ## 随机局势领域服务，不直接访问场景树或 UI
 var _situation_system: SituationSystem = SITUATION_SYSTEM_SCRIPT.new()
 
@@ -572,13 +576,11 @@ func can_allocate_combined() -> bool:
 ## 返回事件数值经过科技减损后的结果
 ## 仅减轻秩序和希望的负面变化，正面变化及其他属性保持不变
 func get_technology_adjusted_event_delta(delta: int, stat: String) -> int:
-	if delta >= 0:
-		return delta
-	if stat not in ["order", "hope"]:
-		return delta
-	if not %TechnologySystem.has_tag("human_event_mitigation"):
-		return delta
-	return ceili(float(delta) * 0.75)
+	return _event_resolution_system.get_technology_adjusted_event_delta(
+		delta,
+		stat,
+		_get_event_technology_snapshot()
+	)
 
 
 ## 从当前激活节点重新计算资源上限、恢复率、冷却和科技指令
@@ -1092,7 +1094,7 @@ func _process_situations_month() -> void:
 
 
 func _get_situation_facts() -> Dictionary:
-	var facts := _event_state_store.export_state()
+	var facts: Dictionary = _event_state_store.export_state()
 	facts["decision.core_2044_automation_access"] = get_decision_tag(
 		"decision.core_2044_automation_access"
 	)
@@ -1250,14 +1252,10 @@ func process_month_tick() -> void:
 			)
 
 			# 应用选择后果
-			apply_consequences(
+			_apply_event_option_consequences(
 				event.event_region,
-				selected_opt.order_delta,
-				selected_opt.hope_delta,
-				selected_opt.authority_delta,
-				selected_opt.energy_cost,
-				event.event_title,
-				selected_opt.button_text
+				selected_opt,
+				event.event_title
 			)
 			apply_event_option_state(selected_opt)
 			apply_event_option_decision(selected_opt, event.event_title)
@@ -1350,130 +1348,18 @@ func build_display_event(event: GameEvent) -> GameEvent:
 ## 根据已写入的轻量事件状态调整主事件运行时数值，不写回 Resource 模板。
 ## 选项显示文案由 EventNarrativeSystem 在同一运行时副本上投影。
 func apply_event_option_adjustments(event: GameEvent) -> void:
-	match event.event_id:
-		"event_2058_lunar_fall_crisis":
-			_apply_2058_option_adjustments(event)
-		"event_2065_ai_isolation_audit":
-			_apply_2065_option_adjustments(event)
-		"event_2070_siberian_engine_overload":
-			_apply_2070_option_adjustments(event)
-		"event_2075_jupiter_gravity_crisis":
-			_apply_2075_option_adjustments(event)
+	var decision_state := _decision_history.export_state()
+	_event_resolution_system.apply_event_option_adjustments(
+		event,
+		decision_state.get("tags", {}),
+		_event_state_store.export_state()
+	)
 
 
-func _apply_2058_option_adjustments(event: GameEvent) -> void:
-	match get_decision_tag("decision.core_2044_automation_access"):
-		"public_counterstrike":
-			var option := _get_event_option(event, "option_01")
-			if option != null:
-				option.energy_cost = 70
-		"human_command":
-			var option := _get_event_option(event, "option_02")
-			if option != null:
-				option.hope_delta = 15
-		"restricted_interface":
-			var option := _get_event_option(event, "option_01")
-			if option != null:
-				option.energy_cost = 90
-
-	match get_event_state("event_state.mid_08_root_server_retrofit"):
-		"server_first":
-			var option := _get_event_option(event, "option_01")
-			if option != null:
-				option.energy_cost = maxi(option.energy_cost - 20, 0)
-		"drainage_first":
-			var option := _get_event_option(event, "option_01")
-			if option != null:
-				option.energy_cost += 15
-		"moss_schedule":
-			var option := _get_event_option(event, "option_03")
-			if option != null:
-				option.energy_cost = maxi(option.energy_cost - 10, 0)
-
-
-func _apply_2065_option_adjustments(event: GameEvent) -> void:
-	match get_decision_tag("decision.core_2058_crisis_authority"):
-		"bounded_self_rescue":
-			var option := _get_event_option(event, "option_01")
-			if option != null:
-				option.hope_delta += 4
-		"human_final_authority":
-			var option := _get_event_option(event, "option_02")
-			if option != null:
-				option.energy_cost = maxi(option.energy_cost - 10, 0)
-		"forced_takeover":
-			var option := _get_event_option(event, "option_03")
-			if option != null:
-				option.hope_delta -= 5
-
-	match get_event_state("event_state.mid_10_authorization_return"):
-		"full_return":
-			var option := _get_event_option(event, "option_01")
-			if option != null:
-				option.authority_delta -= 2
-		"emergency_backdoor":
-			var option := _get_event_option(event, "option_03")
-			if option != null:
-				option.authority_delta += 2
-		"negotiated_long_term":
-			var option := _get_event_option(event, "option_02")
-			if option != null:
-				option.energy_cost = maxi(option.energy_cost - 10, 0)
-
-
-func _apply_2070_option_adjustments(event: GameEvent) -> void:
-	match get_decision_tag("decision.core_2065_audit_posture"):
-		"full_compliance":
-			var option := _get_event_option(event, "option_01")
-			if option != null:
-				option.hope_delta += 4
-		"limited_disclosure":
-			var option := _get_event_option(event, "option_02")
-			if option != null:
-				option.energy_cost = maxi(option.energy_cost - 10, 0)
-		"hidden_core_chain":
-			var option := _get_event_option(event, "option_03")
-			if option != null:
-				option.hope_delta -= 5
-				option.authority_delta += 2
-
-	match get_event_state("event_state.mid_14_heat_shield_shortage"):
-		"load_reduction":
-			var option := _get_event_option(event, "option_01")
-			if option != null:
-				option.order_delta = -10
-		"rear_reallocation":
-			var option := _get_event_option(event, "option_02")
-			if option != null:
-				option.energy_cost = maxi(option.energy_cost - 10, 0)
-		"moss_supply_reorder":
-			var option := _get_event_option(event, "option_03")
-			if option != null:
-				option.energy_cost = maxi(option.energy_cost - 5, 0)
-
-
-func _apply_2075_option_adjustments(event: GameEvent) -> void:
-	match get_decision_tag("decision.core_2070_engine_protection"):
-		"personnel_first_shutdown":
-			var option := _get_event_option(event, "option_01")
-			if option != null:
-				option.hope_delta += 5
-		"redundant_array":
-			var option := _get_event_option(event, "option_02")
-			if option != null:
-				option.hope_delta += 5
-		"forced_overclock":
-			var option := _get_event_option(event, "option_03")
-			if option != null:
-				option.hope_delta -= 5
-				option.energy_cost = maxi(option.energy_cost - 10, 0)
-
-
-func _get_event_option(event: GameEvent, option_id: String) -> EventOption:
-	for option in event.options:
-		if option.option_id == option_id:
-			return option
-	return null
+func _get_event_technology_snapshot() -> Dictionary:
+	return {
+		"human_event_mitigation": %TechnologySystem.has_tag("human_event_mitigation"),
+	}
 
 
 ## 根据已写入的轻量事件状态补充主事件历史回声。
@@ -1570,12 +1456,7 @@ func _calculate_yearly_recovered_energy(energy: int) -> int:
 # 事件后果处理
 # ============================================================
 
-## 应用事件选择的后果到指定板块
-## 参数:
-##   region_id    - 目标板块稳定 ID（如"asia"）
-##   order_delta  - 秩序值变化量（正数增加，负数减少）
-##   hope_delta   - 希望值变化量
-##   energy_cost  - 能源消耗量
+## 兼容旧调用面的事件后果入口；数值计算由 EventResolutionSystem 完成。
 func apply_consequences(
 	region_id: String,
 	order_delta: int,
@@ -1585,8 +1466,22 @@ func apply_consequences(
 	event_title: String = "",
 	option_text: String = ""
 ) -> void:
-	order_delta = get_technology_adjusted_event_delta(order_delta, "order")
-	hope_delta = get_technology_adjusted_event_delta(hope_delta, "hope")
+	var option := EventOption.new()
+	option.button_text = option_text
+	option.order_delta = order_delta
+	option.hope_delta = hope_delta
+	option.authority_delta = authority_delta
+	option.energy_cost = energy_cost
+	_apply_event_option_consequences(region_id, option, event_title, option_text)
+
+
+## 将玩家在弹窗中实际选择的运行时选项交给同一结算快照。
+func _apply_event_option_consequences(
+	region_id: String,
+	option: EventOption,
+	event_title: String = "",
+	option_text: String = ""
+) -> void:
 	var sectors := %SectorInfoContainer.get_children()
 	var found := false
 
@@ -1598,15 +1493,30 @@ func apply_consequences(
 		# 通过稳定区域 ID 匹配目标板块
 		if sector.data_card.region_id == region_id:
 			select_sector(sector)
+			var projections := _event_resolution_system.calculate_option_projections(
+				option,
+				_get_event_technology_snapshot(),
+				{
+					"order": sector.data_card.order,
+					"hope": sector.data_card.hope,
+					"authority": sector.data_card.authority,
+				},
+				current_energy
+			)
+			var resolution: Dictionary = projections.get("resolution", {})
+			var resolved_order_delta := int(resolution.get("order_delta", 0))
+			var resolved_hope_delta := int(resolution.get("hope_delta", 0))
+			var resolved_authority_delta := int(resolution.get("authority_delta", 0))
+			var resolved_energy_cost := int(resolution.get("energy_cost", 0))
 
 			# 修改板块数据
-			sector.data_card.order += order_delta
-			sector.data_card.hope += hope_delta
-			sector.data_card.authority += authority_delta
+			sector.data_card.order += resolved_order_delta
+			sector.data_card.hope += resolved_hope_delta
+			sector.data_card.authority += resolved_authority_delta
 			sector.data_card.clamp_values()
 
 			# 修改全局能源
-			current_energy = maxi(0, current_energy - energy_cost)
+			current_energy = maxi(0, current_energy - resolved_energy_cost)
 
 			# 刷新UI显示
 			sector.update_display()
@@ -1614,13 +1524,16 @@ func apply_consequences(
 			update_region_detail_ui()
 
 			var lines: Array[String] = []
-			if option_text != "":
-				lines.append("方案：%s" % option_text)
+			var display_option_text := option_text
+			if display_option_text.is_empty():
+				display_option_text = option.button_text
+			if display_option_text != "":
+				lines.append("方案：%s" % display_option_text)
 			lines.append("影响板块：%s" % sector.data_card.region_name)
-			append_signed_change(lines, "秩序", order_delta)
-			append_signed_change(lines, "希望", hope_delta)
-			append_signed_change(lines, "控制权", authority_delta)
-			append_signed_change(lines, "能源", -energy_cost)
+			append_signed_change(lines, "秩序", resolved_order_delta)
+			append_signed_change(lines, "希望", resolved_hope_delta)
+			append_signed_change(lines, "控制权", resolved_authority_delta)
+			append_signed_change(lines, "能源", -resolved_energy_cost)
 			record_action(
 				"event",
 				event_title if event_title != "" else sector.data_card.region_name,

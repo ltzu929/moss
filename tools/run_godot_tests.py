@@ -135,6 +135,12 @@ TEST_SPECS = [
         ("[MOSS-EVENT-STATE] 完成，失败断言：0",),
     ),
     TestSpec(
+        "tests/event_resolution_test.tscn",
+        "domain",
+        "headless",
+        ("[MOSS-EVENT-RESOLUTION] 完成，失败断言：0",),
+    ),
+    TestSpec(
         "tests/branch_event_test.tscn",
         "domain",
         "headless",
