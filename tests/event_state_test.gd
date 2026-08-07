@@ -3,6 +3,7 @@
 extends "res://tests/support/moss_test_case.gd"
 
 const MAIN_SCENE: PackedScene = preload("res://scenes/main_os.tscn")
+const EVENT_STATE_STORE_SCRIPT := preload("res://scripts/systems/event_state_store.gd")
 
 var _main_os: Control
 var _event_popup: Control
@@ -16,6 +17,7 @@ func _ready() -> void:
 	_event_popup = _main_os.get_node("%EventPopup")
 	_main_os.get_node("Timer").stop()
 
+	_assert_event_state_store_isolated_copy()
 	_assert_event_option_exposes_state_write_fields()
 	await _assert_event_choice_writes_queryable_state()
 	_assert_civic_event_states_change_main_event_context()
@@ -27,6 +29,29 @@ func _ready() -> void:
 	print("[MOSS-EVENT-STATE] 完成，失败断言：%d" % _failed)
 	await get_tree().create_timer(0.2).timeout
 	get_tree().quit(_failed)
+
+
+func _assert_event_state_store_isolated_copy() -> void:
+	var store: EventStateStore = EVENT_STATE_STORE_SCRIPT.new()
+	store.set_state("event_state.test_store", "stable")
+	var exported := store.export_state()
+	exported["event_state.test_store"] = "mutated_outside_store"
+	store.set_state("", "ignored")
+	_assert_eq(
+		store.get_state("event_state.test_store"),
+		"stable",
+		"EventStateStore 导出的状态副本不得污染内部事实"
+	)
+	_assert_true(
+		store.has_state("event_state.test_store", "stable"),
+		"EventStateStore 应支持按值查询状态"
+	)
+	store.clear()
+	_assert_eq(
+		store.get_state("event_state.test_store"),
+		"",
+		"EventStateStore 清理后应不再保留状态"
+	)
 
 
 func _assert_event_option_exposes_state_write_fields() -> void:

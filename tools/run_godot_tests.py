@@ -141,6 +141,18 @@ TEST_SPECS = [
         ("[MOSS-BRANCH-EVENTS] 完成，失败断言：0",),
     ),
     TestSpec(
+        "tests/event_narrative_baseline_test.tscn",
+        "domain",
+        "headless",
+        ("[MOSS-EVENT-NARRATIVE-BASELINE] 完成，失败断言：0",),
+    ),
+    TestSpec(
+        "tests/ending_history_baseline_test.tscn",
+        "domain",
+        "headless",
+        ("[MOSS-ENDING-HISTORY-BASELINE] 完成，失败断言：0",),
+    ),
+    TestSpec(
         "tests/decision_history_test.tscn",
         "ui",
         "display",
