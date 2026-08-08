@@ -139,7 +139,7 @@ func _assert_alternative_terminal_endings() -> void:
 		"coexistence",
 		"协商托管协议不应解锁MOSS托管结局"
 	)
-	_assert_true("协商托管协议" in _main_os._get_technology_summary(), "结局摘要应显示协商托管协议")
+	_assert_true("协商托管协议" in _main_os.get_technology_summary(), "结局摘要应显示协商托管协议")
 
 	_main_os.restart_game_for_test()
 	technology = _main_os.get_node("%TechnologySystem")
@@ -160,7 +160,7 @@ func _assert_alternative_terminal_endings() -> void:
 		"coexistence",
 		"分布式认知不应新增独立结局"
 	)
-	_assert_true("分布式认知" in _main_os._get_technology_summary(), "结局摘要应显示分布式认知")
+	_assert_true("分布式认知" in _main_os.get_technology_summary(), "结局摘要应显示分布式认知")
 
 	_main_os.restart_game_for_test()
 	technology = _main_os.get_node("%TechnologySystem")
@@ -181,7 +181,7 @@ func _assert_alternative_terminal_endings() -> void:
 		"coexistence",
 		"协作治理协议不应解锁人类自主结局"
 	)
-	_assert_true("协作治理协议" in _main_os._get_technology_summary(), "结局摘要应显示协作治理协议")
+	_assert_true("协作治理协议" in _main_os.get_technology_summary(), "结局摘要应显示协作治理协议")
 
 
 ## 校验结局解释会读取代表性 event_state，但不改变结局判定

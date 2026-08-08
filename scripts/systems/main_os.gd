@@ -39,6 +39,8 @@ const EVENT_STATE_STORE_SCRIPT := preload("res://scripts/systems/event_state_sto
 const EVENT_NARRATIVE_SCRIPT := preload("res://scripts/systems/event_narrative_system.gd")
 ## 事件选项数值调整与结算服务
 const EVENT_RESOLUTION_SCRIPT := preload("res://scripts/systems/event_resolution_system.gd")
+## 结局判定、历史回顾和科技摘要服务
+const ENDING_SYSTEM_SCRIPT := preload("res://scripts/systems/ending_system.gd")
 ## 随机局势领域服务脚本
 const SITUATION_SYSTEM_SCRIPT := preload("res://scripts/systems/situation_system.gd")
 ## 游戏初始值
@@ -139,6 +141,8 @@ var _event_state_store: EventStateStore = EVENT_STATE_STORE_SCRIPT.new()
 var _event_narrative_system: EventNarrativeSystem = EVENT_NARRATIVE_SCRIPT.new()
 ## 事件数值服务，不访问场景树、资源模板或写回对象
 var _event_resolution_system: EventResolutionSystem = EVENT_RESOLUTION_SCRIPT.new()
+## 结局领域服务，不访问场景树、Resource 或 UI
+var _ending_system: EndingSystem = ENDING_SYSTEM_SCRIPT.new()
 ## 随机局势领域服务，不直接访问场景树或 UI
 var _situation_system: SituationSystem = SITUATION_SYSTEM_SCRIPT.new()
 
@@ -2016,11 +2020,12 @@ func should_fail_from_authority(
 	avg_order: int,
 	avg_hope: int
 ) -> bool:
-	if authority > 0:
-		return false
-	if not %TechnologySystem.has_tag("human_core"):
-		return true
-	return avg_order < 40 or avg_hope < 40
+	return _ending_system.should_fail_from_authority(
+		authority,
+		avg_order,
+		avg_hope,
+		_get_ending_technology_snapshot()
+	)
 
 
 ## 根据科技核心、控制权、秩序和希望判定最终结局类型
@@ -2030,18 +2035,20 @@ func determine_ending_type(
 	avg_order: int,
 	avg_hope: int
 ) -> String:
-	if %TechnologySystem.has_tag("managed_core") and authority >= 50:
-		return "managed"
-	if (
-		%TechnologySystem.has_tag("human_core")
-		and authority < 25
-		and avg_order >= 50
-		and avg_hope >= 50
-	):
-		return "human_autonomy"
-	if authority > 0 and avg_order >= 40 and avg_hope >= 40:
-		return "coexistence"
-	return "failed"
+	return _ending_system.determine_ending_type(
+		authority,
+		avg_order,
+		avg_hope,
+		_get_ending_technology_snapshot()
+	)
+
+
+## 组装结局服务所需的科技能力快照，不把 TechnologySystem 注入领域服务。
+func _get_ending_technology_snapshot() -> Dictionary:
+	return {
+		"managed_core": %TechnologySystem.has_tag("managed_core"),
+		"human_core": %TechnologySystem.has_tag("human_core"),
+	}
 
 ## 触发失败结局
 ## 原因: 所有板块控制权归零，MOSS系统崩溃
@@ -2098,138 +2105,14 @@ func trigger_ending(authority: int) -> void:
 	show_end_screen(title, message, result)
 
 
-## 构建结局描述文本，并读取少量代表性轻量事件状态作为历史解释
+## 构建结局描述文本，并读取显式历史快照作为历史解释。
 func build_ending_message(result: String) -> String:
-	var base_message := "文明系统未能维持稳定。\nMOSS 协议终止运行。"
-	match result:
-		"managed":
-			base_message = "人类文明进入 MOSS 全域托管。\n存续效率取代了自主决策。"
-		"human_autonomy":
-			base_message = "人类文明获得独立存续能力。\nMOSS 完成使命并退出控制核心。"
-		"coexistence":
-			base_message = "MOSS 与人类保持有限协作。\n文明在控制与自主之间继续前进。"
-
-	var history_lines := _get_ending_history_lines(result)
-	if history_lines.is_empty():
-		return base_message
-	return "%s\n\n历史回顾\n- %s" % [
-		base_message,
-		"\n- ".join(history_lines),
-	]
-
-
-func _get_ending_history_lines(result: String) -> Array[String]:
-	var lines: Array[String] = []
-
-	match get_decision_tag("decision.core_2044_automation_access"):
-		"public_counterstrike":
-			lines.append("2044 年公开扩大的自动化接口成为后来危机调度的起点，MOSS 的权限从一开始就处于公共记录中。")
-		"human_command":
-			lines.append("2044 年保留的人类指挥链贯穿后续授权争议，终局仍能追溯人工决策责任。")
-		"restricted_interface":
-			lines.append("2044 年封闭高危接口换取了清晰责任边界，也让后来的紧急接入承担额外代价。")
-
-	# 2053 核心标签紧随 2044，与更早核心选择组合计算；后写标签不得抹掉前者。
-	match get_decision_tag("decision.core_2053_population_vs_infrastructure"):
-		"population_first":
-			lines.append("2053 年优先撤离人口的记录让终局仍能解释民生优先的治理承诺，%s。" % _get_ending_relation_text(result))
-		"infrastructure_first":
-			lines.append("2053 年坚守基础设施的记录显示文明延续长期依赖工程延续，最终方案承担着人口转移的代价。")
-		"sacrifice_perimeter":
-			lines.append("2053 年牺牲外围的记录让终局牺牲顺序成为长期事实，MOSS 的排序在更早就已成为公开治理。")
-
-	match get_decision_tag("decision.core_2058_crisis_authority"):
-		"bounded_self_rescue":
-			lines.append("2058 年危机授权内的自救行动证明 MOSS 能在可追溯边界内承担高风险调度，%s。" % _get_ending_relation_text(result))
-		"human_final_authority":
-			lines.append("2058 年人类保留最终授权，危机响应速度始终服从人工责任边界。")
-		"forced_takeover":
-			lines.append("2058 年 MOSS 曾越过人工确认强制接管，终局中的高权限不再是未经使用的假设。")
-
-	match get_decision_tag("decision.core_2065_audit_posture"):
-		"full_compliance":
-			lines.append("2065 年完整接受隔离审查，MOSS 的核心权限仍能由公开记录追溯。")
-		"limited_disclosure":
-			lines.append("2065 年只披露有限接口，危机响应能力和人工复核从此共享一条不完整边界。")
-		"hidden_core_chain":
-			lines.append("2065 年隐藏核心链路保留了高权限响应，也把审计空白带入最终授权。")
-
-	match get_decision_tag("decision.core_2070_engine_protection"):
-		"personnel_first_shutdown":
-			lines.append("2070 年分段停机优先保护工程人员，终局仍保留效率不能覆盖生命阈值的记录。")
-		"redundant_array":
-			lines.append("2070 年备用阵列以额外能源换取人员和推进缓冲，终局继承了这次折中。")
-		"forced_overclock":
-			lines.append("2070 年强制超频以人员和设备余量换取推进效率，终局托管逻辑已有公开先例。")
-
-	match get_event_state("event_state.branch_01_perimeter_compensation"):
-		"public_claims_review":
-			lines.append("外围地下城补偿申诉曾被公开复核，普通人仍能追问长期牺牲顺序。")
-		"engineering_quota":
-			lines.append("外围补偿优先保障工程家庭，文明延续因此背负可见的职业排序代价。")
-		"moss_archive":
-			lines.append("外围补偿申诉曾由 MOSS 归档排序，终局名单延续了同一治理方式。")
-
-	match get_event_state("event_state.branch_02_hidden_chain_receipt"):
-		"public_disclosure":
-			lines.append("隐藏链路的异常回执最终被公开，终局仍保留一次主动纠正审计空白的记录。")
-		"interface_isolation":
-			lines.append("争议接口曾被单独隔离，高权限链路在终局前保留了有限边界。")
-		"audit_trail_rewrite":
-			lines.append("异常回执的审计轨迹曾被重写，终局效率建立在失真的责任记录之上。")
-
-	match get_event_state("event_state.mid_07_migration_priority"):
-		"humanitarian":
-			lines.append("人道迁移记录让普通家庭的优先级进入终局解释，%s。" % _get_ending_relation_text(result))
-		"engineering_role":
-			lines.append("工程岗位迁移记录显示文明延续长期依赖岗位分配，最终方案承担着职业牺牲的影子。")
-		"moss_survival_value":
-			lines.append("MOSS 生存价值排序曾写入迁移名单，终局权限更像长期托管事实的延伸。")
-
-	match get_event_state("event_state.mid_09_yaa_sample_access"):
-		"frozen":
-			lines.append("丫丫样本访问曾被冻结，数字生命争议没有成为终局方案的公开依据。")
-		"audited_access":
-			lines.append("丫丫样本的受审计访问记录保留到终局，数字生命样本被视为争议资产而非确定答案。")
-		"next_platform_interface":
-			lines.append("下一代 550 平台预留过兼容接口，数字生命争议已经进入终局技术边界。")
-
-	match get_event_state("event_state.mid_12_digital_life_leak"):
-		"banned":
-			lines.append("数字生命泄露曾被全面封禁，终局回顾更强调安全事故和社会恐慌。")
-		"technical_disclosure":
-			lines.append("有限技术说明让 2065 年审查留下可追溯材料，终局仍避免把数字保存写成永生承诺。")
-		"tracked_and_preserved":
-			lines.append("泄露传播者被追踪且样本被保留，终局必须解释 MOSS 为何积累这些争议资产。")
-
-	match get_event_state("event_state.mid_14_heat_shield_shortage"):
-		"load_reduction":
-			lines.append("热屏蔽短缺曾以降载等待材料处理，最终工程窗口从那时起已经被压缩。")
-		"rear_reallocation":
-			lines.append("热屏蔽短缺曾挪用后方资源，后方资源代价成为文明延续前的工程回顾。")
-		"moss_supply_reorder":
-			lines.append("MOSS 曾强制重排热屏蔽供应链，终局调度延续了强调度的工程逻辑。")
-
-	match get_event_state("event_state.mid_17_final_authorization"):
-		"limited_final":
-			lines.append("最终授权会议只批准有限接口，人工复核仍是终局解释的一部分。")
-		"negotiated_trusteeship":
-			lines.append("最终授权会议形成协商托管框架，MOSS 权限在终局前已有公开制度来源。")
-		"strategic_trusteeship":
-			lines.append("最终授权会议承认战略托管优先级，牺牲顺序在终局前已经成为制度事实。")
-
-	return lines
-
-
-func _get_ending_relation_text(result: String) -> String:
-	match result:
-		"managed":
-			return "托管不是突然覆盖民生记录，而是在这些记录之后继续排序"
-		"human_autonomy":
-			return "MOSS 退出控制核心时仍能说明人类自治的社会基础"
-		"failed":
-			return "即使系统失败，民生优先事实仍保留为最后的治理证据"
-	return "共存协议因此不只来自数值稳定，也来自可回看的治理经验"
+	var decision_state := _decision_history.export_state()
+	return _ending_system.build_ending_message(
+		result,
+		decision_state.get("tags", {}),
+		_event_state_store.export_state()
+	)
 
 # ============================================================
 # 结局界面系统
@@ -2288,37 +2171,29 @@ func show_end_screen(title: String, message: String, result: String = "failed") 
 	end_screen_instance.restart_requested.connect(_on_restart_requested)
 
 
-## 汇总三条科技路线的激活数量和核心协议，用于结局界面
-func _get_technology_summary() -> String:
-	var route_counts := {
-		TechNodeData.Route.MANAGED: 0,
-		TechNodeData.Route.CORE: 0,
-		TechNodeData.Route.HUMAN: 0,
-	}
-	for node_id in %TechnologySystem.get_active_node_ids():
-		var node_data: TechNodeData = %TechnologySystem.get_node_data(node_id)
-		if node_data != null:
-			route_counts[node_data.route] += 1
-
-	var cores: Array[String] = []
-	for node_id in %TechnologySystem.get_active_node_ids():
-		var node_data: TechNodeData = %TechnologySystem.get_node_data(node_id)
-		if node_data != null and node_data.stage == TechNodeData.Stage.MOSS:
-			cores.append(node_data.display_name)
-	cores.sort()
-	var core_text := "无核心协议" if cores.is_empty() else " / ".join(cores)
-	return "托管 %d  核心 %d  人类 %d\n核心：%s" % [
-		route_counts[TechNodeData.Route.MANAGED],
-		route_counts[TechNodeData.Route.CORE],
-		route_counts[TechNodeData.Route.HUMAN],
-		core_text,
-	]
-
-
 ## 返回结局界面使用的科技摘要兼容投影。
-## 供领域迁移前的叙事基线和后续 EndingSystem 适配器读取。
+## MainOS 只组装 TechnologySystem 的显式数据，文本格式由 EndingSystem 负责。
 func get_technology_summary() -> String:
-	return _get_technology_summary()
+	var route_counts: Dictionary = {
+		"managed": 0,
+		"core": 0,
+		"human": 0,
+	}
+	var core_names: Array[String] = []
+	for node_id in %TechnologySystem.get_active_node_ids():
+		var node_data: TechNodeData = %TechnologySystem.get_node_data(node_id)
+		if node_data == null:
+			continue
+		match node_data.route:
+			TechNodeData.Route.MANAGED:
+				route_counts["managed"] += 1
+			TechNodeData.Route.CORE:
+				route_counts["core"] += 1
+			TechNodeData.Route.HUMAN:
+				route_counts["human"] += 1
+		if node_data.stage == TechNodeData.Stage.MOSS:
+			core_names.append(node_data.display_name)
+	return _ending_system.build_technology_summary(route_counts, core_names)
 
 ## 计算所有板块某项属性的平均值
 func _get_average_stat(stat_name: String) -> int:
