@@ -29,7 +29,7 @@ func build_event_description(event: GameEvent) -> String:
 
 
 ## 只把历史事实对应的显示后缀写入运行时事件副本。
-## 数值调整仍由 MainOS 的兼容路径负责，避免叙事服务改变结算语义。
+## 数值调整仍由 MainOS 的场景编排路径负责，避免叙事服务改变结算语义。
 func apply_option_display_text(event: GameEvent) -> void:
 	match event.event_id:
 		"event_2058_lunar_fall_crisis":
