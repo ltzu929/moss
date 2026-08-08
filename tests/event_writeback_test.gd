@@ -17,6 +17,7 @@ func _ready() -> void:
 	_event_popup = _main_os.get_node("%EventPopup")
 
 	await _assert_real_2070_to_2075_writeback_matrix()
+	await _assert_event_state_adjustment_through_real_event()
 	await _assert_lower_bounds_through_real_event()
 	await _assert_energy_cap_and_upper_bounds_through_real_event()
 
@@ -191,6 +192,91 @@ func _run_2075_writeback_case(case: Dictionary) -> void:
 			30 if str(case["option_id"]) == "option_03" else 0
 		),
 		"真实 2075 资源能源代价不应被历史调整污染"
+	)
+
+
+func _assert_event_state_adjustment_through_real_event() -> void:
+	_main_os.restart_game_for_test()
+	_main_os.get_node("Timer").stop()
+	await get_tree().process_frame
+
+	var source_event := load(
+		"res://data/events/event_2058_lunar_fall_crisis.tres"
+	) as GameEvent
+	_assert_true(source_event != null, "event_state 写回应加载真实 2058 事件")
+	if source_event == null:
+		return
+
+	var source_option := _get_option(source_event, "option_01")
+	_assert_true(source_option != null, "真实 2058 事件应包含可调整的 option_01")
+	if source_option == null:
+		return
+	_assert_eq(
+		source_option.energy_cost,
+		80,
+		"真实 2058 资源的原始能源代价应为 80"
+	)
+
+	var runtime_event := source_event.duplicate(true) as GameEvent
+	runtime_event.event_title = "改名后的 2058 事件"
+	runtime_event.options[0].button_text = "改名后的执行方案"
+	_main_os.all_events = [runtime_event] as Array[GameEvent]
+	_main_os.triggered_events.clear()
+	_main_os.current_year = 2058
+	_main_os.current_month = 1
+	_main_os.current_energy = 100
+	_main_os.set_event_state(
+		"event_state.mid_08_root_server_retrofit",
+		"server_first"
+	)
+
+	var preview_event: GameEvent = _main_os.build_display_event(runtime_event)
+	var preview_option := _get_option(preview_event, "option_01")
+	_assert_true(
+		preview_option != null,
+		"真实 2058 预览应返回包含 event_state 调整的运行时选项"
+	)
+	if preview_option == null:
+		return
+	_assert_eq(
+		preview_option.energy_cost,
+		60,
+		"server_first 应将 2058 真实预览能源代价从 80 调整为 60"
+	)
+	_assert_true(
+		"根服务器预改造" in preview_option.button_text,
+		"2058 真实预览按钮应保留 event_state 调整说明"
+	)
+
+	_preview_button_text = ""
+	_preview_button_disabled = true
+	get_tree().create_timer(0.05).timeout.connect(
+		_capture_popup_and_emit.bind(0, false)
+	)
+	await _main_os.process_month_tick()
+
+	_assert_true(
+		not _preview_button_disabled,
+		"当前能源足够时 event_state 调整后的真实方案应可执行"
+	)
+	_assert_true(
+		"根服务器预改造" in _preview_button_text,
+		"真实 EventPopup 应消费 event_state 调整后的按钮文案"
+	)
+	_assert_eq(
+		_main_os.current_energy,
+		40,
+		"真实 MainOS 结算应按 event_state 调整后的 60 能源扣除"
+	)
+	_assert_eq(
+		_main_os.triggered_events[0],
+		"event_2058_lunar_fall_crisis",
+		"真实 2058 结算仍应使用稳定 event_id 写入触发记录"
+	)
+	_assert_eq(
+		_get_option(source_event, "option_01").energy_cost,
+		80,
+		"真实 event_state 结算不应污染 2058 原始资源能源代价"
 	)
 
 
