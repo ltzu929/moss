@@ -102,12 +102,6 @@
     "count": 2
   },
   {
-    "path": "technology_ending_test.gd",
-    "member": "_get_technology_summary",
-    "kind": "direct_member",
-    "count": 3
-  },
-  {
     "path": "technology_gameplay_test.gd",
     "member": "_apply_human_autonomy_recovery",
     "kind": "direct_member",
