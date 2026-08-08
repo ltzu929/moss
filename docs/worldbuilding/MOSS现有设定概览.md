@@ -23,7 +23,7 @@
 - 中型事件与条件短分支写入轻量 `event_state.*`，主事件读取这些状态生成历史回声；2058、2065、2070 已有代表状态接入主事件选项代价。
 - 核心历史已落地 `decision.core_2044_automation_access`、`decision.core_2053_population_vs_infrastructure`、`decision.core_2058_crisis_authority`、`decision.core_2065_audit_posture` 和 `decision.core_2070_engine_protection`。五个标签均被后续主事件或结局读取；2053 与 2065 的指定选择还会解锁条件短分支。
 - 2075 年根据控制权、秩序、希望和科技核心判定结局；结局文本会读取五个核心标签、两个条件分支状态和少量代表中型事件状态作为“历史回顾”，这些历史事实不改变结局类型判定。
-- 依据：`MainOS._on_timer_timeout()`、`MainOS.execute_command()`、`MainOS.build_event_description()`、`MainOS.apply_event_option_adjustments()`、`TechnologySystem.grant_research_for_year()`、`MainOS.determine_ending_type()`、`MainOS.build_ending_message()`。
+- 依据：`MainOS.process_month_tick()`、`MainOS.execute_command()`、`MainOS.build_display_event()`、`EventResolutionSystem.apply_event_option_adjustments()`、`TechnologySystem.grant_research_for_year()`、`MainOS.determine_ending_type()`、`MainOS.build_ending_message()`。
 
 ## 已有事件
 

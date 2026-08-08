@@ -1345,19 +1345,13 @@ func build_display_event(event: GameEvent) -> GameEvent:
 	var display_event: GameEvent = event.duplicate(true)
 	display_event.event_description = build_event_description(event)
 	_event_narrative_system.apply_option_display_text(display_event)
-	apply_event_option_adjustments(display_event)
-	return display_event
-
-
-## 根据已写入的轻量事件状态调整主事件运行时数值，不写回 Resource 模板。
-## 选项显示文案由 EventNarrativeSystem 在同一运行时副本上投影。
-func apply_event_option_adjustments(event: GameEvent) -> void:
 	var decision_state := _decision_history.export_state()
 	_event_resolution_system.apply_event_option_adjustments(
-		event,
+		display_event,
 		decision_state.get("tags", {}),
 		_event_state_store.export_state()
 	)
+	return display_event
 
 
 func _get_event_technology_snapshot() -> Dictionary:
