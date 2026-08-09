@@ -796,14 +796,5 @@ func _stage_for_severity(severity: int) -> int:
 	return 0
 
 
-func _stage_name(stage: int) -> String:
-	match stage:
-		1:
-			return "恶化"
-		2:
-			return "紧急"
-	return "预警"
-
-
 func _cooldown_key(situation_id: String, region_id: String) -> String:
 	return "%s|%s" % [situation_id, region_id]

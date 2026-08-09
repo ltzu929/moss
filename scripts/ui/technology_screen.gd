@@ -133,7 +133,6 @@ func _update_window_size() -> void:
 		return
 	var _vsize := _layout_viewport.get_visible_rect().size
 	var _csize := _calculate_window_size(_vsize)
-	print("[DEBUG] viewport=%s, calc=%s, panel=%s" % [_vsize, _csize, _window_panel.size])
 	_window_panel.custom_minimum_size = _csize
 
 

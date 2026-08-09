@@ -6,7 +6,7 @@
 
 - 起点：2044 年 1 月。依据：`scripts/systems/main_os.gd` 中 `INITIAL_YEAR = 2044`、`INITIAL_MONTH = 1`。
 - 终点：2075 年 1 月。依据：`scripts/systems/main_os.gd` 中 `END_YEAR = 2075`、`END_MONTH = 1`。
-- 时间推进：`MainOS._on_timer_timeout()` 每 tick 检查当年月事件，随后 `_advance_one_month()` 按月推进；每年 1 月执行 `_apply_yearly_settlement()`。
+- 时间推进：`MainOS.process_month_tick()` 每 tick 检查当年月事件，随后 `_advance_one_month()` 按月推进；每年 1 月执行 `_apply_yearly_settlement()`。`_on_timer_timeout()` 只负责转发并等待该完整月度编排协程。
 
 ## 玩家身份与权限
 
