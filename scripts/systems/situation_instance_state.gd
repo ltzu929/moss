@@ -39,3 +39,24 @@ func to_runtime_snapshot() -> Dictionary:
 		"node_choice_name": node_choice_name,
 		"node_result_text": node_result_text,
 	}
+
+
+## 返回不共享可变运行字段的状态副本，供纯月结算服务计算下一状态。
+func duplicate_state() -> SituationInstanceState:
+	var copy := SituationInstanceState.new()
+	copy.instance_id = instance_id
+	copy.data = data
+	copy.region_id = region_id
+	copy.severity = severity
+	copy.stage = stage
+	copy.approach_id = approach_id
+	copy.switch_lock_months = switch_lock_months
+	copy.started_year = started_year
+	copy.started_month = started_month
+	copy.last_unfunded = last_unfunded
+	copy.node_pending = node_pending
+	copy.node_resolved = node_resolved
+	copy.node_choice_id = node_choice_id
+	copy.node_choice_name = node_choice_name
+	copy.node_result_text = node_result_text
+	return copy

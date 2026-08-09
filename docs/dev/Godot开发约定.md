@@ -93,6 +93,12 @@ MainOS 重开时调用 ActionLogView.clear()
 `ActionLogView` 不读取 `MainOS`、年月或资源；测试通过组件公开接口和真实子节点结果检查
 容量、打字机状态与重开取消，不访问组件私有字段。
 
+局势算法也遵循同一边界：`SituationSpawnPlanner`、`SituationFundingPlanner`、
+`SituationMonthResolver` 和 `SituationSnapshotBuilder` 使用 `RefCounted`，只接收显式状态、资源
+和快照输入，不访问场景树、节点或 UI。`SituationSystem` 保留活跃集合、RNG、冷却/历史写入以及
+资源和集合事务编排；测试通过服务公开方法和 `SituationSystem` 公开协议验证，不跨脚本访问服务
+私有成员。
+
 ---
 
 ## 三、节点访问与依赖注入

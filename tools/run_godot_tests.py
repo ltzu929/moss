@@ -129,6 +129,12 @@ TEST_SPECS = [
         ("[MOSS-SITUATION-SYSTEM] 完成，失败断言：0",),
     ),
     TestSpec(
+        "tests/situation_algorithm_test.tscn",
+        "domain",
+        "headless",
+        ("[MOSS-SITUATION-ALGORITHMS] 完成，失败断言：0",),
+    ),
+    TestSpec(
         "tests/event_state_test.tscn",
         "domain",
         "headless",
