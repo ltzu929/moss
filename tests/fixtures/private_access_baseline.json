@@ -42,24 +42,6 @@
     "count": 2
   },
   {
-    "path": "situation_system_test.gd",
-    "member": "_active",
-    "kind": "direct_member",
-    "count": 2
-  },
-  {
-    "path": "situation_system_test.gd",
-    "member": "_build_notification",
-    "kind": "direct_member",
-    "count": 1
-  },
-  {
-    "path": "situation_system_test.gd",
-    "member": "_is_template_eligible",
-    "kind": "direct_member",
-    "count": 3
-  },
-  {
     "path": "situation_ui_test.gd",
     "member": "_on_situation_button_pressed",
     "kind": "engine_callback",

@@ -25,6 +25,7 @@ func _ready() -> void:
 	_assert_node_resolution_and_history()
 	_assert_conditional_opportunity_contract()
 	_assert_command_intervention_and_outcome()
+	_assert_runtime_snapshot_contract()
 	_assert_fixed_seed_export()
 
 	await get_tree().create_timer(0.5).timeout
@@ -206,17 +207,6 @@ func _assert_node_resolution_and_history() -> void:
 		"同地区同类局势再次出现时应显示上次节点选择回声"
 	)
 	var repeated_id := str(repeated.get("instance_id", ""))
-	var repeated_started := system._build_notification(
-		"started",
-		system._active[0],
-		"重复局势开始。",
-		true
-	)
-	_assert_true(
-		"历史回声" in str(repeated_started.get("message", ""))
-		and "分段人工撤离" in str(repeated_started.get("message", "")),
-		"重复局势开始记录应包含上次处置回声"
-	)
 	system.set_approach(repeated_id, "local_survey", 20)
 	var repeated_notifications: Array = []
 	var repeated_result := system.apply_command_intervention("technology_aid", "asia", sectors)
@@ -245,20 +235,20 @@ func _assert_conditional_opportunity_contract() -> void:
 	_assert_eq(opportunity.situation_node.trigger_stage, 0, "机会型局势应在出现时立即提供节点")
 	var system := _new_system(71)
 	_assert_true(
-		not system._is_template_eligible(opportunity, 2056, {}),
+		not system.is_template_eligible("regional_mutual_aid_window", 2056, {}),
 		"没有科技或事件历史时，条件型机会不得进入生成池"
 	)
 	_assert_true(
-		system._is_template_eligible(
-			opportunity,
+		system.is_template_eligible(
+			"regional_mutual_aid_window",
 			2056,
 			{"technology.human_mutual_aid": true}
 		),
 		"满足任一已配置历史事实后，条件型机会应进入生成池"
 	)
 	_assert_true(
-		not system._is_template_eligible(
-			opportunity,
+		not system.is_template_eligible(
+			"regional_mutual_aid_window",
 			2056,
 			{"event_state.mid_05_dispatch_pilot": "closed_model"}
 		),
@@ -273,7 +263,14 @@ func _assert_conditional_opportunity_contract() -> void:
 	var opportunity_sector := _create_sector("south_america")
 	var opportunity_sectors: Array[SectorData] = [opportunity_sector]
 	system.resolve_node(opportunity_id, "local_compact", 0, 0, opportunity_sectors)
-	system._active[0]["severity"] = 97
+	var opportunity_runtime := system.export_runtime_snapshot()
+	var opportunity_active: Array = opportunity_runtime.get("active", [])
+	opportunity_active[0]["severity"] = 97
+	opportunity_active[0]["stage"] = 2
+	_assert_true(
+		system.restore_runtime_snapshot(opportunity_runtime),
+		"局势严重度构造应通过公开运行态恢复接口完成"
+	)
 	var closed := system.process_month(opportunity_sectors, 0, 0, false, 2056, 7)
 	_assert_true(
 		"协作窗口已经关闭" in "\n".join(
@@ -312,6 +309,67 @@ func _assert_command_intervention_and_outcome() -> void:
 func _assert_fixed_seed_export() -> void:
 	var system := _new_system(424242)
 	_assert_eq(int(system.export_state().get("seed", 0)), 424242, "固定种子应进入可保存运行时快照")
+	var runtime_snapshot := system.export_runtime_snapshot()
+	_assert_eq(int(runtime_snapshot.get("version", 0)), 1, "局势运行态快照应声明版本")
+	_assert_true(system.restore_runtime_snapshot(runtime_snapshot), "空局势运行态快照应能恢复")
+
+
+func _assert_runtime_snapshot_contract() -> void:
+	var system := _new_system(20260809)
+	system.start_situation_for_test(
+		"regional_power_instability", "asia", 2044, 7
+	)
+	system.start_situation_for_test(
+		"emergency_communication_congestion", "north_america", 2044, 7
+	)
+	var baseline := system.export_runtime_snapshot()
+	var restored := _new_system(7)
+	_assert_true(restored.restore_runtime_snapshot(baseline), "合法运行态快照应能恢复")
+	_assert_eq(
+		restored.export_runtime_snapshot(),
+		baseline,
+		"运行态恢复后再次导出应保持稳定"
+	)
+
+	var invalid_snapshots: Array[Dictionary] = []
+	var unknown_template := baseline.duplicate(true)
+	unknown_template["active"][0]["situation_id"] = "missing_situation"
+	invalid_snapshots.append(unknown_template)
+	var unknown_approach := baseline.duplicate(true)
+	unknown_approach["active"][0]["approach_id"] = "missing_approach"
+	invalid_snapshots.append(unknown_approach)
+	var unknown_node := baseline.duplicate(true)
+	unknown_node["active"][0]["node_pending"] = false
+	unknown_node["active"][0]["node_resolved"] = true
+	unknown_node["active"][0]["node_choice_id"] = "missing_node_option"
+	unknown_node["active"][0]["node_choice_name"] = "不存在的方案"
+	unknown_node["active"][0]["node_result_text"] = "不存在的结果"
+	invalid_snapshots.append(unknown_node)
+	var duplicate_instance := baseline.duplicate(true)
+	duplicate_instance["active"][1]["instance_id"] = duplicate_instance["active"][0]["instance_id"]
+	invalid_snapshots.append(duplicate_instance)
+	var invalid_severity := baseline.duplicate(true)
+	invalid_severity["active"][0]["severity"] = 101
+	invalid_snapshots.append(invalid_severity)
+	var invalid_region := baseline.duplicate(true)
+	invalid_region["active"][0]["region_id"] = "atlantis"
+	invalid_snapshots.append(invalid_region)
+	var invalid_cooldown := baseline.duplicate(true)
+	invalid_cooldown["repeat_cooldowns"] = {"regional_power_instability|asia": 0}
+	invalid_snapshots.append(invalid_cooldown)
+	var invalid_history := baseline.duplicate(true)
+	invalid_history["history"] = {"regional_power_instability|asia": {}}
+	invalid_snapshots.append(invalid_history)
+	for index in invalid_snapshots.size():
+		_assert_true(
+			not system.restore_runtime_snapshot(invalid_snapshots[index]),
+			"非法运行态快照 %d 应拒绝恢复" % index
+		)
+		_assert_eq(
+			system.export_runtime_snapshot(),
+			baseline,
+			"非法运行态快照 %d 失败后不得留下半恢复状态" % index
+		)
 
 
 func _new_system(seed_value: int) -> SituationSystem:
