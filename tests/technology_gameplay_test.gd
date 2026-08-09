@@ -83,9 +83,7 @@ func _ready() -> void:
 	mitigated = _main_os.get_technology_adjusted_event_delta(-20, "hope")
 	_assert_eq(mitigated, -15, "应急训练应将负面秩序希望影响减轻25%")
 
-	var first_sector: SectorInfo = (
-		_main_os.get_node("%SectorInfoContainer").get_child(0) as SectorInfo
-	)
+	var first_sector: SectorInfo = _get_first_sector()
 	first_sector.data_card.order = 80
 	first_sector.data_card.hope = 75
 	_main_os._apply_human_autonomy_recovery()
@@ -108,7 +106,7 @@ func _ready() -> void:
 		]
 	)
 	var global_takeover: CommandData = _main_os._get_command_by_id("global_takeover")
-	first_sector = _main_os.get_node("%SectorInfoContainer").get_child(0)
+	first_sector = _get_first_sector()
 	var authority_before: int = first_sector.data_card.authority
 	var order_before: int = first_sector.data_card.order
 	var hope_before: int = first_sector.data_card.hope
@@ -150,7 +148,7 @@ func _assert_new_technology_effects() -> void:
 	_assert_eq(takeover.hope_delta, 0, "协商托管协议不应降低希望")
 	var global_takeover: CommandData = _main_os._get_command_by_id("global_takeover")
 	_assert_eq(global_takeover.energy_cost, 5, "权限审计链应降低全局接管能源消耗")
-	var first_sector: SectorInfo = _main_os.get_node("%SectorInfoContainer").get_child(0)
+	var first_sector: SectorInfo = _get_first_sector()
 	var authority_before := first_sector.data_card.authority
 	var order_before := first_sector.data_card.order
 	var hope_before := first_sector.data_card.hope
@@ -211,7 +209,7 @@ func _assert_new_technology_effects() -> void:
 	_assert_eq(technology_aid.authority_delta, -5, "协作治理应降低5控制权")
 	_assert_eq(technology_aid.cooldown_years, 2, "协作治理应将技术援助冷却降为2年")
 
-	first_sector = _main_os.get_node("%SectorInfoContainer").get_child(0)
+	first_sector = _get_first_sector()
 	first_sector.data_card.order = 30
 	first_sector.data_card.hope = 30
 	first_sector.data_card.authority = 30
@@ -227,6 +225,11 @@ func _assert_new_technology_effects() -> void:
 	_assert_eq(_main_os.max_cpu, 100, "重开后应清除新增算力上限效果")
 	_assert_eq(_main_os.cpu_recovery_rate, 10, "重开后应清除新增算力恢复效果")
 	_assert_eq(_main_os.energy_recovery_rate, 10, "重开后应恢复基础能源恢复率")
+
+
+func _get_first_sector() -> SectorInfo:
+	var workspace := _main_os.get_node("MainLayout/StrategicWorkspace") as StrategicWorkspace
+	return workspace.get_sector_nodes()[0] as SectorInfo
 
 
 ## 按顺序激活测试节点，并在协议点耗尽时发放下一年度研究点

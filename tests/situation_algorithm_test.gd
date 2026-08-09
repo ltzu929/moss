@@ -171,8 +171,8 @@ func _assert_month_resolver_contract() -> void:
 	_assert_true(next_state.node_pending, "跨入恶化阶段应激活一次性节点")
 	_assert_eq(str(result["status"]), "active", "仍在边界内的局势应保持活跃")
 	var notification_types: Array[String] = []
-	for notification in result["notifications"]:
-		notification_types.append(str(notification["type"]))
+	for notice in result["notifications"]:
+		notification_types.append(str(notice["type"]))
 	_assert_true("unfunded" in notification_types, "首次断供应返回断供通知数据")
 	_assert_true("node_available" in notification_types, "节点激活应返回暂停通知数据")
 
@@ -220,15 +220,15 @@ func _assert_snapshot_builder_contract() -> void:
 	_assert_eq(bool(snapshot["is_funded"]), false, "快照应消费外部资源计划结果")
 	_assert_true("本地抢修" in str(snapshot["history_echo"]), "快照应生成同类历史回声")
 	_assert_eq(snapshot["node"].get("options", []).size(), 2, "快照应完整投影节点方案")
-	var notification := builder.build_notification(
+	var notification_record := builder.build_notification(
 		"resolved",
 		state,
 		"局势已经恢复到安全边界。",
 		false,
 		history
 	)
-	_assert_true("历史回声" in str(notification["message"]), "结算通知应追加历史回声")
-	_assert_eq(str(notification["title"]), state.data.title, "通知应消费模板标题")
+	_assert_true("历史回声" in str(notification_record["message"]), "结算通知应追加历史回声")
+	_assert_eq(str(notification_record["title"]), state.data.title, "通知应消费模板标题")
 
 
 func _make_state(

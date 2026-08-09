@@ -25,8 +25,6 @@ signal game_ended(result: String, message: String)
 # 常量
 # ============================================================
 
-## MOSS 界面主题工具
-const MOSS_THEME := preload("res://scripts/ui/moss_ui_theme.gd")
 ## 指令领域服务脚本
 const COMMAND_SYSTEM_SCRIPT := preload("res://scripts/systems/command_system.gd")
 ## 开发期崩溃诊断日志
@@ -86,8 +84,9 @@ var current_energy: int = 100
 ## 为true时停止时间推进，禁止事件触发
 var is_game_over: bool = false
 
-## 行动日志显示组件；领域日志仍由 MainOS 保存。
-@onready var _action_log_view: ActionLogView = $MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/LogPlaceholder
+## HUD 和战略工作区只通过公开快照接口接收主控制器状态。
+@onready var _main_hud: MainHud = $MainLayout/MainHud
+@onready var _strategic_workspace: StrategicWorkspace = $MainLayout/StrategicWorkspace
 
 # ============================================================
 # 科技系统派生状态
@@ -187,14 +186,11 @@ func _ready() -> void:
 	%TechnologySystem.stage_changed.connect(_on_technology_stage_changed)
 	%TechnologyScreen.screen_closed.connect(_on_technology_screen_closed)
 
-	# 连接所有板块的点击信号
-	connect_sector_signals()
 	cache_initial_sector_states()
 	setup_strategic_views()
 
 	# 初始化指令按钮
 	setup_command_buttons()
-	setup_main_ui_theme()
 	setup_situation_ui()
 
 	_persist_development_phase("startup:ui")
@@ -241,7 +237,7 @@ func record_action(kind: String, title: String, message: String) -> void:
 		action_log.remove_at(0)
 
 	# 显示生命周期由独立组件负责，MainOS 只传递完整领域条目。
-	_action_log_view.append_entry(entry)
+	_strategic_workspace.append_action_log_entry(entry)
 
 func append_signed_change(lines: Array[String], label: String, delta: int) -> void:
 	if delta == 0:
@@ -446,7 +442,7 @@ func _build_development_snapshot() -> Dictionary:
 func cache_initial_sector_states() -> void:
 	initial_sector_states.clear()
 
-	var sectors := %SectorInfoContainer.get_children()
+	var sectors := _strategic_workspace.get_sector_nodes()
 	for sector in sectors:
 		if sector.get("data_card") == null:
 			continue
@@ -461,7 +457,7 @@ func cache_initial_sector_states() -> void:
 
 ## 恢复所有板块到初始数值
 func restore_sector_states() -> void:
-	var sectors := %SectorInfoContainer.get_children()
+	var sectors := _strategic_workspace.get_sector_nodes()
 
 	for sector in sectors:
 		if sector.get("data_card") == null:
@@ -634,11 +630,7 @@ func command_requires_selected_sector(cmd: CommandData) -> bool:
 
 ## 更新科技按钮显示的可用协议点和提示文本
 func update_technology_button() -> void:
-	if not has_node("%TechnologyButton"):
-		return
-	var btn := %TechnologyButton as Button
-	btn.text = "科技协议  %d" % %TechnologySystem.get_available_points()
-	btn.tooltip_text = "打开科技控制台"
+	_main_hud.set_technology_points(%TechnologySystem.get_available_points())
 
 
 ## 科技节点激活回调：重算效果、刷新按钮并记录操作
@@ -675,7 +667,7 @@ func _apply_human_autonomy_recovery() -> void:
 		recovery = 2
 		recovery_cap = 60
 
-	for sector in %SectorInfoContainer.get_children():
+	for sector in _strategic_workspace.get_sector_nodes():
 		if sector.get("data_card") == null:
 			continue
 		
@@ -726,9 +718,7 @@ func _can_open_technology_screen() -> bool:
 
 ## 同步决策档案按钮的稳定记录数量。
 func update_decision_archive_button() -> void:
-	if not has_node("%DecisionArchiveButton"):
-		return
-	%DecisionArchiveButton.text = "决策档案  %d" % get_decision_records().size()
+	_main_hud.set_decision_count(get_decision_records().size())
 
 
 func _on_decision_archive_button_pressed() -> void:
@@ -790,13 +780,10 @@ func setup_situation_ui() -> void:
 
 
 func update_situation_button() -> void:
-	if not has_node("%SituationButton"):
-		return
-	%SituationButton.text = "局势  %d / %d" % [
+	_main_hud.set_situation_count(
 		_situation_system.get_active_count(),
-		SituationSystem.MAX_ACTIVE,
-	]
-	%SituationButton.tooltip_text = "查看持续推进的随机局势"
+		SituationSystem.MAX_ACTIVE
+	)
 
 
 func _on_situation_button_pressed() -> void:
@@ -805,6 +792,11 @@ func _on_situation_button_pressed() -> void:
 	_refresh_situation_ui()
 	%SituationPanel.open_panel()
 	_set_development_phase("idle", {}, true)
+
+
+## 公共局势面板入口；测试和场景编排不再调用私有按钮回调。
+func open_situation_panel() -> void:
+	_on_situation_button_pressed()
 
 
 func _can_open_situation_panel() -> bool:
@@ -837,6 +829,11 @@ func _on_time_control_button_pressed() -> void:
 	_set_development_phase("idle", {}, true)
 
 
+## 公共时间控制入口；保持按钮回调只负责转发语义事件。
+func toggle_time_control() -> void:
+	_on_time_control_button_pressed()
+
+
 func _can_resume_time_from_hud() -> bool:
 	if is_game_over or end_screen_instance != null:
 		return false
@@ -851,15 +848,13 @@ func _can_resume_time_from_hud() -> bool:
 
 
 func update_time_control_button() -> void:
-	if not has_node("%TimeControlButton"):
-		return
-	%TimeControlButton.text = "继续" if $Timer.is_stopped() else "暂停"
-	if _situation_system.has_pending_node():
-		%TimeControlButton.tooltip_text = "请先处理当前局势节点"
-	else:
-		%TimeControlButton.tooltip_text = (
-			"继续月度推进" if $Timer.is_stopped() else "暂停月度推进"
-		)
+	_main_hud.set_time_state(
+		current_year,
+		current_month,
+		not $Timer.is_stopped(),
+		_manually_paused,
+		_situation_auto_paused or _situation_system.has_pending_node()
+	)
 
 
 func _on_situation_approach_requested(instance_id: String, approach_id: String) -> void:
@@ -879,6 +874,10 @@ func _on_situation_approach_requested(instance_id: String, approach_id: String) 
 	)
 	if bool(result.get("success", false)):
 		record_action("situation", "局势方针调整", str(result.get("message", "")))
+
+
+func request_situation_approach(instance_id: String, approach_id: String) -> void:
+	_on_situation_approach_requested(instance_id, approach_id)
 
 
 func _on_situation_node_option_requested(instance_id: String, option_id: String) -> void:
@@ -913,6 +912,10 @@ func _on_situation_node_option_requested(instance_id: String, option_id: String)
 	)
 
 
+func request_situation_node_option(instance_id: String, option_id: String) -> void:
+	_on_situation_node_option_requested(instance_id, option_id)
+
+
 func _on_situation_focus_region_requested(region_id: String) -> void:
 	var sector := _find_sector_by_id(region_id)
 	if sector != null:
@@ -932,6 +935,10 @@ func _refresh_situation_ui(focus_id: String = "") -> void:
 	update_situation_button()
 	_update_region_situation_summary_ui()
 	_sync_world_map_states()
+
+
+func refresh_situation_ui(focus_id: String = "") -> void:
+	_refresh_situation_ui(focus_id)
 
 
 func get_situation_snapshots() -> Array[Dictionary]:
@@ -984,79 +991,46 @@ func start_situation_for_test(
 # 板块选中管理
 # ============================================================
 
-## 连接所有板块的点击信号
-func connect_sector_signals() -> void:
-	var sectors := %SectorInfoContainer.get_children()
-	for sector in sectors:
-		if sector.get("sector_clicked") != null:
-			sector.sector_clicked.connect(_on_sector_clicked)
-
-
-## 初始化中央战略地图和右上地球聚焦窗口
+## 初始化战略工作区；地图和区域卡片的输入由工作区内部管理。
 func setup_strategic_views() -> void:
-	if has_node("%WorldMapView"):
-		var world_map := get_node("%WorldMapView")
-		if world_map.has_signal("region_selected"):
-			world_map.region_selected.connect(_on_world_map_region_selected)
+	if not _strategic_workspace.region_selected.is_connected(
+		_on_workspace_region_selected
+	):
+		_strategic_workspace.region_selected.connect(_on_workspace_region_selected)
 
 	_sync_strategic_views()
 
 
-## 中央地图点击区域时复用现有板块选中逻辑
-func _on_world_map_region_selected(region_id: String) -> void:
-	if region_id == "":
-		deselect_sector()
-		return
-
-	var sector := _find_sector_by_id(region_id)
-	if sector != null:
-		select_sector(sector)
+## 工作区将稳定区域 ID 选择事件交回主控制器。
+func _on_workspace_region_selected(_region_id: String) -> void:
+	selected_sector = _strategic_workspace.get_selected_sector()
+	if %AllocatePopup.visible:
+		if selected_sector == null or selected_sector.data_card == null:
+			%AllocatePopup.update_display("未选择板块")
+		else:
+			%AllocatePopup.update_display(selected_sector.data_card.region_name)
+	update_region_detail_ui()
+	update_command_buttons()
 
 
 ## 按稳定区域 ID 查找现有 SectorInfo 节点
 func _find_sector_by_id(region_id: String) -> SectorInfo:
-	for child in %SectorInfoContainer.get_children():
-		if child is SectorInfo and child.data_card != null:
-			if child.data_card.region_id == region_id:
-				return child
-	return null
+	return _strategic_workspace.get_sector_by_region_id(region_id)
 
 ## 设置选中板块
 ## 参数: sector - 被点击的板块节点
 func select_sector(sector: SectorInfo) -> void:
-	# 取消之前的选中
-	if selected_sector != null:
-		selected_sector.set_selected(false)
-
-	# 设置新选中
-	selected_sector = sector
-	selected_sector.set_selected(true)
+	_strategic_workspace.select_sector(sector)
+	selected_sector = _strategic_workspace.get_selected_sector()
 	update_region_detail_ui()
 	update_command_buttons()
 
 ## 取消选中状态
 func deselect_sector() -> void:
-	if selected_sector != null:
-		selected_sector.set_selected(false)
-		selected_sector = null
-		update_region_detail_ui()
-		update_command_buttons()
-
-## 板块点击回调 - 连接到SectorInfo的sector_clicked信号
-## 实现toggle行为：点击已选中的板块取消选中，点击其他板块切换选中
-func _on_sector_clicked(sector: SectorInfo) -> void:
-	# 如果点击的是已选中的板块，取消选中
-	if selected_sector == sector:
-		deselect_sector()
-		# 如果弹窗打开，更新显示为未选择状态
-		if %AllocatePopup.visible:
-			%AllocatePopup.update_display("未选择板块")
-	else:
-		# 选中新板块
-		select_sector(sector)
-		# 如果弹窗打开，实时更新板块名称
-		if %AllocatePopup.visible:
-			%AllocatePopup.update_display(sector.data_card.region_name)
+	_strategic_workspace.deselect_sector()
+	selected_sector = null
+	update_region_detail_ui()
+	update_command_buttons()
 
 # ============================================================
 # 冷却系统
@@ -1070,11 +1044,7 @@ func update_cooldowns() -> void:
 
 ## 返回局势系统使用的区域数据列表，不复制 Resource。
 func _get_sector_data_list() -> Array[SectorData]:
-	var result: Array[SectorData] = []
-	for sector in %SectorInfoContainer.get_children():
-		if sector.get("data_card") != null:
-			result.append(sector.data_card)
-	return result
+	return _strategic_workspace.get_sector_data_list()
 
 
 ## 推进所有活跃局势，并在满足 2044 核心决策门槛后尝试生成新局势。
@@ -1129,9 +1099,8 @@ func _handle_situation_notifications(notifications: Array) -> void:
 
 
 func _refresh_sector_displays() -> void:
-	for sector in %SectorInfoContainer.get_children():
-		if sector.get("data_card") != null:
-			sector.update_display()
+	_strategic_workspace.refresh_sector_displays()
+	selected_sector = _strategic_workspace.get_selected_sector()
 	update_region_detail_ui()
 	update_global_overview_ui()
 
@@ -1478,7 +1447,7 @@ func _apply_event_option_consequences(
 	event_title: String = "",
 	option_text: String = ""
 ) -> void:
-	var sectors := %SectorInfoContainer.get_children()
+	var sectors := _strategic_workspace.get_sector_nodes()
 	var found := false
 
 	for sector in sectors:
@@ -1546,299 +1515,36 @@ func _apply_event_option_consequences(
 # UI更新函数
 # ============================================================
 
-## 安全设置文本节点内容
-## path 使用唯一节点路径，例如 "%RegionNameLabel"
-func _set_text_if_exists(path: String, text: String) -> void:
-	if not has_node(path):
-		return
-
-	var node := get_node(path)
-	node.set("text", text)
-
-
-## 安全设置进度条数值
-## path 使用唯一节点路径，例如 "%RegionOrderBar"
-func _set_progress_if_exists(path: String, value: int) -> void:
-	if not has_node(path):
-		return
-
-	var node := get_node(path)
-	if node is ProgressBar:
-		node.value = clampi(value, 0, 100)
-
-
-## 统一主界面现有控件的颜色、细边框和状态条样式
-func setup_main_ui_theme() -> void:
-	var bars: Array[ProgressBar] = []
-	var bar_colors: Array[Color] = []
-	for path in ["%RegionOrderBar", "%RegionHopeBar", "%RegionAuthorityBar"]:
-		if has_node(path):
-			bars.append(get_node(path) as ProgressBar)
-	bar_colors = [MOSS_THEME.ORDER, MOSS_THEME.HOPE, MOSS_THEME.AUTHORITY]
-
-	for i in range(mini(bars.size(), bar_colors.size())):
-		var bar := bars[i]
-		bar.custom_minimum_size.y = 16.0
-		bar.add_theme_stylebox_override(
-			"background",
-			MOSS_THEME.progress_background_style()
-		)
-		bar.add_theme_stylebox_override(
-			"fill",
-			MOSS_THEME.progress_fill_style(bar_colors[i])
-		)
-		bar.add_theme_color_override("font_color", MOSS_THEME.TEXT_PRIMARY)
-		bar.add_theme_font_size_override("font_size", 12)
-
-	if has_node("%ComputationalLabel"):
-		%ComputationalLabel.add_theme_color_override(
-			"font_color",
-			MOSS_THEME.TEXT_PRIMARY
-		)
-	if has_node("%EnergyLabel"):
-		%EnergyLabel.add_theme_color_override("font_color", MOSS_THEME.ACCENT_GOLD)
-	if has_node("%MossLabel"):
-		%MossLabel.add_theme_color_override("font_color", MOSS_THEME.DANGER)
-		%MossLabel.add_theme_font_size_override("font_size", 16)
-
-	if has_node("%TechnologyButton"):
-		var technology_button := %TechnologyButton as Button
-		technology_button.custom_minimum_size = Vector2(120.0, 44.0)
-		technology_button.add_theme_color_override(
-			"font_color",
-			MOSS_THEME.TEXT_PRIMARY
-		)
-		technology_button.add_theme_stylebox_override(
-			"normal",
-			MOSS_THEME.button_style(
-				Color(0.023, 0.050, 0.065, 0.94),
-				MOSS_THEME.BORDER
-			)
-		)
-		technology_button.add_theme_stylebox_override(
-			"hover",
-			MOSS_THEME.button_style(
-				Color(0.043, 0.095, 0.112, 0.98),
-				MOSS_THEME.ACCENT_CYAN
-			)
-		)
-		technology_button.add_theme_stylebox_override(
-			"pressed",
-			MOSS_THEME.button_style(
-				Color(0.016, 0.038, 0.050, 1.0),
-				MOSS_THEME.ACCENT_CYAN
-			)
-		)
-
-	if has_node("%DecisionArchiveButton"):
-		var archive_button := %DecisionArchiveButton as Button
-		archive_button.custom_minimum_size = Vector2(128.0, 44.0)
-		archive_button.add_theme_color_override("font_color", MOSS_THEME.TEXT_PRIMARY)
-		archive_button.add_theme_stylebox_override(
-			"normal",
-			MOSS_THEME.button_style(Color(0.023, 0.050, 0.065, 0.94), MOSS_THEME.BORDER)
-		)
-		archive_button.add_theme_stylebox_override(
-			"hover",
-			MOSS_THEME.button_style(Color(0.043, 0.095, 0.112, 0.98), MOSS_THEME.ACCENT_CYAN)
-		)
-		archive_button.add_theme_stylebox_override(
-			"pressed",
-			MOSS_THEME.button_style(Color(0.016, 0.038, 0.050, 1.0), MOSS_THEME.ACCENT_CYAN)
-		)
-
-	if has_node("%SituationButton"):
-		var situation_button := %SituationButton as Button
-		situation_button.custom_minimum_size = Vector2(112.0, 44.0)
-		situation_button.add_theme_color_override("font_color", MOSS_THEME.TEXT_PRIMARY)
-		situation_button.add_theme_stylebox_override(
-			"normal",
-			MOSS_THEME.button_style(
-				Color(0.023, 0.050, 0.065, 0.94),
-				MOSS_THEME.BORDER
-			)
-		)
-		situation_button.add_theme_stylebox_override(
-			"hover",
-			MOSS_THEME.button_style(
-				Color(0.043, 0.095, 0.112, 0.98),
-				MOSS_THEME.ACCENT_CYAN
-			)
-		)
-		situation_button.add_theme_stylebox_override(
-			"pressed",
-			MOSS_THEME.button_style(
-				Color(0.016, 0.038, 0.050, 1.0),
-				MOSS_THEME.ACCENT_CYAN
-			)
-		)
-
-	if has_node("%TimeControlButton"):
-		var time_button := %TimeControlButton as Button
-		time_button.custom_minimum_size = Vector2(80.0, 44.0)
-		time_button.add_theme_color_override("font_color", MOSS_THEME.ACCENT_CYAN)
-		time_button.add_theme_stylebox_override(
-			"normal",
-			MOSS_THEME.button_style(
-				Color(0.031, 0.072, 0.088, 0.98),
-				MOSS_THEME.BORDER_BRIGHT,
-				2
-			)
-		)
-		time_button.add_theme_stylebox_override(
-			"hover",
-			MOSS_THEME.button_style(
-				Color(0.050, 0.112, 0.126, 1.0),
-				MOSS_THEME.ACCENT_CYAN,
-				2
-			)
-		)
-
-	if has_node("%CommandDock"):
-		var command_dock := %CommandDock as PanelContainer
-		command_dock.add_theme_stylebox_override(
-			"panel",
-			MOSS_THEME.panel_style(
-				Color(0.021, 0.047, 0.064, 0.96),
-				MOSS_THEME.BORDER_BRIGHT
-			)
-		)
-	if has_node("%CommandContextLabel"):
-		%CommandContextLabel.add_theme_color_override(
-			"font_color",
-			MOSS_THEME.TEXT_SECONDARY
-		)
-		%CommandContextLabel.add_theme_font_size_override("font_size", 14)
-	if has_node("%RegionSituationLabel"):
-		%RegionSituationLabel.add_theme_color_override(
-			"font_color",
-			MOSS_THEME.ACCENT_GOLD
-		)
-	var situation_title_path := (
-		"MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/"
-		+ "SituationSummary/SituationSummaryTitle"
-	)
-	if has_node(situation_title_path):
-		var situation_title := get_node(situation_title_path) as Label
-		situation_title.add_theme_color_override("font_color", MOSS_THEME.ACCENT_CYAN)
-
-
 ## 更新右侧上下文区域详情和指令坞
 ## 未选择区域时显示空状态，选择区域后显示对应 SectorData
 func update_region_detail_ui() -> void:
+	_strategic_workspace.update_region_detail(get_situation_snapshots())
 	if selected_sector == null or selected_sector.data_card == null:
-		_set_text_if_exists("%RegionNameLabel", "未选择区域")
-		_set_text_if_exists("%RegionDescriptionLabel", "选择地图或底部区域条以查看详情。")
-		_set_text_if_exists("%RegionRiskLabel", "状态：待选择")
-		_set_text_if_exists("%GlobalMapSelectedLabel", "全球态势监控中")
-		_set_text_if_exists("%CommandContextLabel", "未选择区域  //  请先选择区域")
-		_set_progress_if_exists("%RegionOrderBar", 0)
-		_set_progress_if_exists("%RegionHopeBar", 0)
-		_set_progress_if_exists("%RegionAuthorityBar", 0)
-		_update_region_situation_summary_ui()
-		_sync_strategic_views()
+		_main_hud.set_command_context("未选择区域  //  请先选择区域")
 		return
-
-	var data := selected_sector.data_card
-	_set_text_if_exists("%RegionNameLabel", data.region_name)
-	_set_text_if_exists("%RegionDescriptionLabel", data.description)
-	_set_text_if_exists("%RegionRiskLabel", _get_region_risk_text(data.authority))
-	_set_text_if_exists("%GlobalMapSelectedLabel", "当前监控：" + data.region_name)
-	_set_text_if_exists(
-		"%CommandContextLabel",
-		"当前选区：%s  //  选择指令" % data.region_name
+	_main_hud.set_command_context(
+		"当前选区：%s  //  选择指令" % selected_sector.data_card.region_name
 	)
-	_set_progress_if_exists("%RegionOrderBar", data.order)
-	_set_progress_if_exists("%RegionHopeBar", data.hope)
-	_set_progress_if_exists("%RegionAuthorityBar", data.authority)
-	_update_region_situation_summary_ui()
-	_sync_strategic_views()
 
 
 ## 在上下文栏显示当前选区的局势摘要，完整配置仍由局势追踪面板承担。
 func _update_region_situation_summary_ui() -> void:
-	if not has_node("%RegionSituationLabel"):
-		return
-	if selected_sector == null or selected_sector.data_card == null:
-		%RegionSituationLabel.text = "选择区域后显示局势"
-		%RegionSituationLabel.tooltip_text = ""
-		return
-
-	var region_id: String = selected_sector.data_card.region_id
-	var summary := "当前无活跃局势"
-	for snapshot in get_situation_snapshots():
-		if str(snapshot.get("region_id", "")) != region_id:
-			continue
-		var monthly_delta := int(snapshot.get("expected_monthly_delta", 0))
-		var delta_prefix := "+" if monthly_delta > 0 else ""
-		summary = "%s｜%s %d%%｜下月 %s%d" % [
-			str(snapshot.get("title", "未命名局势")),
-			str(snapshot.get("stage_name", "预警")),
-			int(snapshot.get("severity", 0)),
-			delta_prefix,
-			monthly_delta,
-		]
-		break
-
-	%RegionSituationLabel.text = summary
-	%RegionSituationLabel.tooltip_text = summary
+	_strategic_workspace.update_region_detail(get_situation_snapshots())
 
 
 ## 同步地图状态、地图选区和地球聚焦
 func _sync_strategic_views() -> void:
-	_sync_world_map_states()
-	_sync_orbital_focus()
+	_strategic_workspace.refresh_views(get_situation_snapshots(), _event_focus_region)
 
 
 ## 将现有区域数据快照传给中央战略地图
 func _sync_world_map_states() -> void:
-	if not has_node("%WorldMapView"):
-		return
-
-	var world_map := get_node("%WorldMapView")
-	var states: Dictionary = {}
-	for sector in %SectorInfoContainer.get_children():
-		if sector.get("data_card") == null:
-			continue
-
-		states[sector.data_card.region_id] = {
-			"order": sector.data_card.order,
-			"hope": sector.data_card.hope,
-			"authority": sector.data_card.authority,
-			"situation_count": 0,
-		}
-
-	for snapshot in _situation_system.get_active_snapshots():
-		var region_id := str(snapshot.get("region_id", ""))
-		if not states.has(region_id):
-			continue
-		states[region_id]["situation_count"] = (
-			int(states[region_id].get("situation_count", 0)) + 1
-		)
-
-	if world_map.has_method("set_region_states"):
-		world_map.set_region_states(states)
-
-	var selected_region := ""
-	if selected_sector != null and selected_sector.data_card != null:
-		selected_region = selected_sector.data_card.region_id
-	if world_map.has_method("set_selected_region"):
-		world_map.set_selected_region(selected_region)
+	_strategic_workspace.refresh_views(get_situation_snapshots(), _event_focus_region)
 
 
 ## 地球窗口优先显示事件区域，否则显示当前选区
 func _sync_orbital_focus() -> void:
-	if not has_node("%RegionOrbitalView"):
-		return
-
-	var region_id := _event_focus_region
-	if region_id == "":
-		if selected_sector != null and selected_sector.data_card != null:
-			region_id = selected_sector.data_card.region_id
-
-	var orbital_view := get_node("%RegionOrbitalView")
-	if orbital_view.has_method("focus_region"):
-		orbital_view.focus_region(region_id)
+	_strategic_workspace.set_event_focus_region(_event_focus_region)
 
 
 ## 根据控制权生成区域风险文本
@@ -1867,45 +1573,7 @@ func format_population_for_ui(value: int) -> String:
 ## 更新右侧全局信息面板
 ## 从现有 SectorInfoContainer 中读取区域数据，不新增数据源
 func update_global_overview_ui() -> void:
-	if not has_node("%SectorInfoContainer"):
-		return
-
-	var sectors := %SectorInfoContainer.get_children()
-	var total_population := 0
-	var total_order := 0
-	var total_hope := 0
-	var total_authority := 0
-	var count := 0
-
-	for sector in sectors:
-		if sector.get("data_card") == null:
-			continue
-
-		total_population += sector.data_card.population
-		total_order += sector.data_card.order
-		total_hope += sector.data_card.hope
-		total_authority += sector.data_card.authority
-		count += 1
-
-	if count == 0:
-		_set_text_if_exists("%GlobalPopulationLabel", "全球人口: --")
-		_set_text_if_exists("%GlobalAuthorityLabel", "平均控制权: --")
-		_set_text_if_exists("%GlobalStabilityLabel", "系统稳定性: --")
-		_set_text_if_exists("%GlobalThreatLabel", "威胁等级: --")
-		return
-
-	var avg_order := floori(float(total_order) / float(count))
-	var avg_hope := floori(float(total_hope) / float(count))
-	var avg_authority := floori(float(total_authority) / float(count))
-	var stability := floori(float(avg_order + avg_hope + avg_authority) / 3.0)
-
-	_set_text_if_exists(
-		"%GlobalPopulationLabel",
-		"全球人口: " + format_population_for_ui(total_population)
-	)
-	_set_text_if_exists("%GlobalAuthorityLabel", "平均控制权: %d%%" % avg_authority)
-	_set_text_if_exists("%GlobalStabilityLabel", "系统稳定性: %d%%" % stability)
-	_set_text_if_exists("%GlobalThreatLabel", "威胁等级: " + _get_global_threat_text(avg_authority))
+	_strategic_workspace.update_global_overview()
 
 
 ## 根据平均控制权生成全局威胁等级
@@ -1919,24 +1587,23 @@ func _get_global_threat_text(avg_authority: int) -> String:
 
 ## 刷新顶部全局资源显示（日期、算力、能源）
 func update_global_resource_ui() -> void:
-	if has_node("%ComputationalLabel"):
-		%ComputationalLabel.text = "算力: " + str(current_cpu)
-
-	if has_node("%EnergyLabel"):
-		%EnergyLabel.text = "能源: " + str(current_energy)
-
-	if has_node("%MossLabel"):
-		var moss_label := get_node("%MossLabel")
-		if moss_label is Label:
-			moss_label.text = get_moss_model_name()
-
-	if has_node("%YearProgress"):
-		var year_progress := get_node("%YearProgress")
-		if year_progress is YearProgress:
-			year_progress.update_progress(current_year, current_month)
-
-	update_global_overview_ui()
-	_sync_world_map_states()
+	_main_hud.update_resources(
+		get_moss_model_name(),
+		current_cpu,
+		current_energy,
+		%TechnologySystem.get_available_points(),
+		get_decision_records().size(),
+		_situation_system.get_active_count(),
+		SituationSystem.MAX_ACTIVE
+	)
+	_main_hud.set_time_state(
+		current_year,
+		current_month,
+		not $Timer.is_stopped(),
+		_manually_paused,
+		_situation_auto_paused or _situation_system.has_pending_node()
+	)
+	_strategic_workspace.refresh_views(get_situation_snapshots(), _event_focus_region)
 
 ## 获取当前 MOSS 型号显示名称
 func get_moss_model_name() -> String:
@@ -1958,7 +1625,7 @@ func get_moss_model_name() -> String:
 ## 返回: 平均值（整数），无板块时返回0
 ## 用途: 判定（≤0则失败）和结局分支判定
 func get_average_authority() -> int:
-	var sectors := %SectorInfoContainer.get_children()
+	var sectors := _strategic_workspace.get_sector_nodes()
 	var total_authority := 0
 	var count := 0
 
@@ -2127,7 +1794,7 @@ func show_end_screen(title: String, message: String, result: String = "failed") 
 	var total_regions := 0
 	var controlled_regions := 0
 
-	for sector in %SectorInfoContainer.get_children():
+	for sector in _strategic_workspace.get_sector_nodes():
 		if sector.get("data_card") == null:
 			continue
 
@@ -2189,7 +1856,7 @@ func get_technology_summary() -> String:
 
 ## 计算所有板块某项属性的平均值
 func _get_average_stat(stat_name: String) -> int:
-	var sectors := %SectorInfoContainer.get_children()
+	var sectors := _strategic_workspace.get_sector_nodes()
 	var total := 0
 	var count := 0
 
@@ -2224,7 +1891,7 @@ func _on_restart_requested() -> void:
 	current_cpu = INITIAL_CPU
 	is_game_over = false
 	action_log.clear()
-	_action_log_view.clear()
+	_strategic_workspace.clear_action_log()
 	triggered_events.clear()
 	_event_state_store.clear()
 	_decision_history.clear()
@@ -2378,7 +2045,7 @@ func apply_special_command_effect(cmd: CommandData) -> void:
 			update_global_resource_ui()
 			log_command_result(cmd, lines)
 		COMMAND_GLOBAL_TAKEOVER:
-			var sector_nodes := %SectorInfoContainer.get_children()
+			var sector_nodes := _strategic_workspace.get_sector_nodes()
 			var sector_data_list: Array[SectorData] = []
 			for sector in sector_nodes:
 				if sector.get("data_card") == null:
@@ -2404,43 +2071,16 @@ func apply_special_command_effect(cmd: CommandData) -> void:
 
 ## 初始化指令按钮容器中的所有按钮
 func setup_command_buttons() -> void:
-	var button_container: HBoxContainer = %CommandButtonContainer
-
-	if button_container == null:
-		push_error("找不到CommandButtonContainer")
-		return
-
-	# 只清空动态指令按钮，保留指令坞中的当前选区提示。
-	for child in button_container.get_children():
-		if child is CommandButton:
-			child.queue_free()
-
-	# 为每个指令创建按钮
-	for cmd in available_commands:
-		var button_scene := load("res://scenes/command_button.tscn")
-		var button: Button = button_scene.instantiate()
-
-		# 配置按钮
-		button.setup(cmd)
-
-		# 连接点击信号
-		button.command_pressed.connect(_on_command_button_pressed)
-
-		# 添加到容器
-		button_container.add_child(button)
+	_main_hud.set_commands(available_commands)
 
 ## 更新所有指令按钮状态
 func update_command_buttons() -> void:
-	var button_container: HBoxContainer = %CommandButtonContainer
-
-	if button_container == null:
-		return
-
-	for button in button_container.get_children():
-		if button is CommandButton:
-			var reason := get_command_unavailable_reason(button.command_data)
-			button.set_availability(
-				reason.is_empty(),
-				reason,
-				_command_system.get_command_cost_text(button.command_data)
-			)
+	var availability: Dictionary = {}
+	for cmd in available_commands:
+		var reason := get_command_unavailable_reason(cmd)
+		availability[cmd.command_id] = {
+			"available": reason.is_empty(),
+			"reason": reason,
+			"cost_text": _command_system.get_command_cost_text(cmd),
+		}
+	_main_hud.set_command_availability(availability)

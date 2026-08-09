@@ -10,7 +10,7 @@ var _main_os: Control
 func _ready() -> void:
 	_main_os = MAIN_SCENE.instantiate()
 	var serialized_panel := _main_os.get_node("%DecisionArchivePanel") as DecisionArchivePanel
-	var serialized_button := _main_os.get_node("%DecisionArchiveButton") as Button
+	var serialized_button := _main_os.get_node("MainLayout/MainHud/TopBarContainer/DecisionArchiveButton") as Button
 	var serialized_top_bar := serialized_button.get_parent() as Control
 	_assert_true(not serialized_panel.visible, "主场景中的决策档案实例应序列化为隐藏")
 	_assert_true(
@@ -45,7 +45,7 @@ func _ready() -> void:
 
 func _assert_empty_archive_state() -> void:
 	var timer := _main_os.get_node("Timer") as Timer
-	var button := _main_os.get_node("%DecisionArchiveButton") as Button
+	var button := _main_os.get_node("MainLayout/MainHud/TopBarContainer/DecisionArchiveButton") as Button
 	var panel := _main_os.get_node("%DecisionArchivePanel") as DecisionArchivePanel
 	var close_button := panel.get_node("%ArchiveCloseButton") as Button
 	button.pressed.emit()
@@ -275,12 +275,12 @@ func _assert_restart_clears_history() -> void:
 		"重新开始应清空 2070 核心标签"
 	)
 	_assert_eq(_main_os.get_decision_records().size(), 0, "重新开始应清空决策档案")
-	_assert_true("0" in _main_os.get_node("%DecisionArchiveButton").text, "重开后档案按钮应归零")
+	_assert_true("0" in _main_os.get_node("MainLayout/MainHud/TopBarContainer/DecisionArchiveButton").text, "重开后档案按钮应归零")
 
 
 func _assert_archive_ui_reads_stable_records() -> void:
 	var timer := _main_os.get_node("Timer") as Timer
-	var button := _main_os.get_node("%DecisionArchiveButton") as Button
+	var button := _main_os.get_node("MainLayout/MainHud/TopBarContainer/DecisionArchiveButton") as Button
 	var panel := _main_os.get_node("%DecisionArchivePanel") as DecisionArchivePanel
 	var top_bar := button.get_parent() as Control
 	var close_button := panel.get_node("%ArchiveCloseButton") as Button

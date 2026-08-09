@@ -30,7 +30,8 @@ func _assert_runtime_geometry(main_os: Control) -> void:
 		"运行视口应为1920×1080，实际为%s" % viewport_size
 	)
 
-	var world_map := main_os.get_node("%WorldMapView") as Control
+	var workspace := main_os.get_node("MainLayout/StrategicWorkspace") as StrategicWorkspace
+	var world_map := workspace.get_world_map() as Control
 	_assert_true(
 		world_map.size.x >= 1300.0 and world_map.size.y >= 620.0,
 		"世界地图应占据主要观察面积，实际为%s" % world_map.size
@@ -49,25 +50,25 @@ func _assert_runtime_geometry(main_os: Control) -> void:
 
 
 func _assert_europe_selection_keeps_geometry(main_os: Control) -> void:
-	var content_row := main_os.get_node("MainLayout/ContentRow") as Control
-	var world_map := main_os.get_node("%WorldMapView") as WorldMapView
-	var before_content_rect := content_row.get_global_rect()
-	var before_map_rect := world_map.get_global_rect()
+	var workspace := main_os.get_node("MainLayout/StrategicWorkspace") as StrategicWorkspace
+	var world_map := workspace.get_world_map()
+	var before_content_rect := workspace.get_content_rect()
+	var before_map_rect := workspace.get_world_map_rect()
 
 	world_map.region_selected.emit("europe")
 	await get_tree().process_frame
 	await get_tree().process_frame
 
 	_assert_true(
-		(main_os.get_node("%RegionNameLabel") as Label).text == "欧洲",
+		workspace.get_region_name_text() == "欧洲",
 		"点击欧洲后应选中欧洲板块"
 	)
 	_assert_true(
-		content_row.get_global_rect().is_equal_approx(before_content_rect),
+		workspace.get_content_rect().is_equal_approx(before_content_rect),
 		"点击欧洲前后中央内容区几何应保持不变"
 	)
 	_assert_true(
-		world_map.get_global_rect().is_equal_approx(before_map_rect),
+		workspace.get_world_map_rect().is_equal_approx(before_map_rect),
 		"点击欧洲前后世界地图几何应保持不变"
 	)
 	_assert_runtime_geometry(main_os)

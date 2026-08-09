@@ -4,7 +4,7 @@ extends "res://tests/support/moss_test_case.gd"
 const MAIN_SCENE: PackedScene = preload("res://scenes/main_os.tscn")
 const ACTION_LOG_LIMIT: int = 24
 const LOG_VIEW_PATH: NodePath = NodePath(
-	"MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/LogPlaceholder"
+	"MainLayout/StrategicWorkspace/ContentRow/ContextPanel/ContextMargin/ContextVBox/LogPlaceholder"
 )
 
 var _main_os: Control

@@ -1,37 +1,16 @@
-[gd_scene format=3 uid="uid://dlmkcdge21u4x"]
+[gd_scene load_steps=12 format=3]
 
-[ext_resource type="Script" uid="uid://ctakhimn50hdc" path="res://scripts/systems/main_os.gd" id="1_8e66l"]
-[ext_resource type="Script" uid="uid://dhndawkfhm8iq" path="res://scripts/resources/game_event.gd" id="2_0h44u"]
-[ext_resource type="PackedScene" uid="uid://xn0mj5mp0u12" path="res://scenes/sector_info.tscn" id="2_qcklt"]
-[ext_resource type="Resource" uid="uid://bgrmda00hq7ef" path="res://data/events/event_2044_space_elevator_crisis.tres" id="3_b37nj"]
-[ext_resource type="Resource" uid="uid://de5nghry0twj7" path="res://data/sector_asia.tres" id="3_sjuws"]
-[ext_resource type="Resource" uid="uid://c5g8pdsgsa214" path="res://data/sector_na.tres" id="4_lwoul"]
-[ext_resource type="Resource" uid="uid://dthd18iep6jve" path="res://data/sector_europe.tres" id="5_8e66l"]
-[ext_resource type="Resource" uid="uid://cfrica001" path="res://data/sector_africa.tres" id="6_africa"]
-[ext_resource type="Resource" uid="uid://coceania001" path="res://data/sector_oceania.tres" id="8_oceania"]
-[ext_resource type="PackedScene" uid="uid://dellv4e6qlqpr" path="res://scenes/allocate_popup.tscn" id="9_a8ufc"]
-[ext_resource type="PackedScene" uid="uid://jls1m2vbj8iu" path="res://scenes/event_popup.tscn" id="9_b37nj"]
-[ext_resource type="Resource" uid="uid://csoutham001" path="res://data/sector_south_america.tres" id="9_southam"]
-[ext_resource type="PackedScene" uid="uid://bqxj2k3n4m5p" path="res://scenes/year_progress.tscn" id="12_yearprogress"]
-[ext_resource type="Script" uid="uid://be3xq703bipir" path="res://scripts/ui/world_map_view.gd" id="14_worldmap"]
-[ext_resource type="Script" uid="uid://doo72uu83jjx3" path="res://scripts/ui/region_orbital_view.gd" id="15_orbital"]
-[ext_resource type="Script" uid="uid://ce33podwj0fgt" path="res://scripts/systems/technology_system.gd" id="16_technology"]
-[ext_resource type="PackedScene" uid="uid://bn2cwv0ewn4kv" path="res://scenes/technology_screen.tscn" id="17_technology_screen"]
-[ext_resource type="PackedScene" uid="uid://kianyj80h6sh" path="res://scenes/decision_archive_panel.tscn" id="19_a6tgg"]
-[ext_resource type="PackedScene" path="res://scenes/situation_panel.tscn" id="20_situation_panel"]
-[ext_resource type="PackedScene" path="res://scenes/action_log_view.tscn" id="21_action_log_view"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hud"]
-content_margin_left = 8.0
-content_margin_top = 8.0
-content_margin_right = 8.0
-content_margin_bottom = 8.0
-bg_color = Color(0.031, 0.067, 0.102, 0.88)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.118, 0.204, 0.267, 1)
+[ext_resource type="Script" uid="uid://ctakhimn50hdc" path="res://scripts/systems/main_os.gd" id="1_main_os"]
+[ext_resource type="Script" uid="uid://dhndawkfhm8iq" path="res://scripts/resources/game_event.gd" id="2_game_event"]
+[ext_resource type="Resource" uid="uid://bgrmda00hq7ef" path="res://data/events/event_2044_space_elevator_crisis.tres" id="3_event"]
+[ext_resource type="PackedScene" uid="uid://dellv4e6qlqpr" path="res://scenes/allocate_popup.tscn" id="4_allocate"]
+[ext_resource type="PackedScene" uid="uid://jls1m2vbj8iu" path="res://scenes/event_popup.tscn" id="5_event_popup"]
+[ext_resource type="Script" uid="uid://ce33podwj0fgt" path="res://scripts/systems/technology_system.gd" id="6_technology"]
+[ext_resource type="PackedScene" uid="uid://bn2cwv0ewn4kv" path="res://scenes/technology_screen.tscn" id="7_technology_screen"]
+[ext_resource type="PackedScene" uid="uid://kianyj80h6sh" path="res://scenes/decision_archive_panel.tscn" id="8_decision_archive"]
+[ext_resource type="PackedScene" path="res://scenes/situation_panel.tscn" id="9_situation_panel"]
+[ext_resource type="PackedScene" path="res://scenes/main_hud.tscn" id="10_main_hud"]
+[ext_resource type="PackedScene" path="res://scenes/strategic_workspace.tscn" id="11_workspace"]
 
 [node name="MainOS" type="Control" unique_id=1064400959]
 layout_mode = 3
@@ -40,10 +19,10 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_8e66l")
-all_events = Array[ExtResource("2_0h44u")]([ExtResource("3_b37nj")])
+script = ExtResource("1_main_os")
+all_events = Array[ExtResource("2_game_event")]([ExtResource("3_event")])
 
-[node name="ColorRect" type="ColorRect" parent="." unique_id=1465576623]
+[node name="ColorRect" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -52,426 +31,77 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.012, 0.027, 0.047, 1)
 
-[node name="TechnologySystem" type="Node" parent="." unique_id=1016070103]
+[node name="TechnologySystem" type="Node" parent="."]
 unique_name_in_owner = true
-script = ExtResource("16_technology")
+script = ExtResource("6_technology")
 
-[node name="MainLayout" type="VBoxContainer" parent="." unique_id=659819045]
+[node name="MainLayout" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 16.0
-offset_top = 16.0
-offset_right = -16.0
-offset_bottom = -16.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 10
-
-[node name="TopBarContainer" type="HBoxContainer" parent="MainLayout" unique_id=768598594]
-unique_name_in_owner = true
-z_index = 10
-custom_minimum_size = Vector2(0, 52)
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="MossLabel" type="Label" parent="MainLayout/TopBarContainer" unique_id=2033000001]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.267, 0.267, 1)
-text = "MOSS-550C"
-vertical_alignment = 1
-
-[node name="TopBarSpacer" type="Control" parent="MainLayout/TopBarContainer" unique_id=2033000002]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="ComputationalLabel" type="Label" parent="MainLayout/TopBarContainer" unique_id=777115127]
-unique_name_in_owner = true
-layout_mode = 2
-text = "算力:30"
-vertical_alignment = 1
-
-[node name="EnergyLabel" type="Label" parent="MainLayout/TopBarContainer" unique_id=1504169730]
-unique_name_in_owner = true
-layout_mode = 2
-text = "能源:100"
-vertical_alignment = 1
-
-[node name="DecisionArchiveButton" type="Button" parent="MainLayout/TopBarContainer" unique_id=192180034]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(128, 44)
-layout_mode = 2
-tooltip_text = "查看不可逆核心决策记录"
-text = "决策档案  0"
-
-[node name="TechnologyButton" type="Button" parent="MainLayout/TopBarContainer" unique_id=888888001]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(120, 44)
-layout_mode = 2
-text = "科技协议 1"
-
-[node name="SituationButton" type="Button" parent="MainLayout/TopBarContainer" unique_id=35470325]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(112, 44)
-layout_mode = 2
-tooltip_text = "查看持续推进的随机局势"
-text = "局势  0 / 2"
-
-[node name="TimeControlButton" type="Button" parent="MainLayout/TopBarContainer" unique_id=1304786461]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(80, 44)
-layout_mode = 2
-tooltip_text = "暂停月度推进"
-text = "暂停"
-
-[node name="YearProgress" parent="MainLayout" unique_id=2033000003 instance=ExtResource("12_yearprogress")]
-unique_name_in_owner = true
-z_index = 10
-custom_minimum_size = Vector2(0, 28)
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="ContentRow" type="HBoxContainer" parent="MainLayout" unique_id=741041614]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = 12
-
-[node name="CenterPanel" type="PanelContainer" parent="MainLayout/ContentRow" unique_id=1167394134]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
-
-[node name="CenterMargin" type="MarginContainer" parent="MainLayout/ContentRow/CenterPanel" unique_id=177452011]
-layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 12
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 12
-
-[node name="CenterVBox" type="VBoxContainer" parent="MainLayout/ContentRow/CenterPanel/CenterMargin" unique_id=1320071527]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-
-[node name="GlobalViewHeader" type="HBoxContainer" parent="MainLayout/ContentRow/CenterPanel/CenterMargin/CenterVBox" unique_id=1774625788]
-layout_mode = 2
-
-[node name="GlobalViewTitle" type="Label" parent="MainLayout/ContentRow/CenterPanel/CenterMargin/CenterVBox/GlobalViewHeader" unique_id=1519660534]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.545, 0.867, 0.851, 1)
-theme_override_font_sizes/font_size = 16
-text = "全球态势图  GLOBAL SITUATION"
-
-[node name="GlobalMapSelectedLabel" type="Label" parent="MainLayout/ContentRow/CenterPanel/CenterMargin/CenterVBox/GlobalViewHeader" unique_id=1285288344]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.722, 0.78, 0.839, 1)
-text = "全球态势监控中"
-horizontal_alignment = 2
-
-[node name="WorldMapView" type="Control" parent="MainLayout/ContentRow/CenterPanel/CenterMargin/CenterVBox" unique_id=201009618]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 520)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-script = ExtResource("14_worldmap")
-
-[node name="ContextPanel" type="PanelContainer" parent="MainLayout/ContentRow" unique_id=139479161]
-custom_minimum_size = Vector2(420, 0)
-layout_mode = 2
-size_flags_horizontal = 0
-size_flags_vertical = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
-
-[node name="ContextMargin" type="MarginContainer" parent="MainLayout/ContentRow/ContextPanel" unique_id=169280469]
-layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 12
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 12
-
-[node name="ContextVBox" type="VBoxContainer" parent="MainLayout/ContentRow/ContextPanel/ContextMargin" unique_id=1845070411]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/separation = 4
-
-[node name="ContextTitle" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox" unique_id=787011878]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.545, 0.867, 0.851, 1)
-theme_override_font_sizes/font_size = 16
-text = "区域指挥  //  REGION OPS"
-
-[node name="RegionOrbitalPanel" type="PanelContainer" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox" unique_id=1338734464]
-custom_minimum_size = Vector2(0, 132)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
-
-[node name="OrbitalMargin" type="MarginContainer" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/RegionOrbitalPanel" unique_id=819545895]
-layout_mode = 2
-theme_override_constants/margin_left = 8
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 8
-
-[node name="OrbitalVBox" type="VBoxContainer" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/RegionOrbitalPanel/OrbitalMargin" unique_id=97993007]
-layout_mode = 2
-
-[node name="OrbitalTitle" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/RegionOrbitalPanel/OrbitalMargin/OrbitalVBox" unique_id=1038345775]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.545, 0.867, 0.851, 1)
-theme_override_font_sizes/font_size = 16
-text = "区域聚焦"
-
-[node name="OrbitalSubtitle" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/RegionOrbitalPanel/OrbitalMargin/OrbitalVBox" unique_id=275244989]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
-theme_override_font_sizes/font_size = 12
-text = "REGION ORBITAL VIEW"
-
-[node name="RegionOrbitalView" type="Control" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/RegionOrbitalPanel/OrbitalMargin/OrbitalVBox" unique_id=1304632157]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 52)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
 mouse_filter = 2
-script = ExtResource("15_orbital")
 
-[node name="RegionNameLabel" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox" unique_id=48540939]
+[node name="MainHud" parent="MainLayout" instance=ExtResource("10_main_hud")]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="StrategicWorkspace" parent="MainLayout" instance=ExtResource("11_workspace")]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TechnologyScreen" parent="." instance=ExtResource("7_technology_screen")]
 unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.722, 0.78, 0.839, 1)
-text = "未选择区域"
-clip_text = true
-
-[node name="RegionDescriptionLabel" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox" unique_id=2074453506]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 46)
-custom_maximum_size = Vector2(372, -1)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
-text = "选择地图或底部区域条以查看详情。"
-autowrap_mode = 3
-
-[node name="RegionOrderLabel" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox" unique_id=307693293]
-unique_name_in_owner = true
-layout_mode = 2
-text = "秩序"
-
-[node name="RegionOrderBar" type="ProgressBar" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox" unique_id=1569169954]
-unique_name_in_owner = true
-layout_mode = 2
-
-[node name="RegionHopeLabel" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox" unique_id=1148205546]
-unique_name_in_owner = true
-layout_mode = 2
-text = "希望"
-
-[node name="RegionHopeBar" type="ProgressBar" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox" unique_id=481449475]
-unique_name_in_owner = true
-layout_mode = 2
-
-[node name="RegionAuthorityLabel" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox" unique_id=576787291]
-unique_name_in_owner = true
-layout_mode = 2
-text = "控制权"
-
-[node name="RegionAuthorityBar" type="ProgressBar" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox" unique_id=922584391]
-unique_name_in_owner = true
-layout_mode = 2
-
-[node name="RegionRiskLabel" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox" unique_id=297267018]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
-text = "状态：待选择"
-clip_text = true
-
-[node name="SituationSummary" type="HBoxContainer" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox" unique_id=2085716752]
-custom_minimum_size = Vector2(0, 28)
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="SituationSummaryTitle" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/SituationSummary" unique_id=1915491874]
-layout_mode = 2
-text = "当前局势"
-
-[node name="RegionSituationLabel" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/SituationSummary" unique_id=1441603575]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-text = "选择区域后显示局势"
-horizontal_alignment = 2
-clip_text = true
-
-[node name="GlobalOverviewPanel" type="PanelContainer" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox" unique_id=1462355212]
-custom_minimum_size = Vector2(0, 132)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
-
-[node name="GlobalOverviewMargin" type="MarginContainer" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/GlobalOverviewPanel" unique_id=834417501]
-layout_mode = 2
-theme_override_constants/margin_left = 8
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 8
-
-[node name="GlobalOverviewVBox" type="VBoxContainer" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/GlobalOverviewPanel/GlobalOverviewMargin" unique_id=786566749]
-layout_mode = 2
-
-[node name="GlobalOverviewTitle" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox" unique_id=1288679932]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.545, 0.867, 0.851, 1)
-text = "全局信息"
-
-[node name="GlobalPopulationLabel" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox" unique_id=1044130409]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.722, 0.78, 0.839, 1)
-text = "全球人口: --"
-
-[node name="GlobalAuthorityLabel" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox" unique_id=862337580]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.722, 0.78, 0.839, 1)
-text = "平均控制权: --"
-
-[node name="GlobalStabilityLabel" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox" unique_id=1978933368]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
-text = "系统稳定性: --"
-
-[node name="GlobalThreatLabel" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox" unique_id=838219989]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
-text = "威胁等级: --"
-
-[node name="LogPlaceholder" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox" instance=ExtResource("21_action_log_view") unique_id=809928747]
-layout_mode = 2
-
-[node name="CommandDock" type="PanelContainer" parent="MainLayout" unique_id=1757861490]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 54)
-layout_mode = 2
-
-[node name="CommandDockMargin" type="MarginContainer" parent="MainLayout/CommandDock" unique_id=892047756]
-layout_mode = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 0
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 0
-
-[node name="CommandButtonContainer" type="HBoxContainer" parent="MainLayout/CommandDock/CommandDockMargin" unique_id=107053379]
-unique_name_in_owner = true
-z_index = 10
-custom_minimum_size = Vector2(0, 38)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 12
-
-[node name="CommandContextLabel" type="Label" parent="MainLayout/CommandDock/CommandDockMargin/CommandButtonContainer" unique_id=1038075949]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(320, 0)
-layout_mode = 2
-size_flags_horizontal = 3
-text = "未选择区域  //  请先选择区域"
-vertical_alignment = 1
-
-[node name="SectorInfoContainer" type="GridContainer" parent="MainLayout" unique_id=1437917960]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 94)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 4
-theme_override_constants/h_separation = 8
-theme_override_constants/v_separation = 8
-columns = 6
-
-[node name="SectorInfoAsia" parent="MainLayout/SectorInfoContainer" unique_id=845453540 instance=ExtResource("2_qcklt")]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(150, 84)
-size_flags_vertical = 3
-data_card = ExtResource("3_sjuws")
-
-[node name="SectorInfoNa" parent="MainLayout/SectorInfoContainer" unique_id=680731091 instance=ExtResource("2_qcklt")]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(150, 84)
-size_flags_vertical = 3
-data_card = ExtResource("4_lwoul")
-
-[node name="SectorInfoEurope" parent="MainLayout/SectorInfoContainer" unique_id=883468909 instance=ExtResource("2_qcklt")]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(150, 84)
-size_flags_vertical = 3
-data_card = ExtResource("5_8e66l")
-
-[node name="SectorInfoAfrica" parent="MainLayout/SectorInfoContainer" unique_id=1001 instance=ExtResource("2_qcklt")]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(150, 84)
-size_flags_vertical = 3
-data_card = ExtResource("6_africa")
-
-[node name="SectorInfoOceania" parent="MainLayout/SectorInfoContainer" unique_id=1003 instance=ExtResource("2_qcklt")]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(150, 84)
-size_flags_vertical = 3
-data_card = ExtResource("8_oceania")
-
-[node name="SectorInfoSouthAmerica" parent="MainLayout/SectorInfoContainer" unique_id=1004 instance=ExtResource("2_qcklt")]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(150, 84)
-size_flags_vertical = 3
-data_card = ExtResource("9_southam")
-
-[node name="TechnologyScreen" parent="." unique_id=149477755 instance=ExtResource("17_technology_screen")]
 visible = false
 layout_mode = 1
-grow_horizontal = 1
-grow_vertical = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
-[node name="Timer" type="Timer" parent="." unique_id=984637322]
+[node name="Timer" type="Timer" parent="."]
 autostart = true
 
-[node name="EventPopup" parent="." unique_id=701897754 instance=ExtResource("9_b37nj")]
+[node name="EventPopup" parent="." instance=ExtResource("5_event_popup")]
 unique_name_in_owner = true
 visible = false
 z_index = 30
 layout_mode = 1
 
-[node name="AllocatePopup" parent="." unique_id=1777844314 instance=ExtResource("9_a8ufc")]
+[node name="AllocatePopup" parent="." instance=ExtResource("4_allocate")]
 unique_name_in_owner = true
 z_index = 30
 layout_mode = 1
 offset_top = -60.5
 offset_bottom = 60.5
 
-[node name="DecisionArchivePanel" parent="." unique_id=75133822 instance=ExtResource("19_a6tgg")]
+[node name="DecisionArchivePanel" parent="." instance=ExtResource("8_decision_archive")]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="SituationPanel" parent="." unique_id=308579437 instance=ExtResource("20_situation_panel")]
+[node name="SituationPanel" parent="." instance=ExtResource("9_situation_panel")]
 unique_name_in_owner = true
 layout_mode = 1
 
-[connection signal="pressed" from="MainLayout/TopBarContainer/DecisionArchiveButton" to="." method="_on_decision_archive_button_pressed"]
-[connection signal="pressed" from="MainLayout/TopBarContainer/TechnologyButton" to="." method="_on_technology_button_pressed"]
-[connection signal="pressed" from="MainLayout/TopBarContainer/SituationButton" to="." method="_on_situation_button_pressed"]
-[connection signal="pressed" from="MainLayout/TopBarContainer/TimeControlButton" to="." method="_on_time_control_button_pressed"]
+[connection signal="decision_archive_requested" from="MainLayout/MainHud" to="." method="_on_decision_archive_button_pressed"]
+[connection signal="technology_requested" from="MainLayout/MainHud" to="." method="_on_technology_button_pressed"]
+[connection signal="situation_requested" from="MainLayout/MainHud" to="." method="_on_situation_button_pressed"]
+[connection signal="time_control_requested" from="MainLayout/MainHud" to="." method="_on_time_control_button_pressed"]
+[connection signal="command_requested" from="MainLayout/MainHud" to="." method="_on_command_button_pressed"]
+[connection signal="region_selected" from="MainLayout/StrategicWorkspace" to="." method="_on_workspace_region_selected"]
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
 [connection signal="close_requested" from="DecisionArchivePanel" to="." method="_on_decision_archive_closed"]

@@ -27,14 +27,16 @@ func _ready() -> void:
 
 
 func _assert_hud_entry() -> void:
-	_assert_true(_main_os.has_node("%SituationButton"), "顶部栏应存在局势入口")
-	_assert_true(_main_os.has_node("%TimeControlButton"), "顶部栏应存在暂停/继续按钮")
-	_assert_true(_main_os.has_node("%RegionSituationLabel"), "上下文栏应存在当前选区局势摘要")
-	_assert_true(_main_os.has_node("%CommandContextLabel"), "指令坞应显示当前选区提示")
+	var hud := _main_os.get_node("MainLayout/MainHud") as MainHud
+	var workspace := _main_os.get_node("MainLayout/StrategicWorkspace") as StrategicWorkspace
+	_assert_true(hud.get_situation_button() != null, "顶部栏应存在局势入口")
+	_assert_true(hud.get_time_control_button() != null, "顶部栏应存在暂停/继续按钮")
+	_assert_true(workspace.get_region_situation_text() != "", "上下文栏应存在当前选区局势摘要")
+	_assert_true(hud.get_command_context_text() != "", "指令坞应显示当前选区提示")
 	_assert_true(_panel != null, "主场景应挂载非模态局势面板")
-	_assert_eq((_main_os.get_node("%SituationButton") as Button).text, "局势  0 / 2", "局势入口应显示全局并发上限")
+	_assert_eq(hud.get_situation_button().text, "局势  0 / 2", "局势入口应显示全局并发上限")
 	_assert_true(
-		"请先选择区域" in (_main_os.get_node("%CommandContextLabel") as Label).text,
+		"请先选择区域" in hud.get_command_context_text(),
 		"未选择区域时指令坞应说明前置操作"
 	)
 
@@ -46,17 +48,19 @@ func _assert_situation_details_and_approach() -> void:
 	await get_tree().process_frame
 	_assert_true(not snapshot.is_empty(), "测试局势应能从主场景启动")
 	_assert_true(_panel.visible, "新局势详情应可作为非模态面板打开")
-	_main_os.select_sector(_main_os.get_node("%SectorInfoAsia") as SectorInfo)
+	var workspace := _main_os.get_node("MainLayout/StrategicWorkspace") as StrategicWorkspace
+	var hud := _main_os.get_node("MainLayout/MainHud") as MainHud
+	_main_os.select_sector(workspace.get_sector_by_region_id("asia"))
 	await get_tree().process_frame
 	_assert_true(
-		"区域电网负荷失衡" in (_main_os.get_node("%RegionSituationLabel") as Label).text,
+		"区域电网负荷失衡" in workspace.get_region_situation_text(),
 		"选中区域后上下文栏应显示该区域的活跃局势"
 	)
 	_assert_true(
-		"当前选区：亚洲" in (_main_os.get_node("%CommandContextLabel") as Label).text,
+		"当前选区：亚洲" in hud.get_command_context_text(),
 		"选中区域后指令坞应同步当前选区"
 	)
-	_assert_eq((_main_os.get_node("%SituationButton") as Button).text, "局势  1 / 2", "顶部入口应同步活跃局势数量")
+	_assert_eq(hud.get_situation_button().text, "局势  1 / 2", "顶部入口应同步活跃局势数量")
 	_assert_eq((_panel.get_node("%DetailTitle") as Label).text, "区域电网负荷失衡", "详情页应显示局势标题")
 	_assert_eq((_panel.get_node("%SituationProgress") as ProgressBar).value, 38.0, "严重度进度条应显示当前风险")
 	var approach_list := _panel.get_node("%ApproachList")
@@ -93,7 +97,7 @@ func _assert_situation_details_and_approach() -> void:
 
 	_main_os.current_year = 2044
 	_main_os.current_month = 12
-	_main_os._refresh_situation_ui()
+	_main_os.refresh_situation_ui()
 	active = _main_os.get_situation_snapshots()
 	_assert_eq(
 		int(active[0].get("expected_monthly_delta", 0)),
@@ -150,15 +154,15 @@ func _assert_inline_node() -> void:
 	_assert_true(has_available_fallback, "资源见底时节点仍应保留可选兜底方案")
 	var timer := _main_os.get_node("Timer") as Timer
 	_assert_true(timer.is_stopped(), "待处理局势节点应保持自动暂停")
-	_main_os._on_time_control_button_pressed()
+	_main_os.toggle_time_control()
 	_assert_true(timer.is_stopped(), "节点处理前不应允许恢复时间")
 	_assert_true(
-		"请先处理" in (_main_os.get_node("%TimeControlButton") as Button).tooltip_text,
+		"请先处理" in (_main_os.get_node("MainLayout/MainHud") as MainHud).get_time_control_button().tooltip_text,
 		"继续按钮应说明节点前置条件"
 	)
 
 	_main_os.current_energy = 5
-	_main_os._refresh_situation_ui()
+	_main_os.refresh_situation_ui()
 	await get_tree().process_frame
 	node_options = _panel.get_node("%NodeOptionList")
 	if node_options.get_child_count() == 0:
@@ -191,7 +195,7 @@ func _assert_modal_boundary() -> void:
 	_panel.hide()
 	var event_popup := _main_os.get_node("%EventPopup") as Control
 	event_popup.show()
-	_main_os._on_situation_button_pressed()
+	_main_os.open_situation_panel()
 	_assert_true(not _panel.visible, "事件模态显示时不得从下层 HUD 打开局势面板")
 	event_popup.hide()
 
@@ -199,8 +203,8 @@ func _assert_modal_boundary() -> void:
 func _assert_time_control() -> void:
 	var timer := _main_os.get_node("Timer") as Timer
 	_assert_true(timer.is_stopped(), "测试开始时计时器应暂停")
-	_main_os._on_time_control_button_pressed()
+	_main_os.toggle_time_control()
 	_assert_true(not timer.is_stopped(), "继续按钮应恢复月度推进")
-	_main_os._on_time_control_button_pressed()
+	_main_os.toggle_time_control()
 	_assert_true(timer.is_stopped(), "暂停按钮应停止月度推进")
-	_assert_eq((_main_os.get_node("%TimeControlButton") as Button).text, "继续", "暂停后按钮应提示继续")
+	_assert_eq((_main_os.get_node("MainLayout/MainHud") as MainHud).get_time_control_button().text, "继续", "暂停后按钮应提示继续")

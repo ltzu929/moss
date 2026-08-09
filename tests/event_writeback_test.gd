@@ -412,12 +412,8 @@ func _capture_popup_and_emit(index: int, bypass_disabled: bool) -> void:
 
 
 func _get_sector(region_id: String) -> SectorInfo:
-	var container := _main_os.get_node("%SectorInfoContainer")
-	for child in container.get_children():
-		if child is SectorInfo and child.data_card != null:
-			if child.data_card.region_id == region_id:
-				return child
-	return null
+	var workspace := _main_os.get_node("MainLayout/StrategicWorkspace") as StrategicWorkspace
+	return workspace.get_sector_by_region_id(region_id)
 
 
 func _set_sector_values(sector: SectorInfo, order: int, hope: int, authority: int) -> void:

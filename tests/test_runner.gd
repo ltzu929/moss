@@ -122,7 +122,7 @@ func _process(_delta: float) -> void:
 		set_process(false)
 
 
-## 这些桥接接口只保留测试对 MainOS 私有实现的既有边界，供 support 脚本使用。
+## 这些桥接接口只调用 MainOS 的公开场景编排入口，供 support 脚本使用。
 func get_route_command(command_id: String) -> CommandData:
 	if _main_os == null:
 		return null
@@ -130,15 +130,15 @@ func get_route_command(command_id: String) -> CommandData:
 
 
 func request_situation_node(instance_id: String, option_id: String) -> void:
-	_main_os._on_situation_node_option_requested(instance_id, option_id)
+	_main_os.request_situation_node_option(instance_id, option_id)
 
 
 func request_situation_approach(instance_id: String, approach_id: String) -> void:
-	_main_os._on_situation_approach_requested(instance_id, approach_id)
+	_main_os.request_situation_approach(instance_id, approach_id)
 
 
 func toggle_time_control() -> void:
-	_main_os._on_time_control_button_pressed()
+	_main_os.toggle_time_control()
 
 
 func get_average_stat_for_test(stat_name: String) -> int:

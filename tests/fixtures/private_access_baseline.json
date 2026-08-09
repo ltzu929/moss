@@ -42,24 +42,6 @@
     "count": 2
   },
   {
-    "path": "situation_ui_test.gd",
-    "member": "_on_situation_button_pressed",
-    "kind": "engine_callback",
-    "count": 1
-  },
-  {
-    "path": "situation_ui_test.gd",
-    "member": "_on_time_control_button_pressed",
-    "kind": "engine_callback",
-    "count": 3
-  },
-  {
-    "path": "situation_ui_test.gd",
-    "member": "_refresh_situation_ui",
-    "kind": "direct_member",
-    "count": 2
-  },
-  {
     "path": "technology_gameplay_test.gd",
     "member": "_apply_human_autonomy_recovery",
     "kind": "direct_member",
@@ -72,12 +54,6 @@
     "count": 9
   },
   {
-    "path": "technology_ui_test.gd",
-    "member": "_calculate_window_size",
-    "kind": "dynamic_call",
-    "count": 2
-  },
-  {
     "path": "test_runner.gd",
     "member": "_get_average_stat",
     "kind": "direct_member",
@@ -87,60 +63,6 @@
     "path": "test_runner.gd",
     "member": "_get_command_by_id",
     "kind": "direct_member",
-    "count": 1
-  },
-  {
-    "path": "test_runner.gd",
-    "member": "_on_situation_approach_requested",
-    "kind": "engine_callback",
-    "count": 1
-  },
-  {
-    "path": "test_runner.gd",
-    "member": "_on_situation_node_option_requested",
-    "kind": "engine_callback",
-    "count": 1
-  },
-  {
-    "path": "test_runner.gd",
-    "member": "_on_time_control_button_pressed",
-    "kind": "engine_callback",
-    "count": 1
-  },
-  {
-    "path": "world_map_view_test.gd",
-    "member": "_get_map_rect",
-    "kind": "dynamic_call",
-    "count": 2
-  },
-  {
-    "path": "world_map_view_test.gd",
-    "member": "_gui_input",
-    "kind": "dynamic_call",
-    "count": 3
-  },
-  {
-    "path": "world_map_view_test.gd",
-    "member": "_load_editor_preview_states",
-    "kind": "dynamic_call",
-    "count": 1
-  },
-  {
-    "path": "world_map_view_test.gd",
-    "member": "_mask_images",
-    "kind": "dynamic_get",
-    "count": 1
-  },
-  {
-    "path": "world_map_view_test.gd",
-    "member": "_region_at_position",
-    "kind": "dynamic_call",
-    "count": 4
-  },
-  {
-    "path": "world_map_view_test.gd",
-    "member": "_region_states",
-    "kind": "dynamic_get",
     "count": 1
   }
 ]

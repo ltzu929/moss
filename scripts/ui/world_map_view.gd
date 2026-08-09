@@ -134,6 +134,30 @@ func set_selected_region(region_id: String) -> void:
 	queue_redraw()
 
 
+func reload_editor_preview_states() -> void:
+	_load_editor_preview_states()
+
+
+func get_region_states_snapshot() -> Dictionary:
+	return _region_states.duplicate(true)
+
+
+func get_loaded_region_ids() -> Array[String]:
+	var result: Array[String] = []
+	for region_id in REGION_ORDER:
+		if _mask_images.has(region_id):
+			result.append(region_id)
+	return result
+
+
+func get_map_rect() -> Rect2:
+	return _get_map_rect()
+
+
+func get_region_at_position(local_position: Vector2) -> String:
+	return _region_at_position(local_position)
+
+
 func get_region_names() -> Array[String]:
 	var result: Array[String] = []
 	for region_id in REGION_ORDER:

@@ -105,27 +105,25 @@ func verify_scene_integrity() -> bool:
 	var ok: bool = true
 	var node_paths: Array[String] = [
 		"Timer",
-		"%TopBarContainer",
-		"MainLayout/ContentRow",
-		"MainLayout/ContentRow/ContextPanel",
-		"%SectorInfoContainer",
-		"%CommandDock",
-		"%CommandButtonContainer",
-		"%CommandContextLabel",
+		"MainLayout/MainHud/TopBarContainer",
+		"MainLayout/StrategicWorkspace/ContentRow",
+		"MainLayout/StrategicWorkspace/ContentRow/ContextPanel",
+		"MainLayout/StrategicWorkspace/SectorInfoContainer",
+		"MainLayout/MainHud/CommandDock",
+		"MainLayout/MainHud/CommandDock/CommandDockMargin/CommandButtonContainer",
+		"MainLayout/MainHud/CommandDock/CommandDockMargin/CommandButtonContainer/CommandContextLabel",
 		"%EventPopup",
 		"%TechnologySystem",
 		"%TechnologyScreen",
-		"%RegionNameLabel",
-		"%RegionDescriptionLabel",
-		"%RegionOrderBar",
-		"%RegionHopeBar",
-		"%RegionAuthorityBar",
-		"%GlobalMapSelectedLabel",
-		"%GlobalPopulationLabel",
-		"%GlobalAuthorityLabel",
-		"%WorldMapView",
-		"%RegionOrbitalView",
-		"%RegionSituationLabel",
+		"MainLayout/StrategicWorkspace/ContentRow/CenterPanel/CenterMargin/CenterVBox/GlobalViewHeader/GlobalMapSelectedLabel",
+		"MainLayout/StrategicWorkspace/ContentRow/ContextPanel/ContextMargin/ContextVBox/RegionNameLabel",
+		"MainLayout/StrategicWorkspace/ContentRow/ContextPanel/ContextMargin/ContextVBox/RegionDescriptionLabel",
+		"MainLayout/StrategicWorkspace/ContentRow/ContextPanel/ContextMargin/ContextVBox/RegionOrderBar",
+		"MainLayout/StrategicWorkspace/ContentRow/ContextPanel/ContextMargin/ContextVBox/RegionHopeBar",
+		"MainLayout/StrategicWorkspace/ContentRow/ContextPanel/ContextMargin/ContextVBox/RegionAuthorityBar",
+		"MainLayout/StrategicWorkspace/ContentRow/CenterPanel/CenterMargin/CenterVBox/WorldMapView",
+		"MainLayout/StrategicWorkspace/ContentRow/ContextPanel/ContextMargin/ContextVBox/RegionOrbitalPanel/OrbitalMargin/OrbitalVBox/RegionOrbitalView",
+		"MainLayout/StrategicWorkspace/ContentRow/ContextPanel/ContextMargin/ContextVBox/SituationSummary/RegionSituationLabel",
 	]
 	for path in node_paths:
 		if not _main_os.has_node(path):
@@ -138,8 +136,9 @@ func verify_scene_integrity() -> bool:
 	ok = verify_1080p_layout_contract() and ok
 	ok = verify_strategic_ui_contract() and ok
 
-	if _main_os.has_node("%SectorInfoContainer"):
-		var sectors: Array[Node] = _main_os.get_node("%SectorInfoContainer").get_children()
+	var workspace := _main_os.get_node("MainLayout/StrategicWorkspace") as StrategicWorkspace
+	if workspace != null:
+		var sectors: Array[Node] = workspace.get_sector_nodes()
 		assert_eq(sectors.size(), 6, "场景中应有6个板块", "scene_integrity")
 		var initial_authorities: Dictionary = {
 			"亚洲": 24,
@@ -177,8 +176,9 @@ func verify_scene_integrity() -> bool:
 
 func verify_strategic_ui_contract() -> bool:
 	var ok: bool = true
-	if _main_os.has_node("%WorldMapView"):
-		var world_map: Control = _main_os.get_node("%WorldMapView") as Control
+	var workspace := _main_os.get_node("MainLayout/StrategicWorkspace") as StrategicWorkspace
+	if workspace != null:
+		var world_map: Control = workspace.get_world_map()
 		var supports_selection := (
 			world_map != null
 			and world_map.has_signal("region_selected")
@@ -191,8 +191,8 @@ func verify_strategic_ui_contract() -> bool:
 		assert_true(false, "缺少可点击世界地图组件", "strategic_ui")
 		ok = false
 
-	if _main_os.has_node("%RegionOrbitalView"):
-		var orbital_view: Control = _main_os.get_node("%RegionOrbitalView") as Control
+	if workspace != null:
+		var orbital_view: Control = workspace.get_orbital_view()
 		var supports_focus := (
 			orbital_view != null
 			and orbital_view.has_method("focus_region")
@@ -237,15 +237,15 @@ func verify_1080p_layout_contract() -> bool:
 	ok = viewport_width == 1920 and ok
 	ok = viewport_height == 1080 and ok
 
-	var top_bar: HBoxContainer = _main_os.get_node("%TopBarContainer") as HBoxContainer
+	var hud := _main_os.get_node("MainLayout/MainHud") as MainHud
+	var workspace := _main_os.get_node("MainLayout/StrategicWorkspace") as StrategicWorkspace
+	var top_bar: HBoxContainer = hud.get_node("TopBarContainer") as HBoxContainer
 	var header_height := top_bar.custom_minimum_size.y
 	var header_ok := header_height >= 48.0 and header_height <= 56.0
 	assert_true(header_ok, "顶部状态栏应保持紧凑并适配1080P HUD", "ui_layout")
 	ok = header_ok and ok
 
-	var context_panel := _main_os.get_node(
-		"MainLayout/ContentRow/ContextPanel"
-	) as PanelContainer
+	var context_panel := workspace.get_node("ContentRow/ContextPanel") as PanelContainer
 	var context_ok := int(context_panel.custom_minimum_size.x) == 420
 	assert_eq(
 		int(context_panel.custom_minimum_size.x),
@@ -255,7 +255,7 @@ func verify_1080p_layout_contract() -> bool:
 	)
 	ok = context_ok and ok
 
-	var sector_container: GridContainer = _main_os.get_node("%SectorInfoContainer") as GridContainer
+	var sector_container: GridContainer = workspace.get_node("SectorInfoContainer") as GridContainer
 	var sector_ok := int(sector_container.custom_minimum_size.y) == 94
 	assert_eq(
 		int(sector_container.custom_minimum_size.y),
@@ -265,14 +265,14 @@ func verify_1080p_layout_contract() -> bool:
 	)
 	ok = sector_ok and ok
 
-	var command_dock := _main_os.get_node("%CommandDock") as PanelContainer
+	var command_dock := hud.get_command_dock()
 	var dock_ok := int(command_dock.custom_minimum_size.y) == 54
 	assert_eq(int(command_dock.custom_minimum_size.y), 54, "指令坞高度应为54", "ui_layout")
 	ok = dock_ok and ok
 
-	var command_container: HBoxContainer = (
-		_main_os.get_node("%CommandButtonContainer") as HBoxContainer
-	)
+	var command_container: HBoxContainer = hud.get_node(
+		"CommandDock/CommandDockMargin/CommandButtonContainer"
+	) as HBoxContainer
 	var command_ok := command_container.custom_minimum_size.y <= 40.0
 	assert_true(command_ok, "指令坞内容不应挤压1080P主视图", "ui_layout")
 	return command_ok and ok
@@ -280,16 +280,18 @@ func verify_1080p_layout_contract() -> bool:
 
 func verify_hud_layout_contract() -> bool:
 	var ok: bool = true
-	if not _main_os.has_node("MainLayout/ContentRow"):
+	var hud := _main_os.get_node("MainLayout/MainHud") as MainHud
+	var workspace := _main_os.get_node("MainLayout/StrategicWorkspace") as StrategicWorkspace
+	if workspace == null or not workspace.has_node("ContentRow"):
 		assert_true(false, "缺少主内容行", "ui_layout")
 		return false
-	var content_row: HBoxContainer = _main_os.get_node("MainLayout/ContentRow") as HBoxContainer
+	var content_row: HBoxContainer = workspace.get_node("ContentRow") as HBoxContainer
 	ok = assert_child_order(content_row, ["CenterPanel", "ContextPanel"], "地图优先主内容") and ok
-	if not _main_os.has_node("MainLayout/ContentRow/ContextPanel"):
+	if not workspace.has_node("ContentRow/ContextPanel"):
 		assert_true(false, "缺少右侧上下文栏", "ui_layout")
 		return false
-	var context_vbox := _main_os.get_node(
-		"MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox"
+	var context_vbox := workspace.get_node(
+		"ContentRow/ContextPanel/ContextMargin/ContextVBox"
 	) as VBoxContainer
 	ok = assert_child_order(
 		context_vbox,
@@ -297,8 +299,8 @@ func verify_hud_layout_contract() -> bool:
 		"右侧上下文栏"
 	) and ok
 
-	if _main_os.has_node("%TopBarContainer"):
-		var top_bar: HBoxContainer = _main_os.get_node("%TopBarContainer") as HBoxContainer
+	if hud != null and hud.has_node("TopBarContainer"):
+		var top_bar: HBoxContainer = hud.get_node("TopBarContainer") as HBoxContainer
 		var readable_top_bar := top_bar.custom_minimum_size.y >= 48.0
 		assert_true(readable_top_bar, "顶部状态栏应保持可读", "ui_layout")
 		ok = readable_top_bar and ok
@@ -306,19 +308,19 @@ func verify_hud_layout_contract() -> bool:
 		assert_true(false, "缺少顶部状态栏", "ui_layout")
 		ok = false
 
-	var has_moss_status_panel := _main_os.has_node("%MossStatusPanel")
+	var has_moss_status_panel := hud != null and hud.has_node("MossStatusPanel")
 	assert_true(not has_moss_status_panel, "右栏不应保留独立 MossStatusPanel", "ui_layout")
 	ok = not has_moss_status_panel and ok
 
-	var log_path := "MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/LogPlaceholder"
-	if _main_os.has_node(log_path):
-		var log_panel: Control = _main_os.get_node(log_path) as Control
+	var log_path := "ContentRow/ContextPanel/ContextMargin/ContextVBox/LogPlaceholder"
+	if workspace != null and workspace.has_node(log_path):
+		var log_panel: Control = workspace.get_node(log_path) as Control
 		var log_expands := log_panel != null and log_panel.size_flags_vertical == Control.SIZE_EXPAND_FILL
 		assert_true(log_expands, "MOSS LOG 应填满上下文栏剩余高度", "ui_layout")
 		ok = log_expands and ok
 
-	if _main_os.has_node("%SectorInfoContainer"):
-		for sector_node in _main_os.get_node("%SectorInfoContainer").get_children():
+	if workspace != null:
+		for sector_node in workspace.get_sector_nodes():
 			var sector := sector_node as SectorInfo
 			if sector == null:
 				continue
@@ -637,14 +639,15 @@ func _assert_game_logic() -> void:
 
 func _assert_region_detail_sync() -> void:
 	_reporter.write_log("[断言组] 区域详情同步")
-	if not _main_os.has_node("%SectorInfoContainer"):
+	var workspace := _main_os.get_node("MainLayout/StrategicWorkspace") as StrategicWorkspace
+	if workspace == null:
 		assert_true(false, "缺少区域卡片容器", "ui_layout")
 		return
-	if not _main_os.has_node("%RegionNameLabel"):
+	if workspace.get_region_name_text() == "":
 		assert_true(false, "缺少区域名称标签", "ui_layout")
 		return
 
-	var sectors: Array[Node] = _main_os.get_node("%SectorInfoContainer").get_children()
+	var sectors: Array[Node] = workspace.get_sector_nodes()
 	assert_true(sectors.size() > 0, "至少应存在一个区域卡片", "ui_layout")
 	if sectors.is_empty():
 		return
@@ -655,9 +658,8 @@ func _assert_region_detail_sync() -> void:
 		return
 
 	_main_os.select_sector(first_sector)
-	var region_name_label: Label = _main_os.get_node("%RegionNameLabel")
 	assert_eq(
-		region_name_label.text,
+		workspace.get_region_name_text(),
 		first_sector.data_card.region_name,
 		"区域详情名称应同步选中区域",
 		"ui_layout"
@@ -667,26 +669,26 @@ func _assert_region_detail_sync() -> void:
 
 func _assert_global_overview_sync() -> void:
 	_reporter.write_log("[断言组] 全局信息同步")
+	var workspace := _main_os.get_node("MainLayout/StrategicWorkspace") as StrategicWorkspace
 	if not _main_os.has_method("format_population_for_ui"):
 		assert_true(false, "主控制器应提供人口格式化方法", "ui_layout")
 		return
-	if not _main_os.has_node("%GlobalPopulationLabel"):
+	if workspace == null or workspace.get_global_population_text() == "":
 		assert_true(false, "缺少全球人口标签", "ui_layout")
 		return
 
 	var total_population := 0
-	var sectors: Array[Node] = _main_os.get_node("%SectorInfoContainer").get_children()
+	var sectors: Array[Node] = workspace.get_sector_nodes()
 	for sector in sectors:
 		if sector.get("data_card") != null:
 			total_population += sector.data_card.population
 
 	_main_os.update_global_resource_ui()
-	var population_label: Label = _main_os.get_node("%GlobalPopulationLabel")
 	var expected_text: String = (
 		"全球人口: " + _main_os.format_population_for_ui(total_population)
 	)
 	assert_eq(
-		population_label.text,
+		workspace.get_global_population_text(),
 		expected_text,
 		"全球人口应由所有区域人口合计生成",
 		"ui_layout"

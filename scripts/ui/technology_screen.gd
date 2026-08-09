@@ -128,6 +128,10 @@ func _calculate_window_size(viewport_size: Vector2) -> Vector2:
 	)
 
 
+func calculate_window_size(viewport_size: Vector2) -> Vector2:
+	return _calculate_window_size(viewport_size)
+
+
 func _update_window_size() -> void:
 	if not is_instance_valid(_layout_viewport) or not is_instance_valid(_window_panel):
 		return

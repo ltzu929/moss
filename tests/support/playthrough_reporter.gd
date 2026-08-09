@@ -25,7 +25,7 @@ func write_log(message: String) -> void:
 
 ## 输出与旧测试入口兼容的最终标记，并以失败断言数退出。
 func finish(
-	game_ended: bool,
+	_game_ended: bool,
 	game_result: String,
 	game_message: String,
 	event_log: Dictionary,

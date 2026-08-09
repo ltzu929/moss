@@ -4,7 +4,7 @@ extends "res://tests/support/moss_test_case.gd"
 
 var _main_os: Control
 var _technology: TechnologySystem
-var _screen: Control
+var _screen: TechnologyScreen
 var _timer: Timer
 
 
@@ -15,7 +15,7 @@ func _ready() -> void:
 	await get_tree().process_frame
 
 	_technology = _main_os.get_node("%TechnologySystem")
-	_screen = _main_os.get_node("%TechnologyScreen")
+	_screen = _main_os.get_node("%TechnologyScreen") as TechnologyScreen
 	_timer = _main_os.get_node("Timer")
 	_timer.start()
 
@@ -27,7 +27,8 @@ func _ready() -> void:
 	_assert_static_card_resources(cards)
 	_assert_window_sizing()
 
-	var technology_button: Button = _main_os.get_node("%TechnologyButton")
+	var hud := _main_os.get_node("MainLayout/MainHud") as MainHud
+	var technology_button: Button = hud.get_technology_button()
 	technology_button.pressed.emit()
 	await get_tree().process_frame
 	_assert_true(_screen.visible, "无模态弹窗时科技按钮应打开科技树")
@@ -38,7 +39,7 @@ func _ready() -> void:
 	_assert_route_page(TechNodeData.Route.HUMAN, false)
 	_assert_centered_window()
 	_assert_true(
-		_screen.z_index > (_main_os.get_node("%YearProgress") as Control).z_index,
+		_screen.z_index > hud.get_year_progress().z_index,
 		"科技窗口层级应高于时间线"
 	)
 
@@ -103,12 +104,12 @@ func _ready() -> void:
 
 func _assert_window_sizing() -> void:
 	_assert_eq(
-		_screen.call("_calculate_window_size", Vector2(1920, 1080)),
+		_screen.calculate_window_size(Vector2(1920, 1080)),
 		Vector2(1680, 900),
 		"1920x1080时窗口应限制为1680x900"
 	)
 	_assert_eq(
-		_screen.call("_calculate_window_size", Vector2(1280, 720)),
+		_screen.calculate_window_size(Vector2(1280, 720)),
 		Vector2(1216, 656),
 		"1280x720时窗口应保留32像素边距"
 	)

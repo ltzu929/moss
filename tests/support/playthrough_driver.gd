@@ -166,7 +166,8 @@ func find_route_command_target(command: CommandData) -> SectorInfo:
 	var allow_zero_authority := technology.has_tag("human_core")
 	var best_target: SectorInfo = null
 	var best_social_score := 1000000
-	for sector_node in _main_os.get_node("%SectorInfoContainer").get_children():
+	var workspace := _main_os.get_node("MainLayout/StrategicWorkspace") as StrategicWorkspace
+	for sector_node in workspace.get_sector_nodes():
 		var sector := sector_node as SectorInfo
 		if sector == null or sector.data_card == null:
 			continue

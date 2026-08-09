@@ -27,7 +27,7 @@ const SITUATION_PATHS: Array[String] = [
 	"res://data/situations/underground_life_support_fault.tres",
 ]
 
-var _world_map: Control
+var _world_map: WorldMapView
 var _selected_region: String = ""
 
 
@@ -39,8 +39,9 @@ func _ready() -> void:
 	) as GDScript
 	_assert_true(world_map_script != null, "WorldMapView 脚本应能强制加载当前磁盘版本")
 
-	_world_map = Control.new()
-	_world_map.set_script(world_map_script)
+	var world_map_control := Control.new()
+	world_map_control.set_script(world_map_script)
+	_world_map = world_map_control as WorldMapView
 	_world_map.size = MAP_SIZE
 	add_child(_world_map)
 	await get_tree().process_frame
@@ -58,7 +59,7 @@ func _ready() -> void:
 	_assert_editor_preview_contract(world_map_script)
 	_assert_mask_hit_testing()
 	await _assert_resized_map_hit_testing()
-	_assert_selection_signal()
+	await _assert_selection_signal()
 	_assert_main_scene_loads()
 	await _assert_blank_map_click_deselects_main_scene()
 
@@ -67,7 +68,7 @@ func _ready() -> void:
 
 
 func _assert_region_names() -> void:
-	var names: Array = _world_map.call("get_region_names")
+	var names: Array = _world_map.get_region_names()
 	_assert_eq(names.size(), TEST_REGIONS.size(), "get_region_names 应只返回六个可点击区域")
 	for region_name in TEST_REGIONS:
 		_assert_true(region_name in names, "应包含可点击区域：%s" % region_name)
@@ -92,15 +93,10 @@ func _assert_clear_asset_names() -> void:
 
 
 func _assert_masks_loaded() -> void:
-	var mask_images_variant: Variant = _world_map.get("_mask_images")
-	_assert_true(mask_images_variant is Dictionary, "应缓存遮罩 Image 字典")
-	if not mask_images_variant is Dictionary:
-		return
-
-	var mask_images: Dictionary = mask_images_variant
+	var loaded_region_ids := _world_map.get_loaded_region_ids()
+	_assert_eq(loaded_region_ids.size(), TEST_REGION_IDS.size(), "应缓存六个可点击区域遮罩")
 	for region_id in TEST_REGION_IDS:
-		var image: Image = mask_images.get(region_id)
-		_assert_true(image != null and not image.is_empty(), "%s 遮罩应加载为 Image" % region_id)
+		_assert_true(region_id in loaded_region_ids, "%s 遮罩应加载" % region_id)
 
 
 func _assert_editor_preview_contract(world_map_script: GDScript) -> void:
@@ -114,11 +110,10 @@ func _assert_editor_preview_contract(world_map_script: GDScript) -> void:
 		"oceania_label_position",
 	]:
 		_assert_true(_world_map.get(property_name) is Vector2, "%s 应作为可调标签坐标导出" % property_name)
-	_assert_true(_world_map.has_method("_load_editor_preview_states"), "应提供编辑器预览区域数据加载方法")
-	if _world_map.has_method("_load_editor_preview_states"):
-		_world_map.call("_load_editor_preview_states")
-		var states: Dictionary = _world_map.get("_region_states")
-		_assert_eq(states.size(), TEST_REGIONS.size(), "编辑器预览应加载六个区域状态")
+	_assert_true(_world_map.has_method("reload_editor_preview_states"), "应提供编辑器预览区域数据加载方法")
+	_world_map.reload_editor_preview_states()
+	var states: Dictionary = _world_map.get_region_states_snapshot()
+	_assert_eq(states.size(), TEST_REGIONS.size(), "编辑器预览应加载六个区域状态")
 
 
 func _assert_mask_hit_testing() -> void:
@@ -139,22 +134,21 @@ func _assert_resized_map_hit_testing() -> void:
 	_world_map.size = RESIZED_MAP_SIZE
 	await get_tree().process_frame
 
-	var map_rect: Rect2 = _world_map.call("_get_map_rect")
+	var map_rect: Rect2 = _world_map.get_map_rect()
 	_assert_true(map_rect.position.x > 0.0, "1920×1080 下地图应水平居中并保留侧边空白")
 	_assert_true(is_equal_approx(map_rect.size.y, RESIZED_MAP_SIZE.y), "1920×1080 下地图应按高度等比缩放")
 	_assert_eq(
-		_world_map.call("_region_at_position", _map_pixel_to_control(Vector2(575.0, 255.0))),
+		_world_map.get_region_at_position(_map_pixel_to_control(Vector2(575.0, 255.0))),
 		"asia",
 		"缩放后亚洲代表点仍应命中亚洲"
 	)
 	_assert_eq(
-		_world_map.call("_region_at_position", _map_pixel_to_control(Vector2(358.0, 159.0))),
+		_world_map.get_region_at_position(_map_pixel_to_control(Vector2(358.0, 159.0))),
 		"europe",
 		"缩放后欧洲代表点仍应命中欧洲"
 	)
 	_assert_eq(
-		_world_map.call(
-			"_region_at_position",
+		_world_map.get_region_at_position(
 			Vector2(map_rect.position.x - 12.0, map_rect.size.y * 0.5)
 		),
 		"",
@@ -171,15 +165,18 @@ func _assert_selection_signal() -> void:
 	click.button_index = MOUSE_BUTTON_LEFT
 	click.pressed = true
 	click.position = Vector2(575.0, 255.0)
-	_world_map.call("_gui_input", click)
+	_world_map.get_viewport().push_input(click)
+	await get_tree().process_frame
 	_assert_eq(_selected_region, "asia", "点击亚洲遮罩应发出 region_selected('asia')")
 
 	click.position = Vector2(860.0, 470.0)
-	_world_map.call("_gui_input", click)
+	_world_map.get_viewport().push_input(click)
+	await get_tree().process_frame
 	_assert_eq(_selected_region, "", "点击地图海洋或空白处应发出空区域用于取消选中")
 
 	click.position = Vector2(358.0, 159.0)
-	_world_map.call("_gui_input", click)
+	_world_map.get_viewport().push_input(click)
+	await get_tree().process_frame
 	_assert_eq(_selected_region, "europe", "点击欧洲遮罩应发出 region_selected('europe')")
 
 
@@ -201,7 +198,8 @@ func _assert_blank_map_click_deselects_main_scene() -> void:
 		var timer := main_os.get_node("Timer") as Timer
 		timer.stop()
 
-	var sectors: Array[Node] = main_os.get_node("%SectorInfoContainer").get_children()
+	var workspace := main_os.get_node("MainLayout/StrategicWorkspace") as StrategicWorkspace
+	var sectors: Array[Node] = workspace.get_sector_nodes()
 	if sectors.is_empty():
 		_assert_true(false, "主场景应存在区域卡片")
 		main_os.queue_free()
@@ -216,16 +214,16 @@ func _assert_blank_map_click_deselects_main_scene() -> void:
 	main_os.call("select_sector", first_sector)
 	await get_tree().process_frame
 	_assert_eq(
-		(main_os.get_node("%RegionNameLabel") as Label).text,
+		workspace.get_region_name_text(),
 		first_sector.data_card.region_name,
 		"主场景测试前应先选中一个区域"
 	)
 
-	var world_map := main_os.get_node("%WorldMapView") as WorldMapView
+	var world_map := workspace.get_world_map()
 	world_map.region_selected.emit("europe")
 	await get_tree().process_frame
 	_assert_eq(
-		(main_os.get_node("%RegionNameLabel") as Label).text,
+		workspace.get_region_name_text(),
 		"欧洲",
 		"中央地图点击欧洲应选中欧洲板块"
 	)
@@ -233,7 +231,7 @@ func _assert_blank_map_click_deselects_main_scene() -> void:
 	world_map.region_selected.emit("")
 	await get_tree().process_frame
 	_assert_eq(
-		(main_os.get_node("%RegionNameLabel") as Label).text,
+		workspace.get_region_name_text(),
 		"未选择区域",
 		"中央地图空白点击应取消主场景当前选区"
 	)
@@ -246,10 +244,10 @@ func _on_region_selected(region_name: String) -> void:
 
 
 func _map_pixel_to_control(pixel: Vector2) -> Vector2:
-	var map_rect: Rect2 = _world_map.call("_get_map_rect")
+	var map_rect: Rect2 = _world_map.get_map_rect()
 	var uv := Vector2(pixel.x / MAP_SIZE.x, pixel.y / MAP_SIZE.y)
 	return map_rect.position + Vector2(map_rect.size.x * uv.x, map_rect.size.y * uv.y)
 
 
 func _assert_region_at(position: Vector2, expected: String, message: String) -> void:
-	_assert_eq(_world_map.call("_region_at_position", position), expected, message)
+	_assert_eq(_world_map.get_region_at_position(position), expected, message)

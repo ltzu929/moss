@@ -1,0 +1,92 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/main_hud.gd" id="1_main_hud"]
+[ext_resource type="PackedScene" path="res://scenes/year_progress.tscn" id="2_year_progress"]
+
+[node name="MainHud" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_main_hud")
+
+[node name="TopBarContainer" type="HBoxContainer" parent="."]
+z_index = 10
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 0
+theme_override_constants/separation = 12
+
+[node name="MossLabel" type="Label" parent="TopBarContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.267, 0.267, 1)
+text = "MOSS-550C"
+vertical_alignment = 1
+
+[node name="TopBarSpacer" type="Control" parent="TopBarContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ComputationalLabel" type="Label" parent="TopBarContainer"]
+layout_mode = 2
+text = "算力:30"
+vertical_alignment = 1
+
+[node name="EnergyLabel" type="Label" parent="TopBarContainer"]
+layout_mode = 2
+text = "能源:100"
+vertical_alignment = 1
+
+[node name="DecisionArchiveButton" type="Button" parent="TopBarContainer"]
+custom_minimum_size = Vector2(128, 44)
+layout_mode = 2
+tooltip_text = "查看不可逆核心决策记录"
+text = "决策档案  0"
+
+[node name="TechnologyButton" type="Button" parent="TopBarContainer"]
+custom_minimum_size = Vector2(120, 44)
+layout_mode = 2
+text = "科技协议 1"
+
+[node name="SituationButton" type="Button" parent="TopBarContainer"]
+custom_minimum_size = Vector2(112, 44)
+layout_mode = 2
+tooltip_text = "查看持续推进的随机局势"
+text = "局势  0 / 2"
+
+[node name="TimeControlButton" type="Button" parent="TopBarContainer"]
+custom_minimum_size = Vector2(80, 44)
+layout_mode = 2
+tooltip_text = "暂停月度推进"
+text = "暂停"
+
+[node name="YearProgress" parent="." instance=ExtResource("2_year_progress")]
+z_index = 10
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 0
+size_flags_horizontal = 3
+
+[node name="CommandDock" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 0
+
+[node name="CommandDockMargin" type="MarginContainer" parent="CommandDock"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_right = 10
+
+[node name="CommandButtonContainer" type="HBoxContainer" parent="CommandDock/CommandDockMargin"]
+z_index = 10
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="CommandContextLabel" type="Label" parent="CommandDock/CommandDockMargin/CommandButtonContainer"]
+custom_minimum_size = Vector2(320, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "未选择区域  //  请先选择区域"
+vertical_alignment = 1

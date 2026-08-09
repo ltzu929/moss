@@ -1,0 +1,281 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/strategic_workspace.gd" id="1_workspace"]
+[ext_resource type="PackedScene" path="res://scenes/sector_info.tscn" id="2_sector_info"]
+[ext_resource type="Resource" path="res://data/sector_asia.tres" id="3_asia"]
+[ext_resource type="Resource" path="res://data/sector_na.tres" id="4_na"]
+[ext_resource type="Resource" path="res://data/sector_europe.tres" id="5_europe"]
+[ext_resource type="Resource" path="res://data/sector_africa.tres" id="6_africa"]
+[ext_resource type="Resource" path="res://data/sector_oceania.tres" id="7_oceania"]
+[ext_resource type="Resource" path="res://data/sector_south_america.tres" id="8_south_america"]
+[ext_resource type="Script" path="res://scripts/ui/world_map_view.gd" id="9_world_map"]
+[ext_resource type="Script" path="res://scripts/ui/region_orbital_view.gd" id="10_orbital"]
+[ext_resource type="PackedScene" path="res://scenes/action_log_view.tscn" id="11_action_log"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hud"]
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0.031, 0.067, 0.102, 0.88)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.118, 0.204, 0.267, 1)
+
+[node name="StrategicWorkspace" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_workspace")
+
+[node name="ContentRow" type="HBoxContainer" parent="."]
+layout_mode = 0
+theme_override_constants/separation = 12
+
+[node name="CenterPanel" type="PanelContainer" parent="ContentRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
+
+[node name="CenterMargin" type="MarginContainer" parent="ContentRow/CenterPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="CenterVBox" type="VBoxContainer" parent="ContentRow/CenterPanel/CenterMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="GlobalViewHeader" type="HBoxContainer" parent="ContentRow/CenterPanel/CenterMargin/CenterVBox"]
+layout_mode = 2
+
+[node name="GlobalViewTitle" type="Label" parent="ContentRow/CenterPanel/CenterMargin/CenterVBox/GlobalViewHeader"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.545, 0.867, 0.851, 1)
+theme_override_font_sizes/font_size = 16
+text = "全球态势图  GLOBAL SITUATION"
+
+[node name="GlobalMapSelectedLabel" type="Label" parent="ContentRow/CenterPanel/CenterMargin/CenterVBox/GlobalViewHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.722, 0.78, 0.839, 1)
+text = "全球态势监控中"
+horizontal_alignment = 2
+
+[node name="WorldMapView" type="Control" parent="ContentRow/CenterPanel/CenterMargin/CenterVBox"]
+custom_minimum_size = Vector2(0, 520)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("9_world_map")
+
+[node name="ContextPanel" type="PanelContainer" parent="ContentRow"]
+custom_minimum_size = Vector2(420, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
+
+[node name="ContextMargin" type="MarginContainer" parent="ContentRow/ContextPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="ContextVBox" type="VBoxContainer" parent="ContentRow/ContextPanel/ContextMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 4
+
+[node name="ContextTitle" type="Label" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.545, 0.867, 0.851, 1)
+theme_override_font_sizes/font_size = 16
+text = "区域指挥  //  REGION OPS"
+
+[node name="RegionOrbitalPanel" type="PanelContainer" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox"]
+custom_minimum_size = Vector2(0, 132)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
+
+[node name="OrbitalMargin" type="MarginContainer" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox/RegionOrbitalPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="OrbitalVBox" type="VBoxContainer" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox/RegionOrbitalPanel/OrbitalMargin"]
+layout_mode = 2
+
+[node name="OrbitalTitle" type="Label" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox/RegionOrbitalPanel/OrbitalMargin/OrbitalVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.545, 0.867, 0.851, 1)
+theme_override_font_sizes/font_size = 16
+text = "区域聚焦"
+
+[node name="OrbitalSubtitle" type="Label" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox/RegionOrbitalPanel/OrbitalMargin/OrbitalVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
+theme_override_font_sizes/font_size = 12
+text = "REGION ORBITAL VIEW"
+
+[node name="RegionOrbitalView" type="Control" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox/RegionOrbitalPanel/OrbitalMargin/OrbitalVBox"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 2
+script = ExtResource("10_orbital")
+
+[node name="RegionNameLabel" type="Label" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.722, 0.78, 0.839, 1)
+text = "未选择区域"
+clip_text = true
+
+[node name="RegionDescriptionLabel" type="Label" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox"]
+custom_minimum_size = Vector2(0, 46)
+custom_maximum_size = Vector2(372, -1)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
+text = "选择地图或底部区域条以查看详情。"
+autowrap_mode = 3
+
+[node name="RegionOrderLabel" type="Label" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox"]
+layout_mode = 2
+text = "秩序"
+
+[node name="RegionOrderBar" type="ProgressBar" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox"]
+layout_mode = 2
+
+[node name="RegionHopeLabel" type="Label" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox"]
+layout_mode = 2
+text = "希望"
+
+[node name="RegionHopeBar" type="ProgressBar" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox"]
+layout_mode = 2
+
+[node name="RegionAuthorityLabel" type="Label" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox"]
+layout_mode = 2
+text = "控制权"
+
+[node name="RegionAuthorityBar" type="ProgressBar" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox"]
+layout_mode = 2
+
+[node name="RegionRiskLabel" type="Label" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
+text = "状态：待选择"
+clip_text = true
+
+[node name="SituationSummary" type="HBoxContainer" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SituationSummaryTitle" type="Label" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox/SituationSummary"]
+layout_mode = 2
+text = "当前局势"
+
+[node name="RegionSituationLabel" type="Label" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox/SituationSummary"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "选择区域后显示局势"
+horizontal_alignment = 2
+clip_text = true
+
+[node name="GlobalOverviewPanel" type="PanelContainer" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox"]
+custom_minimum_size = Vector2(0, 132)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
+
+[node name="GlobalOverviewMargin" type="MarginContainer" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox/GlobalOverviewPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="GlobalOverviewVBox" type="VBoxContainer" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox/GlobalOverviewPanel/GlobalOverviewMargin"]
+layout_mode = 2
+
+[node name="GlobalOverviewTitle" type="Label" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.545, 0.867, 0.851, 1)
+text = "全局信息"
+
+[node name="GlobalPopulationLabel" type="Label" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.722, 0.78, 0.839, 1)
+text = "全球人口: --"
+
+[node name="GlobalAuthorityLabel" type="Label" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.722, 0.78, 0.839, 1)
+text = "平均控制权: --"
+
+[node name="GlobalStabilityLabel" type="Label" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
+text = "系统稳定性: --"
+
+[node name="GlobalThreatLabel" type="Label" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
+text = "威胁等级: --"
+
+[node name="LogPlaceholder" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox" instance=ExtResource("11_action_log")]
+layout_mode = 2
+
+[node name="SectorInfoContainer" type="GridContainer" parent="."]
+custom_minimum_size = Vector2(0, 94)
+layout_mode = 0
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+columns = 6
+
+[node name="SectorInfoAsia" parent="SectorInfoContainer" instance=ExtResource("2_sector_info")]
+custom_minimum_size = Vector2(150, 84)
+size_flags_vertical = 3
+data_card = ExtResource("3_asia")
+
+[node name="SectorInfoNa" parent="SectorInfoContainer" instance=ExtResource("2_sector_info")]
+custom_minimum_size = Vector2(150, 84)
+size_flags_vertical = 3
+data_card = ExtResource("4_na")
+
+[node name="SectorInfoEurope" parent="SectorInfoContainer" instance=ExtResource("2_sector_info")]
+custom_minimum_size = Vector2(150, 84)
+size_flags_vertical = 3
+data_card = ExtResource("5_europe")
+
+[node name="SectorInfoAfrica" parent="SectorInfoContainer" instance=ExtResource("2_sector_info")]
+custom_minimum_size = Vector2(150, 84)
+size_flags_vertical = 3
+data_card = ExtResource("6_africa")
+
+[node name="SectorInfoOceania" parent="SectorInfoContainer" instance=ExtResource("2_sector_info")]
+custom_minimum_size = Vector2(150, 84)
+size_flags_vertical = 3
+data_card = ExtResource("7_oceania")
+
+[node name="SectorInfoSouthAmerica" parent="SectorInfoContainer" instance=ExtResource("2_sector_info")]
+custom_minimum_size = Vector2(150, 84)
+size_flags_vertical = 3
+data_card = ExtResource("8_south_america")
