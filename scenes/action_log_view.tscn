@@ -1,0 +1,56 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/action_log_view.gd" id="1_action_log"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hud"]
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0.031, 0.067, 0.102, 0.88)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.118, 0.204, 0.267, 1)
+
+[node name="ActionLogView" type="Panel"]
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
+script = ExtResource("1_action_log")
+
+[node name="LogVBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="LogTitle" type="Label" parent="LogVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.866667, 0.85098, 1)
+text = "MOSS LOG"
+
+[node name="LogScrollContainer" type="ScrollContainer" parent="LogVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="LogEntryContainer" type="VBoxContainer" parent="LogVBox/LogScrollContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LogCursor" type="Label" parent="LogVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.866667, 0.85098, 1)
+text = "█"

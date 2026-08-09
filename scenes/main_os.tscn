@@ -19,6 +19,7 @@
 [ext_resource type="PackedScene" uid="uid://bn2cwv0ewn4kv" path="res://scenes/technology_screen.tscn" id="17_technology_screen"]
 [ext_resource type="PackedScene" uid="uid://kianyj80h6sh" path="res://scenes/decision_archive_panel.tscn" id="19_a6tgg"]
 [ext_resource type="PackedScene" path="res://scenes/situation_panel.tscn" id="20_situation_panel"]
+[ext_resource type="PackedScene" path="res://scenes/action_log_view.tscn" id="21_action_log_view"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hud"]
 content_margin_left = 8.0
@@ -358,45 +359,8 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
 text = "威胁等级: --"
 
-[node name="LogPlaceholder" type="Panel" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox" unique_id=809928747]
-custom_minimum_size = Vector2(0, 120)
+[node name="LogPlaceholder" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox" instance=ExtResource("21_action_log_view") unique_id=809928747]
 layout_mode = 2
-size_flags_vertical = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
-
-[node name="LogVBox" type="VBoxContainer" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/LogPlaceholder" unique_id=1875220548]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 10.0
-offset_top = 10.0
-offset_right = -10.0
-offset_bottom = -10.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="LogTitle" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/LogPlaceholder/LogVBox" unique_id=1101649824]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.55, 0.866667, 0.85098, 1)
-text = "MOSS LOG"
-
-[node name="LogScrollContainer" type="ScrollContainer" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/LogPlaceholder/LogVBox" unique_id=2001000001]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_vertical = 3
-horizontal_scroll_mode = 0
-
-[node name="LogEntryContainer" type="VBoxContainer" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/LogPlaceholder/LogVBox/LogScrollContainer" unique_id=2001000002]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="LogCursor" type="Label" parent="MainLayout/ContentRow/ContextPanel/ContextMargin/ContextVBox/LogPlaceholder/LogVBox" unique_id=2001000003]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.55, 0.866667, 0.85098, 1)
-text = "█"
 
 [node name="CommandDock" type="PanelContainer" parent="MainLayout" unique_id=1757861490]
 unique_name_in_owner = true

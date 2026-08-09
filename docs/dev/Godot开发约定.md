@@ -80,6 +80,19 @@ main_os.gd 统一更新选择状态和地图显示
 
 子场景只表达“发生了什么”，不决定“外部系统应该怎么变”。
 
+行动日志显示流程也遵循这一边界：
+
+```text
+MainOS.record_action() 构造领域条目
+        ↓
+ActionLogView.append_entry(entry) 管理显示队列与真实节点
+        ↓
+MainOS 重开时调用 ActionLogView.clear()
+```
+
+`ActionLogView` 不读取 `MainOS`、年月或资源；测试通过组件公开接口和真实子节点结果检查
+容量、打字机状态与重开取消，不访问组件私有字段。
+
 ---
 
 ## 三、节点访问与依赖注入

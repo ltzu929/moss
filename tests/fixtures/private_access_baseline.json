@@ -1,29 +1,5 @@
 [
   {
-    "path": "action_log_ui_test.gd",
-    "member": "_clear_log_ui",
-    "kind": "direct_member",
-    "count": 4
-  },
-  {
-    "path": "action_log_ui_test.gd",
-    "member": "_get_log_cursor",
-    "kind": "direct_member",
-    "count": 2
-  },
-  {
-    "path": "action_log_ui_test.gd",
-    "member": "_typewriter_active",
-    "kind": "direct_member",
-    "count": 6
-  },
-  {
-    "path": "action_log_ui_test.gd",
-    "member": "_typewriter_queue",
-    "kind": "direct_member",
-    "count": 7
-  },
-  {
     "path": "base_resource_contract_test.gd",
     "member": "_get_command_by_id",
     "kind": "direct_member",
