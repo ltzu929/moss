@@ -3,9 +3,8 @@
 /test-results/
 __pycache__/
 *.py[cod]
-# Local Godot editor plugins; provision locally and do not vendor updates
-/addons/godot_ai/
-/addons/inspector_tabs/
+# Godot editor plugins are installed and updated locally
+/addons/
 /android/
 *.tmp
 
