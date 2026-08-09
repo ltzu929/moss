@@ -176,6 +176,32 @@ func _run_2075_writeback_case(case: Dictionary) -> void:
 		100 - int(case["energy_cost"]),
 		"真实 MainOS 写回应扣除结算能源投影"
 	)
+	var event_log := _get_last_action("event")
+	_assert_true(not event_log.is_empty(), "真实 MainOS 写回应追加事件行动日志")
+	_assert_eq(
+		str(event_log.get("title", "")),
+		runtime_event.event_title,
+		"事件行动日志应保留运行时事件标题"
+	)
+	var log_message := str(event_log.get("message", ""))
+	_assert_true(
+		preview_option.button_text in log_message,
+		"事件行动日志应记录玩家实际点击的运行时方案"
+	)
+	for expected_change in [
+		"秩序 %+d" % int(case["order_delta"]),
+		"希望 %+d" % int(case["hope_delta"]),
+		"控制权 %+d" % int(case["authority_delta"]),
+	]:
+		_assert_true(
+			expected_change in log_message,
+			"事件行动日志应记录实际写回变化：%s" % expected_change
+		)
+	if int(case["energy_cost"]) > 0:
+		_assert_true(
+			"能源 -%d" % int(case["energy_cost"]) in log_message,
+			"事件行动日志应记录实际能源扣除"
+		)
 	_assert_eq(
 		_main_os.triggered_events[0],
 		"event_2075_jupiter_gravity_crisis",
@@ -413,3 +439,11 @@ func _get_option_by_decision(event: GameEvent, decision_value: String) -> EventO
 		if option.decision_tag_value == decision_value:
 			return option
 	return null
+
+
+func _get_last_action(kind: String) -> Dictionary:
+	var entries: Array[Dictionary] = _main_os.get_action_log()
+	for index in range(entries.size() - 1, -1, -1):
+		if str(entries[index].get("kind", "")) == kind:
+			return entries[index]
+	return {}
