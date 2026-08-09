@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=12 format=3 uid="uid://dlmkcdge21u4x"]
 
 [ext_resource type="Script" uid="uid://ctakhimn50hdc" path="res://scripts/systems/main_os.gd" id="1_main_os"]
 [ext_resource type="Script" uid="uid://dhndawkfhm8iq" path="res://scripts/resources/game_event.gd" id="2_game_event"]
