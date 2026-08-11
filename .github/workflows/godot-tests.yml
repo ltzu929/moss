@@ -22,9 +22,7 @@ jobs:
         run: python -m unittest discover -s tools/tests -p "test_*.py" -v
 
       - name: Audit test private access
-        run: |
-          python tools/audit_test_private_access.py --baseline tests/fixtures/private_access_baseline.json --fail-on-new
-          python tools/audit_test_private_access.py --require-zero
+        run: python tools/audit_test_private_access.py --require-zero
 
       - name: Audit content identity mapping
         run: python tools/audit_content_identity.py --baseline tests/fixtures/content_identity_baseline.json
