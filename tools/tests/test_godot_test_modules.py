@@ -34,7 +34,10 @@ EXPECTED_REGISTRY = (
     ("tests/branch_event_test.tscn", "domain", "headless"),
     ("tests/event_narrative_baseline_test.tscn", "domain", "headless"),
     ("tests/ending_history_baseline_test.tscn", "domain", "headless"),
-    ("tests/decision_history_test.tscn", "ui", "display"),
+    ("tests/decision_history_store_test.tscn", "domain", "headless"),
+    ("tests/event_narrative_matrix_test.tscn", "domain", "headless"),
+    ("tests/ending_history_test.tscn", "domain", "headless"),
+    ("tests/decision_archive_ui_test.tscn", "ui", "display"),
     ("tests/technology_ui_test.tscn", "ui", "display"),
     ("tests/situation_ui_test.tscn", "ui", "display"),
     ("tests/action_log_ui_test.tscn", "ui", "display"),
@@ -101,14 +104,14 @@ class RegistryAndBoundaryTests(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
         lines = output.getvalue().splitlines()
-        self.assertEqual(len(lines), 13)
+        self.assertEqual(len(lines), 16)
         self.assertEqual(
             lines[0],
             "domain\theadless\ttests/resource_isolation_test.tscn",
         )
         self.assertEqual(
             lines[-1],
-            "domain\theadless\ttests/ending_history_baseline_test.tscn",
+            "domain\theadless\ttests/ending_history_test.tscn",
         )
 
     def test_main_keeps_two_phase_import_before_scene_execution(self) -> None:

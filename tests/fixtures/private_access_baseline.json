@@ -1,14 +1,1 @@
-[
-  {
-    "path": "decision_history_test.gd",
-    "member": "_unhandled_input",
-    "kind": "engine_callback",
-    "count": 1
-  },
-  {
-    "path": "test_runner.gd",
-    "member": "_get_average_stat",
-    "kind": "direct_member",
-    "count": 2
-  }
-]
+[]

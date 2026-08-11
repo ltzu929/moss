@@ -8,7 +8,6 @@ var _route_config: Dictionary = {}
 var _event_log: Dictionary = {}
 var _seen_situation_ids: Array[String] = []
 var _reporter: PlaythroughReporter = null
-var _get_average_stat: Callable
 
 var _assertions: Array[Dictionary] = []
 var _passed: int = 0
@@ -25,8 +24,7 @@ func configure(
 	route_config: Dictionary,
 	event_log: Dictionary,
 	seen_situation_ids: Array[String],
-	reporter: PlaythroughReporter,
-	get_average_stat: Callable
+	reporter: PlaythroughReporter
 ) -> void:
 	_main_os = main_os
 	_route_id = route_id
@@ -34,7 +32,6 @@ func configure(
 	_event_log = event_log
 	_seen_situation_ids = seen_situation_ids
 	_reporter = reporter
-	_get_average_stat = get_average_stat
 
 
 func assert_eq(
@@ -581,8 +578,9 @@ func _assert_final_state() -> void:
 	if _game_ended:
 		assert_true(_main_os.is_game_over, "游戏结束后is_game_over应为true", "final_state")
 		var avg_auth: int = _main_os.get_average_authority()
-		var avg_order: int = int(_get_average_stat.call("order"))
-		var avg_hope: int = int(_get_average_stat.call("hope"))
+		var average_stats: Dictionary = _main_os.get_average_stats_snapshot()
+		var avg_order: int = int(average_stats.get("order", 0))
+		var avg_hope: int = int(average_stats.get("hope", 0))
 		assert_eq(
 			_game_result,
 			_main_os.determine_ending_type(avg_auth, avg_order, avg_hope),

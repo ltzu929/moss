@@ -37,7 +37,7 @@ func _ready() -> void:
 	_route_config = _route_catalog.get_route_config(route_id)
 	if _route_config.is_empty():
 		_reporter.write_log("[FATAL] 未知代表性路线: %s" % route_id)
-		_assertions.configure(null, route_id, {}, {}, [], _reporter, Callable())
+		_assertions.configure(null, route_id, {}, {}, [], _reporter)
 		_assertions.assert_true(false, "代表性路线配置必须存在", "route_config")
 		_finish_test()
 		return
@@ -47,7 +47,7 @@ func _ready() -> void:
 	var scene: PackedScene = load("res://scenes/main_os.tscn")
 	if scene == null:
 		_reporter.write_log("[FATAL] 无法加载主场景")
-		_assertions.configure(null, route_id, _route_config, {}, [], _reporter, Callable())
+		_assertions.configure(null, route_id, _route_config, {}, [], _reporter)
 		_assertions.assert_true(false, "主场景必须可加载", "scene_integrity")
 		_finish_test()
 		return
@@ -80,7 +80,6 @@ func _ready() -> void:
 		_driver.get_event_log(),
 		_driver.get_seen_situation_ids(),
 		_reporter,
-		Callable(self, "get_average_stat_for_test"),
 	)
 
 	if not _assertions.verify_scene_integrity():
@@ -139,12 +138,6 @@ func request_situation_approach(instance_id: String, approach_id: String) -> voi
 
 func toggle_time_control() -> void:
 	_main_os.toggle_time_control()
-
-
-func get_average_stat_for_test(stat_name: String) -> int:
-	if stat_name == "order":
-		return _main_os._get_average_stat("order")
-	return _main_os._get_average_stat("hope")
 
 
 func _on_game_ended(result: String, message: String) -> void:

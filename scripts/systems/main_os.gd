@@ -1550,20 +1550,40 @@ func get_moss_model_name() -> String:
 ## 返回: 平均值（整数），无板块时返回0
 ## 用途: 判定（≤0则失败）和结局分支判定
 func get_average_authority() -> int:
+	return int(get_average_stats_snapshot().get("authority", 0))
+
+
+## 返回当前区域的平均秩序、希望和控制权快照。
+## 返回值只包含整数平均值，空区域集合时三个维度均为0。
+## 完整路线测试和外部编排通过该公开快照读取统计，不跨脚本访问私有实现。
+func get_average_stats_snapshot() -> Dictionary:
 	var sectors := _strategic_workspace.get_sector_nodes()
+	var total_order := 0
+	var total_hope := 0
 	var total_authority := 0
 	var count := 0
 
 	for sector in sectors:
-		if sector.get("data_card") != null:
-			total_authority += sector.data_card.authority
-			count += 1
+		if sector.get("data_card") == null:
+			continue
+		total_order += sector.data_card.order
+		total_hope += sector.data_card.hope
+		total_authority += sector.data_card.authority
+		count += 1
 
 	if count == 0:
-		return 0
+		return {
+			"order": 0,
+			"hope": 0,
+			"authority": 0,
+		}
 
-	# 返回整数平均值，向下取整
-	return floori(float(total_authority) / float(count))
+	# 返回整数平均值，向下取整，保持原有结局和失败判定语义。
+	return {
+		"order": floori(float(total_order) / float(count)),
+		"hope": floori(float(total_hope) / float(count)),
+		"authority": floori(float(total_authority) / float(count)),
+	}
 
 ## 检查游戏是否应该结束
 ## 触发条件:
@@ -1781,25 +1801,7 @@ func get_technology_summary() -> String:
 
 ## 计算所有板块某项属性的平均值
 func _get_average_stat(stat_name: String) -> int:
-	var sectors := _strategic_workspace.get_sector_nodes()
-	var total := 0
-	var count := 0
-
-	for sector in sectors:
-		if sector.get("data_card") != null:
-			match stat_name:
-				"order":
-					total += sector.data_card.order
-				"hope":
-					total += sector.data_card.hope
-				"authority":
-					total += sector.data_card.authority
-			count += 1
-
-	if count == 0:
-		return 0
-
-	return int(float(total) / float(count))
+	return int(get_average_stats_snapshot().get(stat_name, 0))
 
 ## 重新开始按钮回调
 ## 重置所有游戏状态，重新开始游戏循环

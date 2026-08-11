@@ -134,10 +134,28 @@ TEST_SPECS = [
         ("[MOSS-ENDING-HISTORY-BASELINE] 完成，失败断言：0",),
     ),
     TestSpec(
-        "tests/decision_history_test.tscn",
+        "tests/decision_history_store_test.tscn",
+        "domain",
+        "headless",
+        ("[MOSS-DECISION-HISTORY-STORE] 完成，失败断言：0",),
+    ),
+    TestSpec(
+        "tests/event_narrative_matrix_test.tscn",
+        "domain",
+        "headless",
+        ("[MOSS-EVENT-NARRATIVE-MATRIX] 完成，失败断言：0",),
+    ),
+    TestSpec(
+        "tests/ending_history_test.tscn",
+        "domain",
+        "headless",
+        ("[MOSS-ENDING-HISTORY] 完成，失败断言：0",),
+    ),
+    TestSpec(
+        "tests/decision_archive_ui_test.tscn",
         "ui",
         "display",
-        ("[MOSS-DECISION-HISTORY] 完成，失败断言：0",),
+        ("[MOSS-DECISION-ARCHIVE-UI] 完成，失败断言：0",),
     ),
     TestSpec(
         "tests/technology_ui_test.tscn",
