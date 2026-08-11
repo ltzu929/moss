@@ -250,7 +250,7 @@ func _assert_main_scene_writes_startup_snapshot() -> void:
 		_assert_true(snapshot.has("technology"), "启动快照应包含科技摘要")
 		_assert_true(snapshot.has("resources"), "启动快照应包含资源摘要")
 
-	var heartbeat: Dictionary = main_os._development_log.read_latest_heartbeat()
+	var heartbeat := _read_latest_heartbeat(DEFAULT_HEARTBEAT_PATH)
 	_assert_eq(heartbeat.get("phase", ""), "idle", "主场景就绪后心跳阶段应为空闲")
 	_assert_eq(
 		heartbeat.get("snapshot", {}).get("year", 0),
@@ -263,34 +263,23 @@ func _assert_main_scene_writes_startup_snapshot() -> void:
 	)
 	var heartbeat_timer := main_os.get_node("DevelopmentHeartbeatTimer") as Timer
 	heartbeat_timer.stop()
-	main_os._persist_development_phase(
-		"month_tick:ui_refresh",
-		{"reason": "timer_not_run"}
-	)
-	var phase_entries := _read_json_entries(DEFAULT_LOG_PATH)
-	var persisted_phase := _find_phase_entry(phase_entries, "month_tick:ui_refresh")
+	var heartbeat_before_timer := _read_latest_heartbeat(DEFAULT_HEARTBEAT_PATH)
 	_assert_true(
-		not persisted_phase.is_empty(),
-		"关键阶段设置后、Timer 执行前应已同步写入 JSONL"
+		heartbeat_before_timer.get("phase", "") == "idle",
+		"停止开发心跳 Timer 时应保留主场景当前阶段"
 	)
 	_assert_eq(
-		persisted_phase.get("details", {}).get("reason", ""),
-		"timer_not_run",
-		"同步阶段记录应保留诊断详情"
+		heartbeat_before_timer.get("snapshot", {}).get("month", 0),
+		1,
+		"停止开发心跳 Timer 时应保留最新月份快照"
 	)
-	var heartbeat_before_timer: Dictionary = (
-		main_os._development_log.read_latest_heartbeat()
-	)
-	_assert_eq(
-		heartbeat_before_timer.get("phase", ""),
-		"idle",
-		"停止 Timer 后，阶段同步落盘不应伪造一次心跳"
-	)
-	main_os._set_development_phase("idle", {}, true)
 	main_os.current_month = 2
-	main_os._on_development_heartbeat_timeout()
-	var refreshed_heartbeat: Dictionary = (
-		main_os._development_log.read_latest_heartbeat()
+	heartbeat_timer.timeout.emit()
+	var refreshed_heartbeat := _read_latest_heartbeat(DEFAULT_HEARTBEAT_PATH)
+	_assert_true(
+		int(refreshed_heartbeat.get("heartbeat_index", 0))
+			> int(heartbeat_before_timer.get("heartbeat_index", 0)),
+		"开发心跳 Timer 信号应写入新序号"
 	)
 	_assert_eq(
 		refreshed_heartbeat.get("snapshot", {}).get("month", 0),
@@ -310,6 +299,14 @@ func _delete_user_file(path: String) -> void:
 	if not FileAccess.file_exists(path):
 		return
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+
+func _read_latest_heartbeat(base_path: String) -> Dictionary:
+	var reader := DevelopmentDiagnosticsLog.new()
+	reader.configure("", true, 0, base_path)
+	var heartbeat := reader.read_latest_heartbeat()
+	reader.shutdown()
+	return heartbeat
 
 
 func _delete_heartbeat_files(base_path: String) -> void:

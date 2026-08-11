@@ -27,6 +27,8 @@ signal game_ended(result: String, message: String)
 
 ## 指令领域服务脚本
 const COMMAND_SYSTEM_SCRIPT := preload("res://scripts/systems/command_system.gd")
+## 游戏内容扫描与运行态资源装配
+const CONTENT_LOADER_SCRIPT := preload("res://scripts/systems/game_content_loader.gd")
 ## 开发期崩溃诊断日志
 const DEVELOPMENT_LOG_SCRIPT := preload("res://scripts/systems/development_log.gd")
 ## 不可逆核心决策历史
@@ -126,6 +128,8 @@ var action_log: Array[Dictionary] = []
 
 ## 指令领域服务，不直接访问场景树或 UI
 var _command_system: CommandSystem = COMMAND_SYSTEM_SCRIPT.new()
+## 内容加载服务，不依赖场景树或主控制器
+var _content_loader: GameContentLoader = CONTENT_LOADER_SCRIPT.new()
 ## 开发期诊断日志，不参与游戏内日志 UI
 var _development_log: DevelopmentDiagnosticsLog = DEVELOPMENT_LOG_SCRIPT.new()
 ## 开发期低频心跳计时器，不参与游戏时间推进
@@ -165,19 +169,21 @@ func _ready() -> void:
 
 	# 初始化事件列表
 	all_events.clear()
-	load_events_from_disk()
+	all_events.assign(_content_loader.load_events())
 
 	# 初始化随机局势模板和本局随机种子
 	_persist_development_phase("startup:situations")
 	all_situations.clear()
-	load_situations_from_disk()
+	all_situations.assign(_content_loader.load_situations())
 	_situation_system.configure_templates(all_situations)
 	_situation_system.reset()
 
 	# 初始化指令列表
 	_persist_development_phase("startup:commands")
 	available_commands.clear()
-	load_commands_from_disk()
+	available_commands.assign(_content_loader.load_commands())
+	for command in available_commands:
+		command_cooldowns[command.command_id] = 0
 
 	# 初始化科技系统
 	_persist_development_phase("startup:technology")
@@ -475,88 +481,6 @@ func restore_sector_states() -> void:
 		sector.update_display()
 
 # ============================================================
-# 事件加载系统
-# ============================================================
-
-## 从硬盘目录加载所有事件资源文件
-## 自动扫描 res://data/events/ 下的 .tres 文件
-## 无需返回值，直接填充 all_events 数组
-func load_events_from_disk() -> void:
-	var path := "res://data/events/"
-	var dir := DirAccess.open(path)
-
-	# 目录不存在时静默失败（开发阶段可能未创建）
-	if not dir:
-		push_warning("事件目录不存在: " + path)
-		return
-
-	dir.list_dir_begin()
-	var file_name := dir.get_next()
-
-	while file_name != "":
-		# 只处理 .tres 资源文件，跳过目录和其他文件
-		if not dir.current_is_dir() and file_name.ends_with(".tres"):
-			var event := load(path + file_name)
-
-			# 类型安全检查：防止加载非事件资源
-			if event is GameEvent:
-				all_events.append(event)
-
-		file_name = dir.get_next()
-
-
-## 从硬盘目录加载全部随机局势模板。
-func load_situations_from_disk() -> void:
-	var path := "res://data/situations/"
-	var dir := DirAccess.open(path)
-	if not dir:
-		push_warning("局势目录不存在: " + path)
-		return
-
-	var file_names: Array[String] = []
-	dir.list_dir_begin()
-	var file_name := dir.get_next()
-	while file_name != "":
-		if not dir.current_is_dir() and file_name.ends_with(".tres"):
-			file_names.append(file_name)
-		file_name = dir.get_next()
-	file_names.sort()
-
-	for situation_file in file_names:
-		var situation := load(path + situation_file)
-		if situation is SituationData:
-			all_situations.append(situation)
-
-# ============================================================
-# 指令加载系统
-# ============================================================
-
-## 从硬盘目录加载所有指令资源文件
-## 自动扫描 res://data/commands/ 下的 .tres 文件
-func load_commands_from_disk() -> void:
-	var path := "res://data/commands/"
-	var dir := DirAccess.open(path)
-
-	if not dir:
-		push_warning("指令目录不存在: " + path)
-		return
-
-	dir.list_dir_begin()
-	var file_name := dir.get_next()
-
-	while file_name != "":
-		if not dir.current_is_dir() and file_name.ends_with(".tres"):
-			var command_template := load(path + file_name)
-
-			if command_template is CommandData:
-				var cmd: CommandData = command_template.duplicate(true) as CommandData
-				available_commands.append(cmd)
-				# 初始化冷却状态为0
-				command_cooldowns[cmd.command_id] = 0
-
-		file_name = dir.get_next()
-
-# ============================================================
 # 科技系统接入
 # ============================================================
 
@@ -618,8 +542,9 @@ func refresh_technology_effects() -> void:
 
 
 
-## 根据稳定指令 ID 查找可用指令；不存在时返回 null
-func _get_command_by_id(command_id: String) -> CommandData:
+## 根据稳定指令 ID 查找可用指令；不存在时返回 null。
+## 这是 MainOS 对指令查询的稳定公开入口，具体查找仍由 CommandSystem 负责。
+func get_command_by_id(command_id: String) -> CommandData:
 	return _command_system.get_command_by_id(available_commands, command_id)
 
 
@@ -1912,7 +1837,9 @@ func _on_restart_requested() -> void:
 	# 重置指令状态
 	command_cooldowns.clear()
 	available_commands.clear()
-	load_commands_from_disk()
+	available_commands.assign(_content_loader.load_commands())
+	for command in available_commands:
+		command_cooldowns[command.command_id] = 0
 	refresh_technology_effects()
 	update_technology_button()
 	update_decision_archive_button()

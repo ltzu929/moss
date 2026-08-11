@@ -28,8 +28,8 @@ func _ready() -> void:
 	_assert_eq(second_sector.data_card.order, template_order, "修改一个场景不得污染另一个区域")
 	_assert_eq(sector_template.order, template_order, "修改运行态不得污染区域 .tres 模板")
 
-	var first_command: CommandData = first._get_command_by_id("takeover")
-	var second_command: CommandData = second._get_command_by_id("takeover")
+	var first_command: CommandData = first.get_command_by_id("takeover")
+	var second_command: CommandData = second.get_command_by_id("takeover")
 	_assert_true(first_command != second_command, "两个主场景不得共享指令运行态")
 	first_command.cpu_cost = 1
 	_assert_eq(second_command.cpu_cost, template_cpu_cost, "修改一个场景不得污染另一个指令")

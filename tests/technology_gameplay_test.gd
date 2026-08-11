@@ -40,7 +40,7 @@ func _ready() -> void:
 
 	technology.grant_research_for_year(2060)
 	_assert_true(technology.activate("managed_infrastructure"), "应激活基础设施托管")
-	var takeover: CommandData = _main_os._get_command_by_id("takeover")
+	var takeover: CommandData = _main_os.get_command_by_id("takeover")
 	_assert_eq(takeover.cpu_cost, 25, "基础设施托管应降低接管算力成本")
 	_assert_eq(takeover.energy_cost, 15, "基础设施托管应降低接管能源成本")
 	_assert_eq(takeover.authority_delta, 15, "基础设施托管应提高控制权收益")
@@ -54,7 +54,7 @@ func _ready() -> void:
 	_assert_true(technology.activate("core_recursive"), "应激活递归优化")
 	_assert_eq(_main_os.cooldown_reduction, 1, "递归优化应减少1年冷却")
 	_main_os.current_cpu = 0
-	_main_os.apply_special_command_effect(_main_os._get_command_by_id("energy_convert"))
+	_main_os.apply_special_command_effect(_main_os.get_command_by_id("energy_convert"))
 	_assert_eq(_main_os.current_cpu, 15, "递归优化应使能源转换获得15算力")
 
 	var mitigated: int = _main_os.get_technology_adjusted_event_delta(-20, "order")
@@ -84,11 +84,15 @@ func _ready() -> void:
 	_assert_eq(mitigated, -15, "应急训练应将负面秩序希望影响减轻25%")
 
 	var first_sector: SectorInfo = _get_first_sector()
-	first_sector.data_card.order = 80
-	first_sector.data_card.hope = 75
-	_main_os._apply_human_autonomy_recovery()
-	_assert_eq(first_sector.data_card.order, 80, "恢复不应降低高于上限的秩序")
-	_assert_eq(first_sector.data_card.hope, 75, "恢复不应降低高于上限的希望")
+	first_sector.data_card.order = 58
+	first_sector.data_card.hope = 59
+	_main_os.current_year = 2074
+	_main_os.current_month = 12
+	await _main_os.process_month_tick()
+	_assert_eq(_main_os.current_year, 2075, "年度结算应按2074→2075顺序推进")
+	_assert_eq(_main_os.current_month, 1, "年度结算应在进入1月时执行")
+	_assert_eq(first_sector.data_card.order, 60, "人类自主年度恢复应受60点上限约束")
+	_assert_eq(first_sector.data_card.hope, 60, "人类自主年度恢复应受60点上限约束")
 
 	_main_os.restart_game_for_test()
 	_main_os.get_node("Timer").stop()
@@ -105,7 +109,7 @@ func _ready() -> void:
 			"managed_irreplaceable_protocol",
 		]
 	)
-	var global_takeover: CommandData = _main_os._get_command_by_id("global_takeover")
+	var global_takeover: CommandData = _main_os.get_command_by_id("global_takeover")
 	first_sector = _get_first_sector()
 	var authority_before: int = first_sector.data_card.authority
 	var order_before: int = first_sector.data_card.order
@@ -141,12 +145,12 @@ func _assert_new_technology_effects() -> void:
 			"managed_consensual_protocol",
 		]
 	)
-	var takeover: CommandData = _main_os._get_command_by_id("takeover")
+	var takeover: CommandData = _main_os.get_command_by_id("takeover")
 	_assert_eq(takeover.cooldown_years, 4, "行为预测模型应将系统接管基础冷却降为4年")
 	_assert_eq(takeover.energy_cost, 10, "权限审计链应在基础设施托管后继续降低接管能源")
 	_assert_eq(takeover.authority_delta, 12, "协商托管协议应覆盖接管控制权收益")
 	_assert_eq(takeover.hope_delta, 0, "协商托管协议不应降低希望")
-	var global_takeover: CommandData = _main_os._get_command_by_id("global_takeover")
+	var global_takeover: CommandData = _main_os.get_command_by_id("global_takeover")
 	_assert_eq(global_takeover.energy_cost, 5, "权限审计链应降低全局接管能源消耗")
 	var first_sector: SectorInfo = _get_first_sector()
 	var authority_before := first_sector.data_card.authority
@@ -175,7 +179,7 @@ func _assert_new_technology_effects() -> void:
 	_assert_eq(_main_os.max_cpu, 200, "分布式认知应在并行核心基础上再提高50算力上限")
 	_assert_eq(_main_os.cpu_recovery_rate, 25, "分布式认知应额外提高10年度算力恢复")
 	_assert_eq(_main_os.energy_recovery_rate, 10, "热冗余与分布式认知的能源恢复修正应相互抵消")
-	var energy_convert: CommandData = _main_os._get_command_by_id("energy_convert")
+	var energy_convert: CommandData = _main_os.get_command_by_id("energy_convert")
 	_assert_eq(energy_convert.energy_cost, 15, "负载迁移协议应降低能源转换消耗")
 	_assert_eq(energy_convert.cooldown_years, 1, "负载迁移协议应降低能源转换基础冷却")
 
@@ -193,7 +197,7 @@ func _assert_new_technology_effects() -> void:
 			"human_emergency_training",
 		]
 	)
-	var technology_aid: CommandData = _main_os._get_command_by_id("technology_aid")
+	var technology_aid: CommandData = _main_os.get_command_by_id("technology_aid")
 	_assert_eq(technology_aid.cpu_cost, 15, "区域互助网络应降低技术援助算力消耗")
 	_assert_eq(technology_aid.energy_cost, 5, "区域互助网络应降低技术援助能源消耗")
 	_assert_eq(technology_aid.order_delta, 12, "区域互助网络应提高12秩序")
@@ -201,7 +205,7 @@ func _assert_new_technology_effects() -> void:
 	_assert_eq(technology_aid.authority_delta, -4, "区域互助网络应降低4控制权")
 	_assert_true(technology.grant_research_for_year(2068), "应为协作治理发放第7点协议点")
 	_assert_true(technology.activate("human_collaborative_governance"), "应激活协作治理协议")
-	technology_aid = _main_os._get_command_by_id("technology_aid")
+	technology_aid = _main_os.get_command_by_id("technology_aid")
 	_assert_eq(technology_aid.cpu_cost, 10, "协作治理应覆盖技术援助算力消耗")
 	_assert_eq(technology_aid.energy_cost, 5, "协作治理应保持技术援助能源消耗")
 	_assert_eq(technology_aid.order_delta, 15, "协作治理应提高15秩序")
@@ -214,7 +218,7 @@ func _assert_new_technology_effects() -> void:
 	first_sector.data_card.hope = 30
 	first_sector.data_card.authority = 30
 	_main_os.select_sector(first_sector)
-	var allocate: CommandData = _main_os._get_command_by_id("allocate")
+	var allocate: CommandData = _main_os.get_command_by_id("allocate")
 	_main_os.apply_command_effect(allocate, "order")
 	_assert_eq(first_sector.data_card.order, 45, "公共决策选择秩序时主属性应增加15")
 	_assert_eq(first_sector.data_card.hope, 35, "公共决策选择秩序时希望应附带增加5")

@@ -126,7 +126,7 @@ func _process(_delta: float) -> void:
 func get_route_command(command_id: String) -> CommandData:
 	if _main_os == null:
 		return null
-	return _main_os._get_command_by_id(command_id)
+	return _main_os.get_command_by_id(command_id)
 
 
 func request_situation_node(instance_id: String, option_id: String) -> void:

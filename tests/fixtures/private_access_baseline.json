@@ -1,68 +1,14 @@
 [
   {
-    "path": "base_resource_contract_test.gd",
-    "member": "_get_command_by_id",
-    "kind": "direct_member",
-    "count": 1
-  },
-  {
     "path": "decision_history_test.gd",
     "member": "_unhandled_input",
     "kind": "engine_callback",
     "count": 1
   },
   {
-    "path": "development_log_test.gd",
-    "member": "_development_log",
-    "kind": "direct_member",
-    "count": 3
-  },
-  {
-    "path": "development_log_test.gd",
-    "member": "_on_development_heartbeat_timeout",
-    "kind": "engine_callback",
-    "count": 1
-  },
-  {
-    "path": "development_log_test.gd",
-    "member": "_persist_development_phase",
-    "kind": "direct_member",
-    "count": 1
-  },
-  {
-    "path": "development_log_test.gd",
-    "member": "_set_development_phase",
-    "kind": "direct_member",
-    "count": 1
-  },
-  {
-    "path": "resource_isolation_test.gd",
-    "member": "_get_command_by_id",
-    "kind": "direct_member",
-    "count": 2
-  },
-  {
-    "path": "technology_gameplay_test.gd",
-    "member": "_apply_human_autonomy_recovery",
-    "kind": "direct_member",
-    "count": 1
-  },
-  {
-    "path": "technology_gameplay_test.gd",
-    "member": "_get_command_by_id",
-    "kind": "direct_member",
-    "count": 9
-  },
-  {
     "path": "test_runner.gd",
     "member": "_get_average_stat",
     "kind": "direct_member",
     "count": 2
-  },
-  {
-    "path": "test_runner.gd",
-    "member": "_get_command_by_id",
-    "kind": "direct_member",
-    "count": 1
   }
 ]

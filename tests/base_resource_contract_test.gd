@@ -3,6 +3,7 @@
 extends "res://tests/support/moss_test_case.gd"
 
 const MAIN_SCENE: PackedScene = preload("res://scenes/main_os.tscn")
+const CONTENT_LOADER_SCRIPT := preload("res://scripts/systems/game_content_loader.gd")
 const SECTOR_SPECS: Dictionary = {
 	"SectorInfoAsia": ["res://data/sector_asia.tres", "亚洲"],
 	"SectorInfoNa": ["res://data/sector_na.tres", "北美"],
@@ -46,6 +47,7 @@ func _ready() -> void:
 
 	_assert_sector_contracts(main_os)
 	_assert_command_contracts(main_os)
+	_assert_content_loader_contracts()
 
 	print("[MOSS-BASE-RESOURCES] 完成，失败断言：%d" % _failed)
 	await get_tree().create_timer(0.2).timeout
@@ -134,7 +136,7 @@ func _assert_command_contracts(main_os: Control) -> void:
 			continue
 
 		_assert_command_values(template, command_id, spec, "真实资源")
-		var runtime_command: CommandData = main_os._get_command_by_id(command_id)
+		var runtime_command: CommandData = main_os.get_command_by_id(command_id)
 		_assert_true(runtime_command != null, "主场景应按稳定 ID 加载指令：%s" % command_id)
 		if runtime_command == null:
 			continue
@@ -172,6 +174,46 @@ func _assert_command_values(
 		spec["is_allocate_type"],
 		"%s 指令类型应匹配" % prefix
 	)
+
+
+func _assert_content_loader_contracts() -> void:
+	var loader: GameContentLoader = CONTENT_LOADER_SCRIPT.new()
+	var events := loader.load_events()
+	var situations := loader.load_situations()
+	var commands := loader.load_commands()
+
+	_assert_eq(events.size(), 25, "内容加载器应按文件名扫描25个事件资源")
+	_assert_eq(situations.size(), 9, "内容加载器应按文件名扫描9个局势模板")
+	_assert_eq(commands.size(), 2, "内容加载器应扫描两条基础指令")
+
+	var event_ids: Array[String] = []
+	for event in events:
+		event_ids.append(event.event_id)
+	var sorted_event_ids := event_ids.duplicate()
+	sorted_event_ids.sort()
+	_assert_eq(event_ids, sorted_event_ids, "事件资源应按文件名顺序返回")
+
+	var situation_ids: Array[String] = []
+	for situation in situations:
+		situation_ids.append(situation.situation_id)
+	var sorted_situation_ids := situation_ids.duplicate()
+	sorted_situation_ids.sort()
+	_assert_eq(situation_ids, sorted_situation_ids, "局势资源应按文件名顺序返回")
+
+	var command_ids: Array[String] = []
+	for command in commands:
+		command_ids.append(command.command_id)
+	var sorted_command_ids := command_ids.duplicate()
+	sorted_command_ids.sort()
+	_assert_eq(command_ids, sorted_command_ids, "指令资源应按文件名顺序返回")
+
+	var command_template := load("res://data/commands/command_allocate.tres") as CommandData
+	var has_runtime_copy := false
+	for command in commands:
+		if command != command_template:
+			has_runtime_copy = true
+			break
+	_assert_true(has_runtime_copy, "内容加载器返回的指令必须是运行态副本")
 
 
 func _assert_sector_values_equal(
