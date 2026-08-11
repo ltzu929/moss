@@ -245,7 +245,7 @@ func verify_1080p_layout_contract() -> bool:
 	assert_true(header_ok, "顶部状态栏应保持紧凑并适配1080P HUD", "ui_layout")
 	ok = header_ok and ok
 
-	var context_panel := workspace.get_node("ContentRow/ContextPanel") as PanelContainer
+	var context_panel := workspace.get_node("ContentRow/ContextPanel") as ScrollContainer
 	var context_ok := int(context_panel.custom_minimum_size.x) == 420
 	assert_eq(
 		int(context_panel.custom_minimum_size.x),

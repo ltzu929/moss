@@ -396,7 +396,7 @@ func _parse_runtime_snapshot(snapshot: Dictionary) -> Dictionary:
 	var spawn_cooldown_months: Variant = snapshot.get("spawn_cooldown_months", null)
 	if not _is_int(snapshot_seed) or int(snapshot_seed) <= 0:
 		return {"success": false}
-	if not _is_int(rng_state) or int(rng_state) < 0:
+	if not _is_int(rng_state):
 		return {"success": false}
 	if not _is_int(instance_counter) or int(instance_counter) < 0:
 		return {"success": false}
@@ -417,6 +417,7 @@ func _parse_runtime_snapshot(snapshot: Dictionary) -> Dictionary:
 		return {"success": false}
 	var active: Array[SituationInstanceState] = []
 	var seen_instance_ids: Dictionary = {}
+	var seen_region_ids: Dictionary = {}
 	for entry_variant in active_entries:
 		if typeof(entry_variant) != TYPE_DICTIONARY:
 			return {"success": false}
@@ -424,6 +425,9 @@ func _parse_runtime_snapshot(snapshot: Dictionary) -> Dictionary:
 		var state := _parse_state_snapshot(entry, seen_instance_ids)
 		if state == null:
 			return {"success": false}
+		if seen_region_ids.has(state.region_id):
+			return {"success": false}
+		seen_region_ids[state.region_id] = true
 		active.append(state)
 
 	var repeat_cooldowns: Dictionary = raw_repeat_cooldowns

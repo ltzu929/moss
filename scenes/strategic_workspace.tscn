@@ -73,21 +73,23 @@ text = "全球态势监控中"
 horizontal_alignment = 2
 
 [node name="WorldMapView" type="Control" parent="ContentRow/CenterPanel/CenterMargin/CenterVBox"]
-custom_minimum_size = Vector2(0, 520)
+custom_minimum_size = Vector2(0, 300)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 script = ExtResource("9_world_map")
 
-[node name="ContextPanel" type="PanelContainer" parent="ContentRow"]
+[node name="ContextPanel" type="ScrollContainer" parent="ContentRow"]
 custom_minimum_size = Vector2(420, 0)
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 3
+horizontal_scroll_mode = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
 
 [node name="ContextMargin" type="MarginContainer" parent="ContentRow/ContextPanel"]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/margin_left = 12
 theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 12

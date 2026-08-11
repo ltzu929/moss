@@ -19,8 +19,10 @@ func _ready() -> void:
 	first.get_node("Timer").stop()
 	second.get_node("Timer").stop()
 
-	var first_sector: SectorInfo = first.get_node("%SectorInfoAsia")
-	var second_sector: SectorInfo = second.get_node("%SectorInfoAsia")
+	var first_workspace := first.get_node("MainLayout/StrategicWorkspace") as StrategicWorkspace
+	var second_workspace := second.get_node("MainLayout/StrategicWorkspace") as StrategicWorkspace
+	var first_sector := first_workspace.get_sector_by_region_id("asia")
+	var second_sector := second_workspace.get_sector_by_region_id("asia")
 	_assert_true(first_sector.data_card != second_sector.data_card, "两个主场景不得共享区域运行态")
 	first_sector.data_card.order = 1
 	_assert_eq(second_sector.data_card.order, template_order, "修改一个场景不得污染另一个区域")

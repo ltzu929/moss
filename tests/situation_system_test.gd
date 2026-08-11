@@ -330,6 +330,15 @@ func _assert_runtime_snapshot_contract() -> void:
 		baseline,
 		"运行态恢复后再次导出应保持稳定"
 	)
+	var signed_rng_state := baseline.duplicate(true)
+	signed_rng_state["rng_state"] = -1
+	_assert_true(system.restore_runtime_snapshot(signed_rng_state), "合法负数 RNG 状态应能恢复")
+	_assert_eq(
+		int(system.export_runtime_snapshot().get("rng_state", 0)),
+		-1,
+		"运行态恢复应完整保留有符号 RNG 状态"
+	)
+	_assert_true(system.restore_runtime_snapshot(baseline), "负数 RNG 状态回归后应恢复测试基线")
 
 	var invalid_snapshots: Array[Dictionary] = []
 	var unknown_template := baseline.duplicate(true)
@@ -348,6 +357,9 @@ func _assert_runtime_snapshot_contract() -> void:
 	var duplicate_instance := baseline.duplicate(true)
 	duplicate_instance["active"][1]["instance_id"] = duplicate_instance["active"][0]["instance_id"]
 	invalid_snapshots.append(duplicate_instance)
+	var duplicate_region := baseline.duplicate(true)
+	duplicate_region["active"][1]["region_id"] = duplicate_region["active"][0]["region_id"]
+	invalid_snapshots.append(duplicate_region)
 	var invalid_severity := baseline.duplicate(true)
 	invalid_severity["active"][0]["severity"] = 101
 	invalid_snapshots.append(invalid_severity)
