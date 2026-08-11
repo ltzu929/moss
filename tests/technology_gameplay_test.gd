@@ -84,8 +84,11 @@ func _ready() -> void:
 	_assert_eq(mitigated, -15, "应急训练应将负面秩序希望影响减轻25%")
 
 	var first_sector: SectorInfo = _get_first_sector()
+	var second_sector: SectorInfo = _get_second_sector()
 	first_sector.data_card.order = 58
 	first_sector.data_card.hope = 59
+	second_sector.data_card.order = 80
+	second_sector.data_card.hope = 75
 	_main_os.current_year = 2074
 	_main_os.current_month = 12
 	await _main_os.process_month_tick()
@@ -93,6 +96,8 @@ func _ready() -> void:
 	_assert_eq(_main_os.current_month, 1, "年度结算应在进入1月时执行")
 	_assert_eq(first_sector.data_card.order, 60, "人类自主年度恢复应受60点上限约束")
 	_assert_eq(first_sector.data_card.hope, 60, "人类自主年度恢复应受60点上限约束")
+	_assert_eq(second_sector.data_card.order, 80, "高于上限的秩序不应被年度恢复压低")
+	_assert_eq(second_sector.data_card.hope, 75, "高于上限的希望不应被年度恢复压低")
 
 	_main_os.restart_game_for_test()
 	_main_os.get_node("Timer").stop()
@@ -234,6 +239,11 @@ func _assert_new_technology_effects() -> void:
 func _get_first_sector() -> SectorInfo:
 	var workspace := _main_os.get_node("MainLayout/StrategicWorkspace") as StrategicWorkspace
 	return workspace.get_sector_nodes()[0] as SectorInfo
+
+
+func _get_second_sector() -> SectorInfo:
+	var workspace := _main_os.get_node("MainLayout/StrategicWorkspace") as StrategicWorkspace
+	return workspace.get_sector_nodes()[1] as SectorInfo
 
 
 ## 按顺序激活测试节点，并在协议点耗尽时发放下一年度研究点
