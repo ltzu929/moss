@@ -859,7 +859,7 @@ func _refresh_situation_ui(focus_id: String = "") -> void:
 			%SituationPanel.open_panel(focus_id)
 	update_situation_button()
 	_update_region_situation_summary_ui()
-	_sync_world_map_states()
+	_sync_strategic_views()
 
 
 func refresh_situation_ui(focus_id: String = "") -> void:
@@ -1462,52 +1462,15 @@ func _sync_strategic_views() -> void:
 	_strategic_workspace.refresh_views(get_situation_snapshots(), _event_focus_region)
 
 
-## 将现有区域数据快照传给中央战略地图
-func _sync_world_map_states() -> void:
-	_strategic_workspace.refresh_views(get_situation_snapshots(), _event_focus_region)
-
-
 ## 地球窗口优先显示事件区域，否则显示当前选区
 func _sync_orbital_focus() -> void:
 	_strategic_workspace.set_event_focus_region(_event_focus_region)
-
-
-## 根据控制权生成区域风险文本
-func _get_region_risk_text(authority: int) -> String:
-	if authority < 20:
-		return "状态：高风险"
-	if authority < 40:
-		return "状态：不稳定"
-	if authority < 70:
-		return "状态：可控"
-	return "状态：稳定"
-
-
-## 格式化人口数字供 UI 显示
-## 例如 18000000 显示为 1800.0万
-func format_population_for_ui(value: int) -> String:
-	if value >= 100000000:
-		return "%.1f亿" % (float(value) / 100000000.0)
-
-	if value >= 10000:
-		return "%.1f万" % (float(value) / 10000.0)
-
-	return str(value)
 
 
 ## 更新右侧全局信息面板
 ## 从现有 SectorInfoContainer 中读取区域数据，不新增数据源
 func update_global_overview_ui() -> void:
 	_strategic_workspace.update_global_overview()
-
-
-## 根据平均控制权生成全局威胁等级
-func _get_global_threat_text(avg_authority: int) -> String:
-	if avg_authority < 20:
-		return "高风险"
-	if avg_authority < 40:
-		return "中等"
-	return "稳定"
 
 
 ## 刷新顶部全局资源显示（日期、算力、能源）
@@ -1528,7 +1491,7 @@ func update_global_resource_ui() -> void:
 		_manually_paused,
 		_situation_auto_paused or _situation_system.has_pending_node()
 	)
-	_strategic_workspace.refresh_views(get_situation_snapshots(), _event_focus_region)
+	_sync_strategic_views()
 
 ## 获取当前 MOSS 型号显示名称
 func get_moss_model_name() -> String:

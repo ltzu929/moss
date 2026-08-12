@@ -668,10 +668,13 @@ func _assert_region_detail_sync() -> void:
 func _assert_global_overview_sync() -> void:
 	_reporter.write_log("[断言组] 全局信息同步")
 	var workspace := _main_os.get_node("MainLayout/StrategicWorkspace") as StrategicWorkspace
-	if not _main_os.has_method("format_population_for_ui"):
-		assert_true(false, "主控制器应提供人口格式化方法", "ui_layout")
+	if workspace == null:
+		assert_true(false, "缺少战略工作区", "ui_layout")
 		return
-	if workspace == null or workspace.get_global_population_text() == "":
+	if not workspace.has_method("format_population_for_ui"):
+		assert_true(false, "战略工作区应提供人口格式化方法", "ui_layout")
+		return
+	if workspace.get_global_population_text() == "":
 		assert_true(false, "缺少全球人口标签", "ui_layout")
 		return
 
@@ -683,7 +686,7 @@ func _assert_global_overview_sync() -> void:
 
 	_main_os.update_global_resource_ui()
 	var expected_text: String = (
-		"全球人口: " + _main_os.format_population_for_ui(total_population)
+		"全球人口: " + workspace.format_population_for_ui(total_population)
 	)
 	assert_eq(
 		workspace.get_global_population_text(),
