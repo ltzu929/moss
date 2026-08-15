@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="48" viewBox="0 0 96 48">
+  <defs>
+    <linearGradient id="buttonPressedFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#102934"/>
+      <stop offset="1" stop-color="#071119"/>
+    </linearGradient>
+  </defs>
+  <path d="M8 1H88L95 8V40L88 47H8L1 40V8Z" fill="url(#buttonPressedFill)" stroke="#bda66a" stroke-width="1.7"/>
+  <path d="M8 1H36M60 1H88M95 8V20M95 28V40M88 47H60M36 47H8M1 40V28M1 20V8" fill="none" stroke="#e0c987" stroke-opacity="0.56" stroke-width="1.2"/>
+  <path d="M8 1L1 8M88 1L95 8M95 40L88 47M8 47L1 40" fill="none" stroke="#bda66a" stroke-opacity="0.96" stroke-width="1.2"/>
+  <path d="M16 8H40M56 8H80" fill="none" stroke="#73c9d3" stroke-opacity="0.38" stroke-width="1"/>
+</svg>

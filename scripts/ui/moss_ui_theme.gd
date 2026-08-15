@@ -15,13 +15,23 @@ const ORDER: Color = Color("#416fa3")
 const HOPE: Color = Color("#71858b")
 const AUTHORITY: Color = Color("#7e3f47")
 
+const PANEL_TEXTURE: Texture2D = preload("res://assets/ui/texture_pack_01/panel_frame.svg")
+const BUTTON_NORMAL_TEXTURE: Texture2D = preload("res://assets/ui/texture_pack_01/button_normal.svg")
+const BUTTON_HOVER_TEXTURE: Texture2D = preload("res://assets/ui/texture_pack_01/button_hover.svg")
+const BUTTON_PRESSED_TEXTURE: Texture2D = preload("res://assets/ui/texture_pack_01/button_pressed.svg")
+const BUTTON_ACCENT_TEXTURE: Texture2D = preload("res://assets/ui/texture_pack_01/button_accent.svg")
+const BUTTON_DISABLED_TEXTURE: Texture2D = preload("res://assets/ui/texture_pack_01/button_disabled.svg")
+const METER_TRACK_TEXTURE: Texture2D = preload("res://assets/ui/texture_pack_01/meter_track.svg")
+
 
 static func panel_style(
 	background: Color = PANEL_BACKGROUND,
 	border: Color = BORDER,
 	border_width: int = 1,
 	corner_radius: int = 2
-) -> StyleBoxFlat:
+) -> StyleBox:
+	if background == PANEL_BACKGROUND and border == BORDER and border_width == 1 and corner_radius == 2:
+		return _panel_texture_style()
 	var style := StyleBoxFlat.new()
 	style.bg_color = background
 	style.border_color = border
@@ -38,8 +48,23 @@ static func button_style(
 	background: Color,
 	border: Color,
 	left_border_width: int = 1
-) -> StyleBoxFlat:
-	var style := panel_style(background, border, 1, 1)
+) -> StyleBox:
+	var texture: Texture2D = null
+	if border == BORDER_BRIGHT:
+		texture = BUTTON_ACCENT_TEXTURE
+	elif border == ACCENT_CYAN:
+		texture = BUTTON_PRESSED_TEXTURE if background.r < 0.025 else BUTTON_HOVER_TEXTURE
+	elif border == BORDER:
+		texture = BUTTON_NORMAL_TEXTURE
+	elif background.r < 0.02 and background.g < 0.04 and background.b < 0.05:
+		texture = BUTTON_DISABLED_TEXTURE
+	if texture != null:
+		return _button_texture_style(texture)
+	var style := StyleBoxFlat.new()
+	style.bg_color = background
+	style.border_color = border
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(1)
 	style.border_width_left = left_border_width
 	style.content_margin_left = 16.0
 	style.content_margin_top = 10.0
@@ -48,10 +73,9 @@ static func button_style(
 	return style
 
 
-static func progress_background_style() -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.05, 0.07, 0.085, 1.0)
-	style.set_corner_radius_all(1)
+
+static func progress_background_style() -> StyleBox:
+	var style := _texture_style(METER_TRACK_TEXTURE, 5.0, 0.0, 0.0)
 	return style
 
 
@@ -59,4 +83,32 @@ static func progress_fill_style(color: Color) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
 	style.bg_color = color
 	style.set_corner_radius_all(1)
+	return style
+
+
+static func _panel_texture_style() -> StyleBoxTexture:
+	return _texture_style(PANEL_TEXTURE, 18.0, 10.0, 8.0)
+
+
+static func _button_texture_style(texture: Texture2D) -> StyleBoxTexture:
+	return _texture_style(texture, 12.0, 16.0, 10.0)
+
+
+static func _texture_style(
+	texture: Texture2D,
+	texture_margin: float,
+	content_margin: float,
+	content_margin_vertical: float
+) -> StyleBoxTexture:
+	var style := StyleBoxTexture.new()
+	style.texture = texture
+	style.texture_margin_left = texture_margin
+	style.texture_margin_top = texture_margin
+	style.texture_margin_right = texture_margin
+	style.texture_margin_bottom = texture_margin
+	style.draw_center = true
+	style.content_margin_left = content_margin
+	style.content_margin_top = content_margin_vertical
+	style.content_margin_right = content_margin
+	style.content_margin_bottom = content_margin_vertical
 	return style

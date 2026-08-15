@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">
+  <defs>
+    <linearGradient id="panelFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#091722" stop-opacity="0.98"/>
+      <stop offset="1" stop-color="#030a11" stop-opacity="0.98"/>
+    </linearGradient>
+    <pattern id="panelGrid" width="16" height="16" patternUnits="userSpaceOnUse">
+      <path d="M16 0H0V16" fill="none" stroke="#73c9d3" stroke-opacity="0.09" stroke-width="0.6"/>
+    </pattern>
+  </defs>
+  <path d="M10 1H86L95 10V86L86 95H10L1 86V10Z" fill="url(#panelFill)" stroke="#294452" stroke-width="1.5"/>
+  <path d="M10 8H86L88 10V86L86 88H10L8 86V10Z" fill="url(#panelGrid)" opacity="0.75"/>
+  <path d="M10 1H34M62 1H86M95 10V32M95 64V86M86 95H62M34 95H10M1 86V64M1 32V10" fill="none" stroke="#73c9d3" stroke-opacity="0.34" stroke-width="1.2"/>
+  <path d="M10 1L1 10M86 1L95 10M95 86L86 95M10 95L1 86" fill="none" stroke="#73c9d3" stroke-opacity="0.62" stroke-width="1.2"/>
+  <path d="M18 8H34M62 8H78M8 18V34M8 62V78" fill="none" stroke="#bda66a" stroke-opacity="0.35" stroke-width="1"/>
+</svg>

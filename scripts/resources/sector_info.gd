@@ -25,12 +25,6 @@ const MOSS_THEME := preload("res://scripts/ui/moss_ui_theme.gd")
 ## 选中时使用低饱和金色，避免高亮面积过大
 const SELECTED_BORDER_COLOR: Color = Color("#bda66a")
 
-## 默认边框颜色
-const DEFAULT_BORDER_COLOR: Color = Color("#263b4a")
-
-## 边框宽度
-const BORDER_WIDTH: int = 1
-
 # ============================================================
 # 状态变量
 # ============================================================
@@ -39,10 +33,10 @@ const BORDER_WIDTH: int = 1
 var is_selected: bool = false
 
 ## 默认样式（缓存）
-var default_style: StyleBoxFlat
+var default_style: StyleBox
 
 ## 选中样式（缓存）
-var selected_style: StyleBoxFlat
+var selected_style: StyleBox
 
 # ============================================================
 # 节点引用
@@ -89,17 +83,12 @@ func _set_descendants_mouse_filter_ignore(parent: Node) -> void:
 
 ## 创建默认和选中两种边框样式
 func _create_styles() -> void:
-	# 默认样式
-	default_style = StyleBoxFlat.new()
-	default_style.border_color = DEFAULT_BORDER_COLOR
-	default_style.set_border_width_all(BORDER_WIDTH)
-	default_style.bg_color = Color(0.026, 0.052, 0.072, 0.94)
-
-	# 选中样式
-	selected_style = StyleBoxFlat.new()
-	selected_style.border_color = SELECTED_BORDER_COLOR
-	selected_style.set_border_width_all(2)
-	selected_style.bg_color = Color(0.105, 0.091, 0.052, 0.96)
+	default_style = MOSS_THEME.panel_style()
+	selected_style = MOSS_THEME.panel_style(
+		Color(0.105, 0.091, 0.052, 0.96),
+		SELECTED_BORDER_COLOR,
+		2
+	)
 
 
 ## 统一卡片文字与三项状态条的低饱和终端样式

@@ -23,6 +23,8 @@ const SECTOR_INFO_HEIGHT: float = 94.0
 const SEPARATION: float = 10.0
 
 @onready var _content_row: HBoxContainer = $ContentRow
+@onready var _center_panel: PanelContainer = $ContentRow/CenterPanel
+@onready var _context_panel: ScrollContainer = $ContentRow/ContextPanel
 @onready var _world_map: WorldMapView = $ContentRow/CenterPanel/CenterMargin/CenterVBox/WorldMapView
 @onready var _orbital_view: RegionOrbitalView = $ContentRow/ContextPanel/ContextMargin/ContextVBox/RegionOrbitalPanel/OrbitalMargin/OrbitalVBox/RegionOrbitalView
 @onready var _global_map_selected_label: Label = $ContentRow/CenterPanel/CenterMargin/CenterVBox/GlobalViewHeader/GlobalMapSelectedLabel
@@ -634,6 +636,18 @@ func _set_details_visibility(expanded: bool) -> void:
 
 
 func _apply_theme() -> void:
+	for panel in [
+		_center_panel,
+		_context_panel,
+		_region_orbital_panel,
+		_situation_alert_panel,
+		_annual_status_panel,
+		_approach_panel,
+		_global_overview_panel,
+		_action_log_view,
+	]:
+		panel.add_theme_stylebox_override("panel", MOSS_THEME.panel_style())
+
 	for bar_data in [
 		[_region_order_bar, MOSS_THEME.ORDER],
 		[_region_hope_bar, MOSS_THEME.HOPE],
@@ -651,8 +665,3 @@ func _apply_theme() -> void:
 	situation_title.add_theme_color_override("font_color", MOSS_THEME.ACCENT_CYAN)
 	_details_toggle.add_theme_color_override("font_color", MOSS_THEME.TEXT_SECONDARY)
 	_more_approaches_button.add_theme_color_override("font_color", MOSS_THEME.ACCENT_GOLD)
-	for panel in [_situation_alert_panel, _annual_status_panel, _approach_panel]:
-		(panel as PanelContainer).add_theme_stylebox_override(
-			"panel",
-			MOSS_THEME.panel_style(MOSS_THEME.PANEL_BACKGROUND, MOSS_THEME.BORDER)
-		)

@@ -24,6 +24,10 @@ var _hovered_button: Button
 
 
 func _ready() -> void:
+	$CenterContainer/MainPanel.add_theme_stylebox_override(
+		"panel",
+		MOSS_THEME.panel_style()
+	)
 	hide()
 
 
