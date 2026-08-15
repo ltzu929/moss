@@ -5,6 +5,9 @@ extends Control
 
 signal region_selected(region_id: String)
 signal region_selection_cleared
+signal situation_approach_requested(instance_id: String, approach_id: String)
+signal situation_node_option_requested(instance_id: String, option_id: String)
+signal situation_details_requested(instance_id: String)
 
 const MOSS_THEME := preload("res://scripts/ui/moss_ui_theme.gd")
 const REGION_RISK_HIGH: int = 20
@@ -30,6 +33,19 @@ const SEPARATION: float = 10.0
 @onready var _region_authority_bar: ProgressBar = $ContentRow/ContextPanel/ContextMargin/ContextVBox/RegionAuthorityBar
 @onready var _region_risk_label: Label = $ContentRow/ContextPanel/ContextMargin/ContextVBox/RegionRiskLabel
 @onready var _region_situation_label: Label = $ContentRow/ContextPanel/ContextMargin/ContextVBox/SituationSummary/RegionSituationLabel
+@onready var _situation_alert_panel: PanelContainer = $ContentRow/ContextPanel/ContextMargin/ContextVBox/SituationAlertPanel
+@onready var _alert_title_label: Label = $ContentRow/ContextPanel/ContextMargin/ContextVBox/SituationAlertPanel/AlertMargin/AlertVBox/AlertHeader/AlertTitleLabel
+@onready var _alert_severity_label: Label = $ContentRow/ContextPanel/ContextMargin/ContextVBox/SituationAlertPanel/AlertMargin/AlertVBox/AlertHeader/AlertSeverityLabel
+@onready var _alert_description_label: Label = $ContentRow/ContextPanel/ContextMargin/ContextVBox/SituationAlertPanel/AlertMargin/AlertVBox/AlertDescriptionLabel
+@onready var _annual_status_panel: PanelContainer = $ContentRow/ContextPanel/ContextMargin/ContextVBox/AnnualStatusPanel
+@onready var _annual_status_label: Label = $ContentRow/ContextPanel/ContextMargin/ContextVBox/AnnualStatusPanel/AnnualStatusMargin/AnnualStatusVBox/AnnualStatusLabel
+@onready var _approach_panel: PanelContainer = $ContentRow/ContextPanel/ContextMargin/ContextVBox/ApproachPanel
+@onready var _current_approach_label: Label = $ContentRow/ContextPanel/ContextMargin/ContextVBox/ApproachPanel/ApproachMargin/ApproachVBox/CurrentApproachLabel
+@onready var _approach_list: VBoxContainer = $ContentRow/ContextPanel/ContextMargin/ContextVBox/ApproachPanel/ApproachMargin/ApproachVBox/ApproachList
+@onready var _more_approaches_button: Button = $ContentRow/ContextPanel/ContextMargin/ContextVBox/ApproachPanel/ApproachMargin/ApproachVBox/MoreApproachesButton
+@onready var _details_toggle: Button = $ContentRow/ContextPanel/ContextMargin/ContextVBox/DetailsToggle
+@onready var _region_orbital_panel: PanelContainer = $ContentRow/ContextPanel/ContextMargin/ContextVBox/RegionOrbitalPanel
+@onready var _global_overview_panel: PanelContainer = $ContentRow/ContextPanel/ContextMargin/ContextVBox/GlobalOverviewPanel
 @onready var _global_population_label: Label = $ContentRow/ContextPanel/ContextMargin/ContextVBox/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox/GlobalPopulationLabel
 @onready var _global_authority_label: Label = $ContentRow/ContextPanel/ContextMargin/ContextVBox/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox/GlobalAuthorityLabel
 @onready var _global_stability_label: Label = $ContentRow/ContextPanel/ContextMargin/ContextVBox/GlobalOverviewPanel/GlobalOverviewMargin/GlobalOverviewVBox/GlobalStabilityLabel
@@ -40,15 +56,22 @@ const SEPARATION: float = 10.0
 var _selected_sector: SectorInfo = null
 var _situation_snapshots: Array[Dictionary] = []
 var _event_focus_region: String = ""
+var _current_cpu: int = 0
+var _current_energy: int = 0
+var _current_year: int = 2044
+var _details_expanded: bool = false
 
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_world_map.region_selected.connect(_on_world_map_region_selected)
+	_more_approaches_button.pressed.connect(_on_more_approaches_pressed)
+	_details_toggle.pressed.connect(_on_details_toggle_pressed)
 	for child in _sector_container.get_children():
 		if child is SectorInfo:
 			(child as SectorInfo).sector_clicked.connect(_on_sector_clicked)
 	_apply_theme()
+	_set_details_visibility(false)
 	_layout_children()
 	_refresh_views()
 
@@ -114,8 +137,16 @@ func refresh_sector_displays() -> void:
 
 
 ## 只更新区域详情和局势摘要；快照字段保持由主控制器显式传入。
-func update_region_detail(situation_snapshots: Array[Dictionary]) -> void:
+func update_region_detail(
+	situation_snapshots: Array[Dictionary],
+	current_cpu: int = 0,
+	current_energy: int = 0,
+	current_year: int = 2044
+) -> void:
 	_situation_snapshots = situation_snapshots.duplicate(true)
+	_current_cpu = current_cpu
+	_current_energy = current_energy
+	_current_year = current_year
 	_update_region_detail_ui()
 	_sync_world_map_states()
 	_sync_orbital_focus()
@@ -247,6 +278,8 @@ func _update_region_detail_ui() -> void:
 		_region_authority_bar.value = 0
 		_region_situation_label.text = "选择区域后显示局势"
 		_region_situation_label.tooltip_text = ""
+		_annual_status_label.text = "选择区域后显示年度状态。"
+		_clear_situation_context()
 		return
 
 	var data := _selected_sector.data_card
@@ -257,7 +290,207 @@ func _update_region_detail_ui() -> void:
 	_region_order_bar.value = data.order
 	_region_hope_bar.value = data.hope
 	_region_authority_bar.value = data.authority
+	_annual_status_label.text = _build_annual_status_text(data)
 	_update_region_situation_summary_ui(data.region_id)
+	_render_situation_context(data.region_id)
+
+
+func _build_annual_status_text(data: SectorData) -> String:
+	return "当前年度：%d  ·  秩序 %d%%  ·  希望 %d%%  ·  控制权 %d%%" % [
+		_current_year,
+		data.order,
+		data.hope,
+		data.authority,
+	]
+
+
+func _clear_situation_context() -> void:
+	_situation_alert_panel.hide()
+	_approach_panel.hide()
+	_more_approaches_button.hide()
+	_alert_title_label.text = "活跃局势"
+	_alert_severity_label.text = "--"
+	_alert_description_label.text = "选择区域后显示当前局势。"
+	_current_approach_label.text = "当前方针：--"
+	_clear_dynamic_buttons()
+
+
+func _clear_dynamic_buttons() -> void:
+	for child in _approach_list.get_children():
+		_approach_list.remove_child(child)
+		child.queue_free()
+
+
+func _get_selected_situation(region_id: String) -> Dictionary:
+	for snapshot in _situation_snapshots:
+		if str(snapshot.get("region_id", "")) == region_id:
+			return snapshot
+	return {}
+
+
+func _render_situation_context(region_id: String) -> void:
+	var snapshot := _get_selected_situation(region_id)
+	if snapshot.is_empty():
+		_situation_alert_panel.show()
+		_situation_alert_panel.add_theme_stylebox_override(
+			"panel",
+			MOSS_THEME.panel_style(MOSS_THEME.PANEL_BACKGROUND, MOSS_THEME.BORDER)
+		)
+		_alert_title_label.text = "当前局势"
+		_alert_severity_label.text = "无活跃局势"
+		_alert_description_label.text = "当前区域没有持续中的局势。"
+		_alert_description_label.add_theme_color_override(
+			"font_color",
+			MOSS_THEME.TEXT_SECONDARY
+		)
+		_approach_panel.hide()
+		_more_approaches_button.hide()
+		_clear_dynamic_buttons()
+		return
+
+	_situation_alert_panel.show()
+	var severity := int(snapshot.get("severity", 0))
+	var is_opportunity := bool(snapshot.get("is_opportunity", false))
+	var status_color := MOSS_THEME.ACCENT_GOLD if is_opportunity else MOSS_THEME.DANGER
+	_situation_alert_panel.add_theme_stylebox_override(
+		"panel",
+		MOSS_THEME.panel_style(
+			Color(0.10, 0.035, 0.045, 0.96) if not is_opportunity else Color(0.09, 0.07, 0.035, 0.96),
+			status_color,
+			1
+		)
+	)
+	_alert_title_label.text = str(snapshot.get("title", "未命名局势"))
+	_alert_title_label.add_theme_color_override("font_color", status_color)
+	_alert_severity_label.text = "%s  %d%%" % [
+		str(snapshot.get("stage_name", "预警")),
+		severity,
+	]
+	_alert_severity_label.add_theme_color_override("font_color", status_color)
+	_alert_description_label.text = _build_situation_alert_text(snapshot)
+	_alert_description_label.add_theme_color_override(
+		"font_color",
+		MOSS_THEME.TEXT_PRIMARY
+	)
+	_render_situation_actions(snapshot)
+
+
+func _build_situation_alert_text(snapshot: Dictionary) -> String:
+	var monthly_delta := int(snapshot.get("expected_monthly_delta", 0))
+	var delta_prefix := "+" if monthly_delta > 0 else ""
+	return "%s  ·  预计下月 %s%d  ·  %s" % [
+		str(snapshot.get("description", "")),
+		delta_prefix,
+		monthly_delta,
+		str(snapshot.get("approach_name", "尚未选择")),
+	]
+
+
+func _render_situation_actions(snapshot: Dictionary) -> void:
+	_approach_panel.show()
+	_clear_dynamic_buttons()
+	var instance_id := str(snapshot.get("instance_id", ""))
+	var node: Dictionary = snapshot.get("node", {})
+	if bool(node.get("pending", false)):
+		_current_approach_label.text = "待处理节点：%s" % str(node.get("title", "待处理节点"))
+		var options: Array = node.get("options", [])
+		for option_variant in options:
+			if _approach_list.get_child_count() >= 2:
+				break
+			var option: Dictionary = option_variant
+			var option_button := _build_action_button(
+				str(option.get("display_name", "未命名方案")),
+				"%s  ·  严重度 %+d" % [
+					_build_cost_text(int(option.get("cpu_cost", 0)), int(option.get("energy_cost", 0))),
+					int(option.get("severity_delta", 0)),
+				]
+			)
+			var cpu_cost := int(option.get("cpu_cost", 0))
+			var energy_cost := int(option.get("energy_cost", 0))
+			option_button.disabled = _current_cpu < cpu_cost or _current_energy < energy_cost
+			option_button.tooltip_text = (
+				"资源不足，无法执行该方案：%s" % _build_cost_text(cpu_cost, energy_cost)
+				if option_button.disabled
+				else str(option.get("description", option.get("result_text", "执行该处置方案")))
+			)
+			option_button.pressed.connect(
+				_on_inline_node_option_pressed.bind(instance_id, str(option.get("option_id", "")))
+			)
+			_approach_list.add_child(option_button)
+		_more_approaches_button.text = "节点详情 / 完整说明"
+		_more_approaches_button.show()
+		return
+
+	var current_id := str(snapshot.get("approach_id", ""))
+	var lock_months := int(snapshot.get("switch_lock_months", 0))
+	_current_approach_label.text = "当前方针：%s" % str(snapshot.get("approach_name", "尚未选择"))
+	var approaches: Array = snapshot.get("approaches", [])
+	var displayed := 0
+	for approach_variant in approaches:
+		if displayed >= 2:
+			break
+		var approach: Dictionary = approach_variant
+		var approach_id := str(approach.get("approach_id", ""))
+		if approach_id == current_id:
+			continue
+		var approach_button := _build_action_button(
+			str(approach.get("display_name", "未命名方针")),
+			_build_cost_text(
+				int(approach.get("monthly_cpu_cost", 0)),
+				int(approach.get("monthly_energy_cost", 0))
+			)
+		)
+		var unavailable_reason := ""
+		if lock_months > 0 and current_id != "":
+			unavailable_reason = "重配置锁定剩余 %d 个月" % lock_months
+		elif current_id != "" and _current_cpu < SituationSystem.APPROACH_SWITCH_CPU_COST:
+			unavailable_reason = "算力不足（切换需要 %d）" % SituationSystem.APPROACH_SWITCH_CPU_COST
+		if unavailable_reason != "":
+			approach_button.disabled = true
+			approach_button.tooltip_text = unavailable_reason
+		else:
+			approach_button.tooltip_text = str(approach.get("description", "选择该应对方针"))
+		approach_button.pressed.connect(
+			_on_inline_approach_pressed.bind(instance_id, approach_id)
+		)
+		_approach_list.add_child(approach_button)
+		displayed += 1
+	_more_approaches_button.text = "更多方针 / 完整说明"
+	_more_approaches_button.visible = approaches.size() > displayed
+
+
+func _build_cost_text(cpu_cost: int, energy_cost: int) -> String:
+	var costs: Array[String] = []
+	if cpu_cost > 0:
+		costs.append("算力 %d/月" % cpu_cost)
+	if energy_cost > 0:
+		costs.append("能源 %d/月" % energy_cost)
+	if costs.is_empty():
+		return "无持续资源消耗"
+	return "、".join(costs)
+
+
+func _build_action_button(title: String, detail: String) -> Button:
+	var button := Button.new()
+	button.text = "%s  ·  %s" % [title, detail]
+	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	button.custom_minimum_size = Vector2(0, 38)
+	button.custom_maximum_size = Vector2(372, 0)
+	button.add_theme_color_override("font_color", MOSS_THEME.TEXT_PRIMARY)
+	button.add_theme_stylebox_override(
+		"normal",
+		MOSS_THEME.button_style(MOSS_THEME.PANEL_BACKGROUND, MOSS_THEME.BORDER)
+	)
+	button.add_theme_stylebox_override(
+		"hover",
+		MOSS_THEME.button_style(MOSS_THEME.PANEL_BACKGROUND_HOVER, MOSS_THEME.ACCENT_CYAN, 2)
+	)
+	button.add_theme_stylebox_override(
+		"disabled",
+		MOSS_THEME.button_style(Color(0.025, 0.04, 0.05, 0.88), MOSS_THEME.BORDER)
+	)
+	return button
 
 
 func _update_region_situation_summary_ui(region_id: String = "") -> void:
@@ -374,6 +607,32 @@ func _get_global_threat_text(avg_authority: int) -> String:
 	return "稳定"
 
 
+func _on_more_approaches_pressed() -> void:
+	var snapshot := _get_selected_situation(get_selected_region_id())
+	if not snapshot.is_empty():
+		situation_details_requested.emit(str(snapshot.get("instance_id", "")))
+
+
+func _on_inline_approach_pressed(instance_id: String, approach_id: String) -> void:
+	situation_approach_requested.emit(instance_id, approach_id)
+
+
+func _on_inline_node_option_pressed(instance_id: String, option_id: String) -> void:
+	situation_node_option_requested.emit(instance_id, option_id)
+
+
+func _on_details_toggle_pressed() -> void:
+	_set_details_visibility(not _details_expanded)
+
+
+func _set_details_visibility(expanded: bool) -> void:
+	_details_expanded = expanded
+	_region_orbital_panel.visible = expanded
+	_global_overview_panel.visible = expanded
+	_action_log_view.visible = expanded
+	_details_toggle.text = "收起全局信息与日志" if expanded else "展开全局信息与日志"
+
+
 func _apply_theme() -> void:
 	for bar_data in [
 		[_region_order_bar, MOSS_THEME.ORDER],
@@ -390,3 +649,10 @@ func _apply_theme() -> void:
 	_region_situation_label.add_theme_color_override("font_color", MOSS_THEME.ACCENT_GOLD)
 	var situation_title := $ContentRow/ContextPanel/ContextMargin/ContextVBox/SituationSummary/SituationSummaryTitle as Label
 	situation_title.add_theme_color_override("font_color", MOSS_THEME.ACCENT_CYAN)
+	_details_toggle.add_theme_color_override("font_color", MOSS_THEME.TEXT_SECONDARY)
+	_more_approaches_button.add_theme_color_override("font_color", MOSS_THEME.ACCENT_GOLD)
+	for panel in [_situation_alert_panel, _annual_status_panel, _approach_panel]:
+		(panel as PanelContainer).add_theme_stylebox_override(
+			"panel",
+			MOSS_THEME.panel_style(MOSS_THEME.PANEL_BACKGROUND, MOSS_THEME.BORDER)
+		)

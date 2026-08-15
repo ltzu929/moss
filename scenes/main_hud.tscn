@@ -25,6 +25,14 @@ theme_override_colors/font_color = Color(1, 0.267, 0.267, 1)
 text = "MOSS-550C"
 vertical_alignment = 1
 
+[node name="DateLabel" type="Label" parent="TopBarContainer"]
+custom_minimum_size = Vector2(78, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.451, 0.788, 0.827, 1)
+theme_override_font_sizes/font_size = 15
+text = "2044.01"
+vertical_alignment = 1
+
 [node name="TopBarSpacer" type="Control" parent="TopBarContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -55,6 +63,25 @@ custom_minimum_size = Vector2(112, 44)
 layout_mode = 2
 tooltip_text = "查看持续推进的随机局势"
 text = "局势  0 / 2"
+
+[node name="TimeSpeedOption" type="OptionButton" parent="TopBarContainer"]
+custom_minimum_size = Vector2(72, 44)
+layout_mode = 2
+tooltip_text = "调整月度推进速度"
+item_count = 3
+selected = 1
+popup/item_0/text = "0.5x"
+popup/item_0/id = 0
+popup/item_1/text = "1x"
+popup/item_1/id = 1
+popup/item_2/text = "2x"
+popup/item_2/id = 2
+
+[node name="SingleStepButton" type="Button" parent="TopBarContainer"]
+custom_minimum_size = Vector2(88, 44)
+layout_mode = 2
+tooltip_text = "暂停状态下推进一个月"
+text = "推进 1 月"
 
 [node name="TimeControlButton" type="Button" parent="TopBarContainer"]
 custom_minimum_size = Vector2(80, 44)

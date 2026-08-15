@@ -20,6 +20,7 @@ func _ready() -> void:
 	await _assert_non_january_event_triggers_once()
 	await _assert_year_boundary_settlement_before_end_event()
 	_assert_restart_resets_month()
+	await _assert_time_speed_and_single_step()
 
 	print("[MOSS-TIME-SYSTEM] 完成，失败断言：%d" % _failed)
 	await get_tree().create_timer(0.2).timeout
@@ -93,6 +94,31 @@ func _assert_restart_resets_month() -> void:
 	_assert_eq(_main_os.current_month, 1, "重开应重置月份")
 
 
+func _assert_time_speed_and_single_step() -> void:
+	var timer := _main_os.get_node("Timer") as Timer
+	_main_os.set_time_speed(0.5)
+	_assert_true(is_equal_approx(_main_os.get_time_speed(), 0.5), "0.5x 应成为当前推进速度")
+	_assert_true(is_equal_approx(timer.wait_time, 2.0), "0.5x 应设置为 2 秒/月")
+	_main_os.set_time_speed(2.0)
+	_assert_true(is_equal_approx(_main_os.get_time_speed(), 2.0), "2x 应成为当前推进速度")
+	_assert_true(is_equal_approx(timer.wait_time, 0.5), "2x 应设置为 0.5 秒/月")
+	_main_os.set_time_speed(3.0)
+	_assert_true(is_equal_approx(_main_os.get_time_speed(), 2.0), "不支持的速度不应覆盖当前速度")
+
+	_main_os.set_time_speed(1.0)
+	_main_os.triggered_events.clear()
+	timer.stop()
+	await _main_os.step_month_once()
+	_assert_eq(_main_os.current_year, 2044, "单步推进首月后年份应保持 2044")
+	_assert_eq(_main_os.current_month, 2, "单步推进应完整推进一个月")
+	_assert_true(timer.is_stopped(), "单步推进完成后应保持暂停")
+	_assert_eq(
+		(_main_os.get_node("MainLayout/MainHud") as MainHud).get_time_control_button().text,
+		"继续",
+		"单步推进完成后按钮应提示继续"
+	)
+
+
 func _tick_without_event_choice() -> void:
 	await _main_os.process_month_tick()
 
@@ -104,6 +130,7 @@ func _tick_and_choose_event() -> void:
 
 func _emit_event_choice(index: int) -> void:
 	_event_popup.option_selected.emit(index)
+	_event_popup.hide()
 
 
 func _create_event(event_id: String, title: String, year: int, month: int) -> GameEvent:

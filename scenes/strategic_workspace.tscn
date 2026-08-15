@@ -110,6 +110,7 @@ text = "区域指挥  //  REGION OPS"
 [node name="RegionOrbitalPanel" type="PanelContainer" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox"]
 custom_minimum_size = Vector2(0, 132)
 layout_mode = 2
+visible = false
 theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
 
 [node name="OrbitalMargin" type="MarginContainer" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox/RegionOrbitalPanel"]
@@ -186,9 +187,115 @@ theme_override_colors/font_color = Color(0.431, 0.51, 0.58, 1)
 text = "状态：待选择"
 clip_text = true
 
+[node name="SituationAlertPanel" type="PanelContainer" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox"]
+custom_minimum_size = Vector2(0, 82)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
+
+[node name="AlertMargin" type="MarginContainer" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox/SituationAlertPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="AlertVBox" type="VBoxContainer" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox/SituationAlertPanel/AlertMargin"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="AlertHeader" type="HBoxContainer" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox/SituationAlertPanel/AlertMargin/AlertVBox"]
+layout_mode = 2
+
+[node name="AlertTitleLabel" type="Label" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox/SituationAlertPanel/AlertMargin/AlertVBox/AlertHeader"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.545, 0.867, 0.851, 1)
+text = "活跃局势"
+
+[node name="AlertSeverityLabel" type="Label" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox/SituationAlertPanel/AlertMargin/AlertVBox/AlertHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.722, 0.78, 0.839, 1)
+text = "--"
+horizontal_alignment = 2
+
+[node name="AlertDescriptionLabel" type="Label" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox/SituationAlertPanel/AlertMargin/AlertVBox"]
+custom_maximum_size = Vector2(372, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.722, 0.78, 0.839, 1)
+text = "选择区域后显示当前局势。"
+autowrap_mode = 3
+
+[node name="AnnualStatusPanel" type="PanelContainer" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox"]
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
+
+[node name="AnnualStatusMargin" type="MarginContainer" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox/AnnualStatusPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="AnnualStatusVBox" type="VBoxContainer" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox/AnnualStatusPanel/AnnualStatusMargin"]
+layout_mode = 2
+
+[node name="AnnualStatusTitle" type="Label" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox/AnnualStatusPanel/AnnualStatusMargin/AnnualStatusVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.545, 0.867, 0.851, 1)
+text = "年度状态"
+
+[node name="AnnualStatusLabel" type="Label" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox/AnnualStatusPanel/AnnualStatusMargin/AnnualStatusVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.722, 0.78, 0.839, 1)
+text = "选择区域后显示年度状态。"
+clip_text = true
+
+[node name="ApproachPanel" type="PanelContainer" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox"]
+custom_minimum_size = Vector2(0, 128)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
+
+[node name="ApproachMargin" type="MarginContainer" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox/ApproachPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="ApproachVBox" type="VBoxContainer" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox/ApproachPanel/ApproachMargin"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="ApproachSectionTitle" type="Label" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox/ApproachPanel/ApproachMargin/ApproachVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.545, 0.867, 0.851, 1)
+text = "建议方针"
+
+[node name="CurrentApproachLabel" type="Label" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox/ApproachPanel/ApproachMargin/ApproachVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.722, 0.78, 0.839, 1)
+text = "当前方针：--"
+clip_text = true
+
+[node name="ApproachList" type="VBoxContainer" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox/ApproachPanel/ApproachMargin/ApproachVBox"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="MoreApproachesButton" type="Button" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox/ApproachPanel/ApproachMargin/ApproachVBox"]
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+text = "更多方针 / 详细信息"
+
+[node name="DetailsToggle" type="Button" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+text = "展开全局信息与日志"
+
 [node name="SituationSummary" type="HBoxContainer" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox"]
 custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
+visible = false
 theme_override_constants/separation = 8
 
 [node name="SituationSummaryTitle" type="Label" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox/SituationSummary"]
@@ -205,6 +312,7 @@ clip_text = true
 [node name="GlobalOverviewPanel" type="PanelContainer" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox"]
 custom_minimum_size = Vector2(0, 132)
 layout_mode = 2
+visible = false
 theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
 
 [node name="GlobalOverviewMargin" type="MarginContainer" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox/GlobalOverviewPanel"]
@@ -244,6 +352,7 @@ text = "威胁等级: --"
 
 [node name="LogPlaceholder" parent="ContentRow/ContextPanel/ContextMargin/ContextVBox" instance=ExtResource("11_action_log")]
 layout_mode = 2
+visible = false
 
 [node name="SectorInfoContainer" type="GridContainer" parent="."]
 custom_minimum_size = Vector2(0, 94)

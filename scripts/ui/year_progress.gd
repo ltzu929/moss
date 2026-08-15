@@ -22,18 +22,21 @@ const END_MONTH: int = 1
 @onready var current_label: Label = $HBoxContainer/CurrentLabel
 @onready var end_label: Label = $HBoxContainer/EndLabel
 @onready var progress_bar: ProgressBar = $HBoxContainer/ProgressBar
+@onready var stage_label: Label = $HBoxContainer/StageLabel
 
 # ============================================================
 # 生命周期
 # ============================================================
 
 func _ready() -> void:
+	stage_label.text = "年度阶段"
 	start_label.text = str(START_YEAR)
 	end_label.text = str(END_YEAR)
 	progress_bar.min_value = 0
 	progress_bar.max_value = _month_index(END_YEAR, END_MONTH)
 	progress_bar.value = 0
-	current_label.text = "%04d.%02d" % [START_YEAR, START_MONTH]
+	current_label.text = str(START_YEAR)
+	tooltip_text = "%04d.%02d" % [START_YEAR, START_MONTH]
 
 	# 设置进度条样式
 	_setup_progress_bar_style()
@@ -50,7 +53,9 @@ func update_progress(current_year: int, current_month: int) -> void:
 		int(progress_bar.min_value),
 		int(progress_bar.max_value)
 	)
-	current_label.text = "%04d.%02d" % [current_year, current_month]
+	current_label.text = str(current_year)
+	tooltip_text = "%04d.%02d" % [current_year, current_month]
+	progress_bar.tooltip_text = "当前日期：%04d.%02d" % [current_year, current_month]
 
 # ============================================================
 # 私有方法
@@ -70,6 +75,7 @@ func _setup_progress_bar_style() -> void:
 	start_label.add_theme_color_override("font_color", MOSS_THEME.TEXT_SECONDARY)
 	current_label.add_theme_color_override("font_color", MOSS_THEME.TEXT_PRIMARY)
 	end_label.add_theme_color_override("font_color", MOSS_THEME.TEXT_SECONDARY)
+	stage_label.add_theme_color_override("font_color", MOSS_THEME.ACCENT_GOLD)
 
 
 ## 计算从起始年月开始的月份偏移

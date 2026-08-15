@@ -7,6 +7,8 @@ signal decision_archive_requested
 signal technology_requested
 signal situation_requested
 signal time_control_requested
+signal time_speed_requested(speed: float)
+signal single_step_requested
 signal command_requested(command: CommandData)
 
 const MOSS_THEME := preload("res://scripts/ui/moss_ui_theme.gd")
@@ -22,11 +24,14 @@ const SEPARATION: float = 10.0
 
 @onready var _top_bar: HBoxContainer = $TopBarContainer
 @onready var _moss_label: Label = $TopBarContainer/MossLabel
+@onready var _date_label: Label = $TopBarContainer/DateLabel
 @onready var _computational_label: Label = $TopBarContainer/ComputationalLabel
 @onready var _energy_label: Label = $TopBarContainer/EnergyLabel
 @onready var _decision_archive_button: Button = $TopBarContainer/DecisionArchiveButton
 @onready var _technology_button: Button = $TopBarContainer/TechnologyButton
 @onready var _situation_button: Button = $TopBarContainer/SituationButton
+@onready var _time_speed_option: OptionButton = $TopBarContainer/TimeSpeedOption
+@onready var _single_step_button: Button = $TopBarContainer/SingleStepButton
 @onready var _time_control_button: Button = $TopBarContainer/TimeControlButton
 @onready var _year_progress: YearProgress = $YearProgress
 @onready var _command_dock: PanelContainer = $CommandDock
@@ -41,7 +46,10 @@ func _ready() -> void:
 	_decision_archive_button.pressed.connect(_on_decision_archive_pressed)
 	_technology_button.pressed.connect(_on_technology_pressed)
 	_situation_button.pressed.connect(_on_situation_pressed)
+	_time_speed_option.item_selected.connect(_on_time_speed_selected)
+	_single_step_button.pressed.connect(_on_single_step_pressed)
 	_time_control_button.pressed.connect(_on_time_control_pressed)
+	_time_speed_option.select(1)
 	_apply_theme()
 	_layout_children()
 
@@ -87,18 +95,33 @@ func set_time_state(
 	month: int,
 	is_running: bool,
 	manually_paused: bool,
-	situation_auto_paused: bool
+	situation_auto_paused: bool,
+	speed: float = 1.0
 ) -> void:
 	_year_progress.update_progress(year, month)
+	_date_label.text = "%04d.%02d" % [year, month]
 	_time_control_button.text = "继续" if not is_running else "暂停"
+	_time_speed_option.select(_speed_to_index(speed))
+	_single_step_button.disabled = situation_auto_paused
 	if situation_auto_paused:
 		_time_control_button.tooltip_text = "请先处理当前局势节点"
+		_single_step_button.tooltip_text = "请先处理当前局势节点"
 	elif manually_paused:
 		_time_control_button.tooltip_text = "继续月度推进"
+		_single_step_button.tooltip_text = "推进一个月并保持暂停"
 	else:
 		_time_control_button.tooltip_text = (
 			"暂停月度推进" if is_running else "继续月度推进"
 		)
+		_single_step_button.tooltip_text = "推进一个月并保持暂停"
+
+
+func _speed_to_index(speed: float) -> int:
+	if is_equal_approx(speed, 0.5):
+		return 0
+	if is_equal_approx(speed, 2.0):
+		return 2
+	return 1
 
 
 ## 更新当前选区的指令上下文提示。
@@ -149,6 +172,14 @@ func get_time_control_button() -> Button:
 	return _time_control_button
 
 
+func get_time_speed_option() -> OptionButton:
+	return _time_speed_option
+
+
+func get_single_step_button() -> Button:
+	return _single_step_button
+
+
 func get_technology_button() -> Button:
 	return _technology_button
 
@@ -182,11 +213,15 @@ func _layout_children() -> void:
 func _apply_theme() -> void:
 	_moss_label.add_theme_color_override("font_color", MOSS_THEME.DANGER)
 	_moss_label.add_theme_font_size_override("font_size", 16)
+	_date_label.add_theme_color_override("font_color", MOSS_THEME.ACCENT_CYAN)
+	_date_label.add_theme_font_size_override("font_size", 15)
 	_computational_label.add_theme_color_override("font_color", MOSS_THEME.TEXT_PRIMARY)
 	_energy_label.add_theme_color_override("font_color", MOSS_THEME.ACCENT_GOLD)
 	_style_action_button(_technology_button, Vector2(120.0, 44.0), MOSS_THEME.TEXT_PRIMARY)
 	_style_action_button(_decision_archive_button, Vector2(128.0, 44.0), MOSS_THEME.TEXT_PRIMARY)
 	_style_action_button(_situation_button, Vector2(112.0, 44.0), MOSS_THEME.TEXT_PRIMARY)
+	_style_action_button(_time_speed_option, Vector2(72.0, 44.0), MOSS_THEME.TEXT_PRIMARY)
+	_style_action_button(_single_step_button, Vector2(88.0, 44.0), MOSS_THEME.ACCENT_GOLD)
 	_style_action_button(_time_control_button, Vector2(80.0, 44.0), MOSS_THEME.ACCENT_CYAN, true)
 	_command_dock.add_theme_stylebox_override(
 		"panel",
@@ -243,6 +278,16 @@ func _on_technology_pressed() -> void:
 
 func _on_situation_pressed() -> void:
 	situation_requested.emit()
+
+
+func _on_time_speed_selected(index: int) -> void:
+	var speeds: Array[float] = [0.5, 1.0, 2.0]
+	if index >= 0 and index < speeds.size():
+		time_speed_requested.emit(speeds[index])
+
+
+func _on_single_step_pressed() -> void:
+	single_step_requested.emit()
 
 
 func _on_time_control_pressed() -> void:

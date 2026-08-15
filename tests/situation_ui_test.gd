@@ -31,6 +31,8 @@ func _assert_hud_entry() -> void:
 	var workspace := _main_os.get_node("MainLayout/StrategicWorkspace") as StrategicWorkspace
 	_assert_true(hud.get_situation_button() != null, "顶部栏应存在局势入口")
 	_assert_true(hud.get_time_control_button() != null, "顶部栏应存在暂停/继续按钮")
+	_assert_true(hud.get_time_speed_option() != null, "顶部栏应存在调速入口")
+	_assert_true(hud.get_single_step_button() != null, "顶部栏应存在单步推进入口")
 	_assert_true(workspace.get_region_situation_text() != "", "上下文栏应存在当前选区局势摘要")
 	_assert_true(hud.get_command_context_text() != "", "指令坞应显示当前选区提示")
 	_assert_true(_panel != null, "主场景应挂载非模态局势面板")
@@ -63,6 +65,14 @@ func _assert_situation_details_and_approach() -> void:
 	_assert_eq(hud.get_situation_button().text, "局势  1 / 2", "顶部入口应同步活跃局势数量")
 	_assert_eq((_panel.get_node("%DetailTitle") as Label).text, "区域电网负荷失衡", "详情页应显示局势标题")
 	_assert_eq((_panel.get_node("%SituationProgress") as ProgressBar).value, 38.0, "严重度进度条应显示当前风险")
+	var inline_alert := workspace.get_node(
+		"ContentRow/ContextPanel/ContextMargin/ContextVBox/SituationAlertPanel"
+	) as Control
+	_assert_true(inline_alert.visible, "选中区域后右栏应显示活跃局势告警")
+	var inline_approaches := workspace.get_node(
+		"ContentRow/ContextPanel/ContextMargin/ContextVBox/ApproachPanel/ApproachMargin/ApproachVBox/ApproachList"
+	) as VBoxContainer
+	_assert_true(inline_approaches.get_child_count() <= 2, "右栏轻操作最多展示两项方针")
 	var approach_list := _panel.get_node("%ApproachList")
 	_assert_eq(approach_list.get_child_count(), 3, "详情页应显示三种专属方针")
 	_main_os.current_cpu = 0
@@ -203,6 +213,9 @@ func _assert_modal_boundary() -> void:
 func _assert_time_control() -> void:
 	var timer := _main_os.get_node("Timer") as Timer
 	_assert_true(timer.is_stopped(), "测试开始时计时器应暂停")
+	_main_os.set_time_speed(0.5)
+	_assert_true(is_equal_approx(timer.wait_time, 2.0), "局势 HUD 调速应设置 0.5x 的 2 秒/月")
+	_main_os.set_time_speed(1.0)
 	_main_os.toggle_time_control()
 	_assert_true(not timer.is_stopped(), "继续按钮应恢复月度推进")
 	_main_os.toggle_time_control()

@@ -61,6 +61,8 @@ const COMMAND_ENERGY_CONVERT: String = COMMAND_SYSTEM_SCRIPT.COMMAND_ENERGY_CONV
 const COMMAND_GLOBAL_TAKEOVER: String = COMMAND_SYSTEM_SCRIPT.COMMAND_GLOBAL_TAKEOVER
 const COMMAND_TECHNOLOGY_AID: String = COMMAND_SYSTEM_SCRIPT.COMMAND_TECHNOLOGY_AID
 const ACTION_LOG_LIMIT: int = 24
+const DEFAULT_TIME_SPEED: float = 1.0
+const TIME_SPEED_OPTIONS: Array[float] = [0.5, 1.0, 2.0]
 
 # ============================================================
 # 游戏状态变量
@@ -157,12 +159,15 @@ var _decision_archive_timer_was_running: bool = false
 ## HUD 时间控制与局势自动暂停状态
 var _manually_paused: bool = false
 var _situation_auto_paused: bool = false
+var _time_speed: float = DEFAULT_TIME_SPEED
+var _single_step_in_progress: bool = false
 
 # ============================================================
 # 生命周期函数
 # ============================================================
 
 func _ready() -> void:
+	set_time_speed(DEFAULT_TIME_SPEED)
 	_event_narrative_system.configure(_event_state_store, _decision_history)
 	_setup_development_log()
 	_persist_development_phase("startup:events")
@@ -363,6 +368,7 @@ func _build_development_runtime_snapshot() -> Dictionary:
 		"month": current_month,
 		"is_game_over": is_game_over,
 		"timer_stopped": true if not has_node("Timer") else $Timer.is_stopped(),
+		"time_speed": _time_speed,
 		"modal": _get_development_modal_state(),
 		"situation_panel_visible": (
 			has_node("%SituationPanel") and %SituationPanel.visible
@@ -724,6 +730,14 @@ func open_situation_panel() -> void:
 	_on_situation_button_pressed()
 
 
+func _on_workspace_situation_details_requested(instance_id: String) -> void:
+	if not _can_open_situation_panel():
+		return
+	_refresh_situation_ui(instance_id)
+	%SituationPanel.open_panel(instance_id)
+	_set_development_phase("idle", {"situation_instance_id": instance_id}, true)
+
+
 func _can_open_situation_panel() -> bool:
 	if is_game_over or end_screen_instance != null or not has_node("%SituationPanel"):
 		return false
@@ -754,6 +768,47 @@ func _on_time_control_button_pressed() -> void:
 	_set_development_phase("idle", {}, true)
 
 
+func _on_time_speed_requested(speed: float) -> void:
+	set_time_speed(speed)
+	update_time_control_button()
+	_set_development_phase("idle", {"time_speed": _time_speed}, true)
+
+
+## 设置月度推进速度；只接受 HUD 提供的三个固定档位。
+func set_time_speed(speed: float) -> void:
+	for supported_speed in TIME_SPEED_OPTIONS:
+		if not is_equal_approx(speed, supported_speed):
+			continue
+		_time_speed = supported_speed
+		if has_node("Timer"):
+			$Timer.wait_time = 1.0 / _time_speed
+		return
+
+
+## 返回当前月度推进速度。
+func get_time_speed() -> float:
+	return _time_speed
+
+
+func _on_single_step_requested() -> void:
+	await step_month_once()
+
+
+## 推进一个完整月份并保持暂停，不绕过 MainOS 月度编排。
+func step_month_once() -> void:
+	if _single_step_in_progress or not _can_resume_time_from_hud():
+		update_time_control_button()
+		return
+	_single_step_in_progress = true
+	_manually_paused = true
+	_situation_auto_paused = false
+	$Timer.stop()
+	update_time_control_button()
+	await process_month_tick()
+	_single_step_in_progress = false
+	update_time_control_button()
+
+
 ## 公共时间控制入口；保持按钮回调只负责转发语义事件。
 func toggle_time_control() -> void:
 	_on_time_control_button_pressed()
@@ -778,7 +833,8 @@ func update_time_control_button() -> void:
 		current_month,
 		not $Timer.is_stopped(),
 		_manually_paused,
-		_situation_auto_paused or _situation_system.has_pending_node()
+		_situation_auto_paused or _situation_system.has_pending_node(),
+		_time_speed
 	)
 
 
@@ -1443,7 +1499,12 @@ func _apply_event_option_consequences(
 ## 更新右侧上下文区域详情和指令坞
 ## 未选择区域时显示空状态，选择区域后显示对应 SectorData
 func update_region_detail_ui() -> void:
-	_strategic_workspace.update_region_detail(get_situation_snapshots())
+	_strategic_workspace.update_region_detail(
+		get_situation_snapshots(),
+		current_cpu,
+		current_energy,
+		current_year
+	)
 	if selected_sector == null or selected_sector.data_card == null:
 		_main_hud.set_command_context("未选择区域  //  请先选择区域")
 		return
@@ -1454,7 +1515,12 @@ func update_region_detail_ui() -> void:
 
 ## 在上下文栏显示当前选区的局势摘要，完整配置仍由局势追踪面板承担。
 func _update_region_situation_summary_ui() -> void:
-	_strategic_workspace.update_region_detail(get_situation_snapshots())
+	_strategic_workspace.update_region_detail(
+		get_situation_snapshots(),
+		current_cpu,
+		current_energy,
+		current_year
+	)
 
 
 ## 同步地图状态、地图选区和地球聚焦
@@ -1489,7 +1555,8 @@ func update_global_resource_ui() -> void:
 		current_month,
 		not $Timer.is_stopped(),
 		_manually_paused,
-		_situation_auto_paused or _situation_system.has_pending_node()
+		_situation_auto_paused or _situation_system.has_pending_node(),
+		_time_speed
 	)
 	_sync_strategic_views()
 
@@ -1788,6 +1855,8 @@ func _on_restart_requested() -> void:
 	_decision_archive_timer_was_running = false
 	_manually_paused = false
 	_situation_auto_paused = false
+	_single_step_in_progress = false
+	set_time_speed(DEFAULT_TIME_SPEED)
 	_situation_system.reset()
 	if has_node("%DecisionArchivePanel"):
 		%DecisionArchivePanel.hide()

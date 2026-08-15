@@ -117,6 +117,17 @@ func _assert_compact_layout_geometry() -> void:
 	_assert_true(context_scroll != null, "紧凑右侧详情应使用滚动容器保留全部内容")
 	if context_scroll != null:
 		_assert_rect_inside(context_scroll.get_global_rect(), viewport_size, "紧凑右侧详情")
+		var details_toggle := workspace.get_node(
+			"ContentRow/ContextPanel/ContextMargin/ContextVBox/DetailsToggle"
+		) as Button
+		_assert_true(details_toggle != null, "紧凑右侧应提供折叠详情入口")
+		if details_toggle != null:
+			details_toggle.pressed.emit()
+			await get_tree().process_frame
+			_assert_true(
+				workspace.get_action_log_view().visible,
+				"展开详情后应显示既有行动日志路径"
+			)
 		context_scroll.scroll_vertical = 100000
 		await get_tree().process_frame
 		var log_rect := workspace.get_action_log_view().get_global_rect()
