@@ -10,6 +10,7 @@ signal time_control_requested
 signal time_speed_requested(speed: float)
 signal single_step_requested
 signal command_requested(command: CommandData)
+signal system_requested
 
 const MOSS_THEME := preload("res://scripts/ui/moss_ui_theme.gd")
 const COMMAND_BUTTON_SCENE := preload("res://scenes/command_button.tscn")
@@ -33,6 +34,7 @@ const SEPARATION: float = 10.0
 @onready var _time_speed_option: OptionButton = $TopBarContainer/TimeSpeedOption
 @onready var _single_step_button: Button = $TopBarContainer/SingleStepButton
 @onready var _time_control_button: Button = $TopBarContainer/TimeControlButton
+@onready var _system_button: Button = $TopBarContainer/SystemButton
 @onready var _year_progress: YearProgress = $YearProgress
 @onready var _command_dock: PanelContainer = $CommandDock
 @onready var _command_button_container: HBoxContainer = $CommandDock/CommandDockMargin/CommandButtonContainer
@@ -49,6 +51,7 @@ func _ready() -> void:
 	_time_speed_option.item_selected.connect(_on_time_speed_selected)
 	_single_step_button.pressed.connect(_on_single_step_pressed)
 	_time_control_button.pressed.connect(_on_time_control_pressed)
+	_system_button.pressed.connect(_on_system_pressed)
 	_time_speed_option.select(1)
 	_apply_theme()
 	_layout_children()
@@ -172,6 +175,10 @@ func get_time_control_button() -> Button:
 	return _time_control_button
 
 
+func get_system_button() -> Button:
+	return _system_button
+
+
 func get_time_speed_option() -> OptionButton:
 	return _time_speed_option
 
@@ -223,6 +230,7 @@ func _apply_theme() -> void:
 	_style_action_button(_time_speed_option, Vector2(72.0, 44.0), MOSS_THEME.TEXT_PRIMARY)
 	_style_action_button(_single_step_button, Vector2(88.0, 44.0), MOSS_THEME.ACCENT_GOLD)
 	_style_action_button(_time_control_button, Vector2(80.0, 44.0), MOSS_THEME.ACCENT_CYAN, true)
+	_style_action_button(_system_button, Vector2(68.0, 44.0), MOSS_THEME.TEXT_PRIMARY)
 	_command_dock.add_theme_stylebox_override(
 		"panel",
 		MOSS_THEME.panel_style(
@@ -303,6 +311,10 @@ func _on_single_step_pressed() -> void:
 
 func _on_time_control_pressed() -> void:
 	time_control_requested.emit()
+
+
+func _on_system_pressed() -> void:
+	system_requested.emit()
 
 
 func _on_command_pressed(command: CommandData) -> void:

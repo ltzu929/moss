@@ -89,6 +89,12 @@ layout_mode = 2
 tooltip_text = "暂停月度推进"
 text = "暂停"
 
+[node name="SystemButton" type="Button" parent="TopBarContainer"]
+custom_minimum_size = Vector2(68, 44)
+layout_mode = 2
+tooltip_text = "打开系统菜单"
+text = "系统"
+
 [node name="YearProgress" parent="." instance=ExtResource("2_year_progress")]
 z_index = 10
 custom_minimum_size = Vector2(0, 28)

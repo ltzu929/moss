@@ -227,6 +227,69 @@ func export_state() -> Dictionary:
 	}
 
 
+func can_restore_state(state: Dictionary) -> bool:
+	var raw_points: Variant = state.get("available_points")
+	var raw_active: Variant = state.get("active_node_ids")
+	var raw_granted: Variant = state.get("granted_years")
+	var raw_stage: Variant = state.get("stage")
+	if typeof(raw_points) != TYPE_INT or int(raw_points) < 0:
+		return false
+	if typeof(raw_active) != TYPE_ARRAY or typeof(raw_granted) != TYPE_ARRAY:
+		return false
+	if typeof(raw_stage) != TYPE_INT:
+		return false
+	var active_ids: Array = raw_active
+	var seen_ids: Dictionary = {}
+	var exclusive_groups: Dictionary = {}
+	for node_id_variant in active_ids:
+		if typeof(node_id_variant) != TYPE_STRING:
+			return false
+		var node_id := str(node_id_variant)
+		var node_data := get_node_data(node_id)
+		if node_data == null or seen_ids.has(node_id):
+			return false
+		for prerequisite_id in node_data.prerequisite_ids:
+			if prerequisite_id not in active_ids:
+				return false
+		if not node_data.exclusive_group.is_empty():
+			if exclusive_groups.has(node_data.exclusive_group):
+				return false
+			exclusive_groups[node_data.exclusive_group] = node_id
+		seen_ids[node_id] = true
+	var seen_years: Dictionary = {}
+	for year_variant in raw_granted:
+		if typeof(year_variant) != TYPE_INT:
+			return false
+		var year := int(year_variant)
+		if year not in RESEARCH_YEARS or seen_years.has(year):
+			return false
+		seen_years[year] = true
+	var expected_stage := TechNodeData.Stage.C550
+	if active_ids.size() >= 6:
+		expected_stage = TechNodeData.Stage.MOSS
+	elif active_ids.size() >= 2:
+		expected_stage = TechNodeData.Stage.W550
+	return int(raw_stage) == int(expected_stage)
+
+
+func restore_state(state: Dictionary) -> bool:
+	if not can_restore_state(state):
+		return false
+	var previous_stage := _stage
+	_available_points = int(state["available_points"])
+	_active_node_ids.clear()
+	for node_id_variant in state["active_node_ids"]:
+		_active_node_ids.append(str(node_id_variant))
+	_granted_years.clear()
+	for year_variant in state["granted_years"]:
+		_granted_years.append(int(year_variant))
+	_stage = int(state["stage"])
+	points_changed.emit(_available_points)
+	if previous_stage != _stage:
+		stage_changed.emit(_stage)
+	return true
+
+
 ## 校验科技图节点数量、路线结构、前置引用和环依赖
 ## 返回所有发现的错误；空数组表示图结构有效
 func validate_graph() -> Array[String]:

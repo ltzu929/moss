@@ -386,6 +386,10 @@ func restore_runtime_snapshot(snapshot: Dictionary) -> bool:
 	return true
 
 
+func can_restore_runtime_snapshot(snapshot: Dictionary) -> bool:
+	return bool(_parse_runtime_snapshot(snapshot).get("success", false))
+
+
 func _parse_runtime_snapshot(snapshot: Dictionary) -> Dictionary:
 	var version: Variant = snapshot.get("version", null)
 	if not _is_int(version) or int(version) != RUNTIME_SNAPSHOT_VERSION:

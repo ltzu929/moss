@@ -30,6 +30,22 @@ func export_state() -> Dictionary:
 	return _states.duplicate(true)
 
 
+func can_restore_state(state: Dictionary) -> bool:
+	for key in state:
+		if typeof(key) != TYPE_STRING or str(key).is_empty():
+			return false
+		if typeof(state[key]) != TYPE_STRING:
+			return false
+	return true
+
+
+func restore_state(state: Dictionary) -> bool:
+	if not can_restore_state(state):
+		return false
+	_states = state.duplicate(true)
+	return true
+
+
 ## 清空本局所有轻量事件状态。
 func clear() -> void:
 	_states.clear()

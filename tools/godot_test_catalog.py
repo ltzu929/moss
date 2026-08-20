@@ -152,6 +152,12 @@ TEST_SPECS = [
         ("[MOSS-ENDING-HISTORY] 完成，失败断言：0",),
     ),
     TestSpec(
+        "tests/save_system_test.tscn",
+        "domain",
+        "headless",
+        ("[MOSS-SAVE-SYSTEM] 完成，失败断言：0",),
+    ),
+    TestSpec(
         "tests/decision_archive_ui_test.tscn",
         "ui",
         "display",
@@ -180,6 +186,12 @@ TEST_SPECS = [
         "ui",
         "display",
         ("[MOSS-UI-LAYOUT-1080P] 完成，失败断言：0",),
+    ),
+    TestSpec(
+        "tests/app_menu_ui_test.tscn",
+        "ui",
+        "display",
+        ("[MOSS-APP-MENU-UI] 完成，失败断言：0",),
     ),
     TestSpec(
         "tests/world_map_view_test.tscn",

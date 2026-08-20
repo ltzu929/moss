@@ -8,7 +8,8 @@
 
 ## 快速了解
 
-- 主场景：`scenes/main_os.tscn`
+- 应用入口：`scenes/app_root.tscn`
+- 游戏场景：`scenes/main_os.tscn`
 - 主控制器：`scripts/systems/main_os.gd`
 - 核心数据：`data/` 下的 `.tres` 资源
 - 自动化播放测试：`tests/test_runner.tscn` + `tests/test_runner.gd`

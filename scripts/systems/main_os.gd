@@ -1,5 +1,6 @@
 ## 主控制器脚本 - MOSS模拟器核心系统
 ## 负责游戏的时间推进、事件协调、胜负判定和结局显示
+class_name MainOS
 extends Control
 
 # ============================================================
@@ -10,6 +11,8 @@ extends Control
 ## 参数: result - 结局类型 ("failed"/"coexistence"/"managed"/"human_autonomy")
 ## 参数: message - 结局描述文本
 signal game_ended(result: String, message: String)
+signal system_menu_requested
+signal autosave_requested(state: Dictionary)
 
 # ============================================================
 # 导出变量
@@ -63,6 +66,7 @@ const COMMAND_TECHNOLOGY_AID: String = COMMAND_SYSTEM_SCRIPT.COMMAND_TECHNOLOGY_
 const ACTION_LOG_LIMIT: int = 24
 const DEFAULT_TIME_SPEED: float = 1.0
 const TIME_SPEED_OPTIONS: Array[float] = [0.5, 1.0, 2.0]
+const SAVE_STATE_VERSION: int = 1
 
 # ============================================================
 # 游戏状态变量
@@ -161,6 +165,7 @@ var _manually_paused: bool = false
 var _situation_auto_paused: bool = false
 var _time_speed: float = DEFAULT_TIME_SPEED
 var _single_step_in_progress: bool = false
+var _month_tick_in_progress: bool = false
 
 # ============================================================
 # 生命周期函数
@@ -203,6 +208,8 @@ func _ready() -> void:
 	# 初始化指令按钮
 	setup_command_buttons()
 	setup_situation_ui()
+	if not _main_hud.system_requested.is_connected(_on_system_menu_requested):
+		_main_hud.system_requested.connect(_on_system_menu_requested)
 
 	_persist_development_phase("startup:ui")
 	refresh_technology_effects()
@@ -233,6 +240,319 @@ func _exit_tree() -> void:
 
 func get_action_log() -> Array[Dictionary]:
 	return action_log.duplicate(true)
+
+
+func build_save_metadata() -> Dictionary:
+	return {
+		"year": current_year,
+		"month": current_month,
+		"model_name": get_moss_model_name(),
+	}
+
+
+func export_save_state() -> Dictionary:
+	var selected_region := ""
+	if selected_sector != null and selected_sector.data_card != null:
+		selected_region = selected_sector.data_card.region_id
+	var sectors: Dictionary = {}
+	for sector in _strategic_workspace.get_sector_nodes():
+		if sector.get("data_card") == null:
+			continue
+		var data: SectorData = sector.data_card
+		sectors[data.region_id] = {
+			"order": data.order,
+			"hope": data.hope,
+			"authority": data.authority,
+			"population": data.population,
+			"is_locked": data.is_locked,
+		}
+	return {
+		"version": SAVE_STATE_VERSION,
+		"time": {
+			"year": current_year,
+			"month": current_month,
+			"speed_index": TIME_SPEED_OPTIONS.find(_time_speed),
+			"manually_paused": _manually_paused,
+			"situation_auto_paused": _situation_auto_paused,
+		},
+		"resources": {"cpu": current_cpu, "energy": current_energy},
+		"sectors": sectors,
+		"events": {
+			"triggered": triggered_events.duplicate(),
+			"states": _event_state_store.export_state(),
+			"decision_history": _decision_history.export_state(),
+		},
+		"technology": %TechnologySystem.export_state(),
+		"commands": {"cooldowns": command_cooldowns.duplicate(true)},
+		"situations": _export_situation_save_state(),
+		"action_log": get_action_log(),
+		"selected_region": selected_region,
+	}
+
+
+func validate_save_state(state: Dictionary) -> bool:
+	if int(state.get("version", 0)) != SAVE_STATE_VERSION:
+		return false
+	for key in [
+		"time", "resources", "sectors", "events", "technology",
+		"commands", "situations"
+	]:
+		if typeof(state.get(key)) != TYPE_DICTIONARY:
+			return false
+	if typeof(state.get("action_log")) != TYPE_ARRAY:
+		return false
+	var time: Dictionary = state["time"]
+	if not _is_integer_variant(time.get("year")):
+		return false
+	if not _is_integer_variant(time.get("month")):
+		return false
+	if int(time["year"]) < INITIAL_YEAR or int(time["year"]) > END_YEAR:
+		return false
+	if int(time["month"]) < 1 or int(time["month"]) > 12:
+		return false
+	if not _is_integer_variant(time.get("speed_index")):
+		return false
+	if int(time["speed_index"]) < 0 or int(time["speed_index"]) >= TIME_SPEED_OPTIONS.size():
+		return false
+	if typeof(time.get("manually_paused")) != TYPE_BOOL:
+		return false
+	if typeof(time.get("situation_auto_paused")) != TYPE_BOOL:
+		return false
+	var resources: Dictionary = state["resources"]
+	if not _is_integer_variant(resources.get("cpu")) or int(resources["cpu"]) < 0:
+		return false
+	if not _is_integer_variant(resources.get("energy")) or int(resources["energy"]) < 0:
+		return false
+	if not _validate_sector_save_states(state["sectors"]):
+		return false
+	var events: Dictionary = state["events"]
+	if typeof(events.get("triggered")) != TYPE_ARRAY:
+		return false
+	for event_id in events["triggered"]:
+		if typeof(event_id) != TYPE_STRING:
+			return false
+	if typeof(events.get("states")) != TYPE_DICTIONARY:
+		return false
+	if typeof(events.get("decision_history")) != TYPE_DICTIONARY:
+		return false
+	if not _event_state_store.can_restore_state(events["states"]):
+		return false
+	if not _decision_history.can_restore_state(events["decision_history"]):
+		return false
+	if not %TechnologySystem.can_restore_state(state["technology"]):
+		return false
+	var commands: Dictionary = state["commands"]
+	if typeof(commands.get("cooldowns")) != TYPE_DICTIONARY:
+		return false
+	for command_id in commands["cooldowns"]:
+		if typeof(command_id) != TYPE_STRING:
+			return false
+		var cooldown: Variant = commands["cooldowns"][command_id]
+		if not _is_integer_variant(cooldown) or int(cooldown) < 0:
+			return false
+	var situation_snapshot := _decode_situation_save_state(state["situations"])
+	if situation_snapshot.is_empty():
+		return false
+	if not _situation_system.can_restore_runtime_snapshot(situation_snapshot):
+		return false
+	if not _validate_action_log(state["action_log"]):
+		return false
+	var selected_region: Variant = state.get("selected_region", "")
+	return (
+		typeof(selected_region) == TYPE_STRING
+		and (
+			str(selected_region).is_empty()
+			or RegionIdentity.is_valid_id(str(selected_region))
+		)
+	)
+
+
+func restore_save_state(state: Dictionary) -> bool:
+	if not validate_save_state(state):
+		return false
+	$Timer.stop()
+	if end_screen_instance != null:
+		end_screen_instance.queue_free()
+		end_screen_instance = null
+	for path in [
+		"%EventPopup", "%AllocatePopup", "%TechnologyScreen",
+		"%DecisionArchivePanel", "%SituationPanel"
+	]:
+		if has_node(path):
+			get_node(path).hide()
+	var time: Dictionary = state["time"]
+	var resources: Dictionary = state["resources"]
+	var events: Dictionary = state["events"]
+	current_year = int(time["year"])
+	current_month = int(time["month"])
+	is_game_over = false
+	triggered_events.clear()
+	for event_id in events["triggered"]:
+		triggered_events.append(str(event_id))
+	if not _event_state_store.restore_state(events["states"]):
+		return false
+	if not _decision_history.restore_state(events["decision_history"]):
+		return false
+	if not %TechnologySystem.restore_state(state["technology"]):
+		return false
+	refresh_technology_effects()
+	current_cpu = int(resources["cpu"])
+	current_energy = int(resources["energy"])
+	var situation_snapshot := _decode_situation_save_state(state["situations"])
+	if not _situation_system.restore_runtime_snapshot(situation_snapshot):
+		return false
+	var saved_cooldowns: Dictionary = state["commands"]["cooldowns"]
+	command_cooldowns.clear()
+	for command in available_commands:
+		command_cooldowns[command.command_id] = int(
+			saved_cooldowns.get(command.command_id, 0)
+		)
+	_restore_sector_save_states(state["sectors"])
+	action_log.clear()
+	_strategic_workspace.clear_action_log()
+	for entry_variant in state["action_log"]:
+		var entry: Dictionary = (entry_variant as Dictionary).duplicate(true)
+		action_log.append(entry)
+		_strategic_workspace.append_action_log_entry(entry)
+	var selected_region := str(state.get("selected_region", ""))
+	if selected_region.is_empty():
+		deselect_sector()
+	else:
+		select_sector(_find_sector_by_id(selected_region))
+	set_time_speed(TIME_SPEED_OPTIONS[int(time["speed_index"])])
+	_manually_paused = true
+	_situation_auto_paused = bool(time["situation_auto_paused"])
+	_single_step_in_progress = false
+	_month_tick_in_progress = false
+	update_technology_button()
+	update_decision_archive_button()
+	update_situation_button()
+	update_global_resource_ui()
+	update_region_detail_ui()
+	update_command_buttons()
+	_refresh_situation_ui()
+	update_time_control_button()
+	_set_development_phase("idle", {}, true)
+	return true
+
+
+func can_open_system_menu() -> bool:
+	if is_game_over or end_screen_instance != null:
+		return false
+	if _month_tick_in_progress or _single_step_in_progress:
+		return false
+	for path in [
+		"%EventPopup", "%AllocatePopup", "%TechnologyScreen",
+		"%DecisionArchivePanel"
+	]:
+		if has_node(path) and get_node(path).visible:
+			return false
+	return true
+
+
+func pause_for_system_menu() -> bool:
+	if not can_open_system_menu():
+		return false
+	var was_running: bool = not $Timer.is_stopped()
+	$Timer.stop()
+	update_time_control_button()
+	return was_running
+
+
+func resume_after_system_menu(was_running: bool) -> void:
+	if (
+		was_running
+		and not _situation_auto_paused
+		and not _situation_system.has_pending_node()
+	):
+		$Timer.start()
+	update_time_control_button()
+
+
+func _on_system_menu_requested() -> void:
+	if can_open_system_menu():
+		system_menu_requested.emit()
+
+
+func _validate_sector_save_states(raw_sectors: Variant) -> bool:
+	var sectors: Dictionary = raw_sectors
+	var runtime_sectors := _strategic_workspace.get_sector_nodes()
+	if sectors.size() != runtime_sectors.size():
+		return false
+	for sector in runtime_sectors:
+		if sector.get("data_card") == null:
+			return false
+		var region_id: String = sector.data_card.region_id
+		if typeof(sectors.get(region_id)) != TYPE_DICTIONARY:
+			return false
+		var state: Dictionary = sectors[region_id]
+		for stat_name in ["order", "hope", "authority"]:
+			if not _is_integer_variant(state.get(stat_name)):
+				return false
+			if int(state[stat_name]) < 0 or int(state[stat_name]) > 100:
+				return false
+		if not _is_integer_variant(state.get("population")):
+			return false
+		if int(state["population"]) < 0:
+			return false
+		if typeof(state.get("is_locked")) != TYPE_BOOL:
+			return false
+	return true
+
+
+func _restore_sector_save_states(sectors: Dictionary) -> void:
+	for sector in _strategic_workspace.get_sector_nodes():
+		if sector.get("data_card") == null:
+			continue
+		var data: SectorData = sector.data_card
+		var state: Dictionary = sectors[data.region_id]
+		data.order = int(state["order"])
+		data.hope = int(state["hope"])
+		data.authority = int(state["authority"])
+		data.population = int(state["population"])
+		data.is_locked = bool(state["is_locked"])
+		sector.update_display()
+
+
+func _validate_action_log(raw_log: Variant) -> bool:
+	var entries: Array = raw_log
+	if entries.size() > ACTION_LOG_LIMIT:
+		return false
+	for entry_variant in entries:
+		if typeof(entry_variant) != TYPE_DICTIONARY:
+			return false
+		var entry: Dictionary = entry_variant
+		for field in ["kind", "title", "message"]:
+			if typeof(entry.get(field)) != TYPE_STRING:
+				return false
+		if not _is_integer_variant(entry.get("year")):
+			return false
+		if not _is_integer_variant(entry.get("month")):
+			return false
+	return true
+
+
+func _export_situation_save_state() -> Dictionary:
+	var snapshot := _situation_system.export_runtime_snapshot()
+	snapshot["rng_state"] = str(snapshot["rng_state"])
+	return snapshot
+
+
+func _decode_situation_save_state(raw_snapshot: Dictionary) -> Dictionary:
+	var snapshot := raw_snapshot.duplicate(true)
+	var raw_rng_state: Variant = snapshot.get("rng_state")
+	if typeof(raw_rng_state) != TYPE_STRING:
+		return {}
+	var rng_text := str(raw_rng_state)
+	if not rng_text.is_valid_int():
+		return {}
+	snapshot["rng_state"] = rng_text.to_int()
+	return snapshot
+
+
+func _is_integer_variant(value: Variant) -> bool:
+	return typeof(value) == TYPE_INT
+
 
 func record_action(kind: String, title: String, message: String) -> void:
 	var entry := {
@@ -1161,8 +1481,9 @@ func get_command_unavailable_reason(cmd: CommandData) -> String:
 ## 不应调用 Timer 信号回调。
 func process_month_tick() -> void:
 	# 游戏已结束，禁止任何操作
-	if is_game_over:
+	if is_game_over or _month_tick_in_progress:
 		return
+	_month_tick_in_progress = true
 	_persist_development_phase("month_tick:event_scan")
 
 	# === 第一步：事件触发检查 ===
@@ -1259,6 +1580,7 @@ func process_month_tick() -> void:
 	if current_year == END_YEAR and current_month == END_MONTH:
 		_persist_development_phase("month_tick:ending_check")
 		check_game_end()
+		_month_tick_in_progress = false
 		return
 
 	# === 第二步：时间推进 ===
@@ -1282,6 +1604,10 @@ func process_month_tick() -> void:
 	_check_game_failure()
 	if not is_game_over:
 		_set_development_phase("idle", {}, true)
+		_month_tick_in_progress = false
+		autosave_requested.emit(export_save_state())
+	else:
+		_month_tick_in_progress = false
 
 
 ## Timer 信号转发到公开的完整月度编排接口。
@@ -1873,6 +2199,7 @@ func _on_restart_requested() -> void:
 	_manually_paused = false
 	_situation_auto_paused = false
 	_single_step_in_progress = false
+	_month_tick_in_progress = false
 	set_time_speed(DEFAULT_TIME_SPEED)
 	_situation_system.reset()
 	if has_node("%DecisionArchivePanel"):
