@@ -5,6 +5,7 @@ const MAIN_SCENE: PackedScene = preload("res://scenes/main_os.tscn")
 const MOSS_THEME := preload("res://scripts/ui/moss_ui_theme.gd")
 const SAVE_SERVICE_SCRIPT := preload("res://scripts/systems/save_service.gd")
 const SETTINGS_SERVICE_SCRIPT := preload("res://scripts/systems/settings_service.gd")
+const BACKGROUND_MUSIC: AudioStream = preload("res://assets/audio/background_music.ogg")
 
 @export var save_directory: String = "user://saves"
 @export var settings_path: String = "user://settings.cfg"
@@ -24,6 +25,7 @@ var _settings_status: Label
 var _display_mode_option: OptionButton
 var _resolution_option: OptionButton
 var _confirmation: ConfirmationDialog
+var _background_music: AudioStreamPlayer
 var _pending_confirmation: Callable
 var _slot_mode: String = "load"
 var _system_timer_was_running: bool = false
@@ -35,10 +37,21 @@ func _ready() -> void:
 	_save_service = SAVE_SERVICE_SCRIPT.new(save_directory)
 	_settings_service = SETTINGS_SERVICE_SCRIPT.new(settings_path)
 	_build_interface()
+	_setup_background_music()
 	var settings := _settings_service.load_settings()
 	if apply_display_settings:
 		_settings_service.apply_settings(settings)
 	_show_main_menu()
+
+
+func _setup_background_music() -> void:
+	_background_music = AudioStreamPlayer.new()
+	_background_music.name = "BackgroundMusic"
+	_background_music.stream = BACKGROUND_MUSIC
+	_background_music.volume_db = -18.0
+	_background_music.finished.connect(_background_music.play)
+	add_child(_background_music)
+	_background_music.play()
 
 
 func _unhandled_input(event: InputEvent) -> void:
