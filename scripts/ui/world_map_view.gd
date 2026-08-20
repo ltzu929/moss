@@ -74,6 +74,7 @@ var _region_states: Dictionary = {}
 var _selected_region: String = ""
 var _hovered_region: String = ""
 var _scan_progress: float = 0.0
+var _scan_paused: bool = false
 
 
 func _ready() -> void:
@@ -92,6 +93,8 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	if _scan_paused:
+		return
 	_scan_progress = fmod(_scan_progress + delta * 0.075, 1.0)
 	queue_redraw()
 
@@ -132,6 +135,20 @@ func set_region_states(states: Dictionary) -> void:
 func set_selected_region(region_id: String) -> void:
 	_selected_region = region_id
 	queue_redraw()
+
+
+## 暂停或恢复扫描动画；暂停时停止推进与重绘，但保留当前扫描位置。
+func set_scan_paused(paused: bool) -> void:
+	if _scan_paused == paused:
+		return
+	_scan_paused = paused
+	if not Engine.is_editor_hint():
+		set_process(not _scan_paused)
+
+
+## 返回扫描动画当前是否处于暂停状态。
+func is_scan_paused() -> bool:
+	return _scan_paused
 
 
 func reload_editor_preview_states() -> void:

@@ -32,8 +32,16 @@ func _assert_runtime_geometry(main_os: Control) -> void:
 		viewport_size.is_equal_approx(EXPECTED_VIEWPORT_SIZE),
 		"运行视口应为1920×1080，实际为%s" % viewport_size
 	)
+	_assert_disabled_button_texture(
+		main_os.get_node("MainLayout/MainHud") as MainHud
+	)
 
 	var workspace := main_os.get_node("MainLayout/StrategicWorkspace") as StrategicWorkspace
+	main_os.update_time_control_button()
+	_assert_true(
+		workspace.get_world_map().is_scan_paused(),
+		"停止计时器后主场景应暂停地图扫描动画"
+	)
 	var world_map := workspace.get_world_map() as Control
 	_assert_true(
 		world_map.size.x >= 1300.0 and world_map.size.y >= 620.0,
@@ -77,6 +85,25 @@ func _assert_europe_selection_keeps_geometry(main_os: Control) -> void:
 	_assert_runtime_geometry(main_os)
 
 
+func _assert_disabled_button_texture(hud: MainHud) -> void:
+	var button := hud.get_single_step_button()
+	var normal := button.get_theme_stylebox("normal") as StyleBoxTexture
+	var disabled := button.get_theme_stylebox("disabled") as StyleBoxTexture
+	_assert_true(normal != null and disabled != null, "时间按钮应使用纹理样式")
+	if normal == null or disabled == null:
+		return
+	_assert_eq(
+		normal.texture.resource_path,
+		"res://assets/ui/texture_pack_01/button_normal.svg",
+		"普通状态应使用普通按钮纹理"
+	)
+	_assert_eq(
+		disabled.texture.resource_path,
+		"res://assets/ui/texture_pack_01/button_disabled.svg",
+		"禁用状态应使用禁用按钮纹理"
+	)
+
+
 func _assert_compact_layout_geometry() -> void:
 	var compact_viewport := SubViewport.new()
 	compact_viewport.size = COMPACT_VIEWPORT_SIZE
@@ -104,6 +131,11 @@ func _assert_compact_layout_geometry() -> void:
 	var hud := main_os.get_node("MainLayout/MainHud") as MainHud
 	_assert_rect_inside(hud.get_command_dock().get_global_rect(), viewport_size, "紧凑指令坞")
 	var workspace := main_os.get_node("MainLayout/StrategicWorkspace") as StrategicWorkspace
+	main_os.update_time_control_button()
+	_assert_true(
+		workspace.get_world_map().is_scan_paused(),
+		"紧凑视口下停止计时器后地图扫描动画应暂停"
+	)
 	_assert_rect_inside(workspace.get_content_rect(), viewport_size, "紧凑战略内容区")
 	_assert_rect_inside(workspace.get_world_map_rect(), viewport_size, "紧凑世界地图")
 	_assert_true(

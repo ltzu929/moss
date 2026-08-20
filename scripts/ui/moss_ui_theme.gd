@@ -50,14 +50,19 @@ static func button_style(
 	left_border_width: int = 1
 ) -> StyleBox:
 	var texture: Texture2D = null
-	if border == BORDER_BRIGHT:
+	if (
+		border == BORDER
+		and background.r < 0.02
+		and background.g < 0.04
+		and background.b < 0.05
+	):
+		texture = BUTTON_DISABLED_TEXTURE
+	elif border == BORDER_BRIGHT:
 		texture = BUTTON_ACCENT_TEXTURE
 	elif border == ACCENT_CYAN:
 		texture = BUTTON_PRESSED_TEXTURE if background.r < 0.025 else BUTTON_HOVER_TEXTURE
 	elif border == BORDER:
 		texture = BUTTON_NORMAL_TEXTURE
-	elif background.r < 0.02 and background.g < 0.04 and background.b < 0.05:
-		texture = BUTTON_DISABLED_TEXTURE
 	if texture != null:
 		return _button_texture_style(texture)
 	var style := StyleBoxFlat.new()

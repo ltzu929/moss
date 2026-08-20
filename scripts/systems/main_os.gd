@@ -836,6 +836,22 @@ func update_time_control_button() -> void:
 		_situation_auto_paused or _situation_system.has_pending_node(),
 		_time_speed
 	)
+	_update_world_map_scan_state()
+
+
+## 时间暂停或任一模态可见时停止地图扫描动画；恢复后继续扫描。
+func _update_world_map_scan_state() -> void:
+	if _strategic_workspace == null or not is_instance_valid(_strategic_workspace):
+		return
+	var world_map := _strategic_workspace.get_world_map()
+	if world_map == null:
+		return
+	var modal_visible := false
+	for path in ["%EventPopup", "%AllocatePopup", "%TechnologyScreen", "%DecisionArchivePanel"]:
+		if has_node(path) and get_node(path).visible:
+			modal_visible = true
+			break
+	world_map.set_scan_paused(is_game_over or modal_visible or $Timer.is_stopped())
 
 
 func _on_situation_approach_requested(instance_id: String, approach_id: String) -> void:
@@ -1803,6 +1819,7 @@ func show_end_screen(title: String, message: String, result: String = "failed") 
 
 	# 连接重新开始信号
 	end_screen_instance.restart_requested.connect(_on_restart_requested)
+	_update_world_map_scan_state()
 
 
 ## 返回结局界面使用的科技摘要兼容投影。

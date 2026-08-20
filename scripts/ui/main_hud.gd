@@ -242,6 +242,10 @@ func _style_action_button(
 ) -> void:
 	button.custom_minimum_size = minimum_size
 	button.add_theme_color_override("font_color", font_color)
+	button.add_theme_color_override(
+		"font_disabled_color",
+		Color(0.45, 0.52, 0.58, 1.0)
+	)
 	button.add_theme_stylebox_override(
 		"normal",
 		MOSS_THEME.button_style(
@@ -264,6 +268,13 @@ func _style_action_button(
 			Color(0.016, 0.038, 0.050, 1.0),
 			MOSS_THEME.ACCENT_CYAN,
 			2 if emphasized else 1
+		)
+	)
+	button.add_theme_stylebox_override(
+		"disabled",
+		MOSS_THEME.button_style(
+			Color(0.018, 0.028, 0.035, 0.82),
+			MOSS_THEME.BORDER
 		)
 	)
 

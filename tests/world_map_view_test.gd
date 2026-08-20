@@ -57,6 +57,7 @@ func _ready() -> void:
 	_assert_clear_asset_names()
 	_assert_masks_loaded()
 	_assert_editor_preview_contract(world_map_script)
+	_assert_scan_pause_contract()
 	_assert_mask_hit_testing()
 	await _assert_resized_map_hit_testing()
 	await _assert_selection_signal()
@@ -114,6 +115,19 @@ func _assert_editor_preview_contract(world_map_script: GDScript) -> void:
 	_world_map.reload_editor_preview_states()
 	var states: Dictionary = _world_map.get_region_states_snapshot()
 	_assert_eq(states.size(), TEST_REGIONS.size(), "编辑器预览应加载六个区域状态")
+
+
+func _assert_scan_pause_contract() -> void:
+	_assert_true(_world_map.has_method("set_scan_paused"), "应提供 set_scan_paused 暂停接口")
+	_assert_true(_world_map.has_method("is_scan_paused"), "应提供 is_scan_paused 只读查询")
+	_assert_true(not _world_map.is_scan_paused(), "扫描动画初始应处于未暂停状态")
+	_assert_true(_world_map.is_processing(), "运行时默认应处理扫描动画")
+	_world_map.set_scan_paused(true)
+	_assert_true(_world_map.is_scan_paused(), "调用暂停接口后应记录暂停状态")
+	_assert_true(not _world_map.is_processing(), "扫描暂停后应停止 _process 处理")
+	_world_map.set_scan_paused(false)
+	_assert_true(not _world_map.is_scan_paused(), "恢复接口应清除暂停状态")
+	_assert_true(_world_map.is_processing(), "扫描恢复后应重新启用 _process 处理")
 
 
 func _assert_mask_hit_testing() -> void:

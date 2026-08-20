@@ -27,6 +27,8 @@ func _ready() -> void:
 	)
 	%SituationTitle.add_theme_color_override("font_color", MOSS_THEME.ACCENT_CYAN)
 	%DetailTitle.add_theme_color_override("font_color", MOSS_THEME.ACCENT_GOLD)
+	_style_action_button(%CloseButton)
+	_style_action_button(%FocusRegionButton)
 	%SituationProgress.add_theme_stylebox_override(
 		"background",
 		MOSS_THEME.progress_background_style()
@@ -98,6 +100,42 @@ func show_status(message: String, is_error: bool = false) -> void:
 	)
 
 
+## 为局势面板内按钮统一 MOSS 终端四态样式，避免落入 Godot 默认皮肤。
+func _style_action_button(button: Button) -> void:
+	button.add_theme_color_override("font_color", MOSS_THEME.TEXT_PRIMARY)
+	button.add_theme_color_override(
+		"font_disabled_color",
+		Color(0.45, 0.52, 0.58, 1.0)
+	)
+	button.add_theme_stylebox_override(
+		"normal",
+		MOSS_THEME.button_style(MOSS_THEME.PANEL_BACKGROUND, MOSS_THEME.BORDER)
+	)
+	button.add_theme_stylebox_override(
+		"hover",
+		MOSS_THEME.button_style(
+			MOSS_THEME.PANEL_BACKGROUND_HOVER,
+			MOSS_THEME.ACCENT_CYAN,
+			2
+		)
+	)
+	button.add_theme_stylebox_override(
+		"pressed",
+		MOSS_THEME.button_style(
+			Color(0.016, 0.038, 0.050, 1.0),
+			MOSS_THEME.ACCENT_CYAN,
+			2
+		)
+	)
+	button.add_theme_stylebox_override(
+		"disabled",
+		MOSS_THEME.button_style(
+			Color(0.018, 0.028, 0.035, 0.82),
+			MOSS_THEME.BORDER
+		)
+	)
+
+
 func _rebuild_entries() -> void:
 	for child in %EntryList.get_children():
 		child.queue_free()
@@ -113,18 +151,9 @@ func _rebuild_entries() -> void:
 		]
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.tooltip_text = "查看局势详情"
-		button.add_theme_stylebox_override(
-			"normal",
-			MOSS_THEME.button_style(MOSS_THEME.PANEL_BACKGROUND, MOSS_THEME.BORDER)
-		)
-		button.add_theme_stylebox_override(
-			"hover",
-			MOSS_THEME.button_style(
-				MOSS_THEME.PANEL_BACKGROUND_HOVER,
-				MOSS_THEME.ACCENT_CYAN,
-				2
-			)
-		)
+		button.custom_minimum_size = Vector2(0, 40)
+		button.add_theme_font_size_override("font_size", 14)
+		_style_action_button(button)
 		button.pressed.connect(
 			_on_entry_pressed.bind(str(snapshot.get("instance_id", "")))
 		)
@@ -221,6 +250,9 @@ func _rebuild_approaches(snapshot: Dictionary) -> void:
 		]
 		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		button.custom_minimum_size = Vector2(0, 44)
+		button.add_theme_font_size_override("font_size", 14)
+		_style_action_button(button)
 		var approach_id := str(approach.get("approach_id", ""))
 		button.disabled = approach_id == current_id or (current_id != "" and lock_months > 0)
 		if approach_id == current_id:
@@ -265,6 +297,9 @@ func _rebuild_node(snapshot: Dictionary, node: Dictionary) -> void:
 		]
 		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		button.custom_minimum_size = Vector2(0, 44)
+		button.add_theme_font_size_override("font_size", 14)
+		_style_action_button(button)
 		button.disabled = _current_cpu < cpu_cost or _current_energy < energy_cost
 		button.tooltip_text = (
 			"资源不足，无法执行该方案"

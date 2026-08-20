@@ -5,6 +5,7 @@ extends Control
 signal screen_closed()
 
 const TECHNOLOGY_NODE_CARD_SCRIPT := preload("res://scripts/ui/technology_node_card.gd")
+const MOSS_THEME := preload("res://scripts/ui/moss_ui_theme.gd")
 const MAX_WINDOW_SIZE := Vector2(1680.0, 900.0)
 const MIN_WINDOW_SIZE := Vector2(960.0, 560.0)
 const VIEWPORT_MARGIN := 32.0
@@ -61,11 +62,13 @@ var _layout_viewport: Viewport
 @onready var _detail_risk: Label = %DetailRisk
 @onready var _detail_requirements: Label = %DetailRequirements
 @onready var _activate_button: Button = %ActivateButton
+@onready var _close_button: Button = $CenterContainer/WindowPanel/WindowMargin/MainVBox/HeaderPanel/HeaderRow/CloseButton
 
 
 func _ready() -> void:
 	set_process_unhandled_input(true)
 	_index_scene_nodes()
+	_apply_control_theme()
 	_layout_viewport = get_viewport()
 	if not _layout_viewport.size_changed.is_connected(_update_window_size):
 		_layout_viewport.size_changed.connect(_update_window_size)
@@ -138,6 +141,44 @@ func _update_window_size() -> void:
 	var _vsize := _layout_viewport.get_visible_rect().size
 	var _csize := _calculate_window_size(_vsize)
 	_window_panel.custom_minimum_size = _csize
+
+
+## 为科技控制台关闭按钮应用 MOSS 终端样式，避免落入默认皮肤。
+func _apply_control_theme() -> void:
+	if _close_button == null:
+		return
+	_close_button.add_theme_color_override("font_color", MOSS_THEME.TEXT_PRIMARY)
+	_close_button.add_theme_color_override(
+		"font_disabled_color",
+		Color(0.45, 0.52, 0.58, 1.0)
+	)
+	_close_button.add_theme_stylebox_override(
+		"normal",
+		MOSS_THEME.button_style(MOSS_THEME.PANEL_BACKGROUND, MOSS_THEME.BORDER)
+	)
+	_close_button.add_theme_stylebox_override(
+		"hover",
+		MOSS_THEME.button_style(
+			MOSS_THEME.PANEL_BACKGROUND_HOVER,
+			MOSS_THEME.ACCENT_CYAN,
+			2
+		)
+	)
+	_close_button.add_theme_stylebox_override(
+		"pressed",
+		MOSS_THEME.button_style(
+			Color(0.016, 0.038, 0.050, 1.0),
+			MOSS_THEME.ACCENT_CYAN,
+			2
+		)
+	)
+	_close_button.add_theme_stylebox_override(
+		"disabled",
+		MOSS_THEME.button_style(
+			Color(0.018, 0.028, 0.035, 0.82),
+			MOSS_THEME.BORDER
+		)
+	)
 
 
 func _unhandled_input(event: InputEvent) -> void:
