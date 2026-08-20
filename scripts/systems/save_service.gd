@@ -3,6 +3,7 @@ extends RefCounted
 
 const FORMAT_VERSION: int = 1
 const SLOT_IDS: Array[String] = ["autosave", "slot_1", "slot_2", "slot_3"]
+const SAVE_STATE_VALIDATOR := preload("res://scripts/systems/save_state_validator.gd")
 
 var _save_directory: String
 
@@ -62,11 +63,53 @@ func write_slot(
 		"metadata": metadata.duplicate(true),
 		"state": state.duplicate(true),
 	}
-	var file := FileAccess.open(_slot_path(slot_id), FileAccess.WRITE)
+	var final_path := _slot_path(slot_id)
+	var temp_path := "%s.tmp" % final_path
+	var backup_path := "%s.bak" % final_path
+	if FileAccess.file_exists(temp_path):
+		if DirAccess.remove_absolute(ProjectSettings.globalize_path(temp_path)) != OK:
+			return false
+	var file := FileAccess.open(temp_path, FileAccess.WRITE)
 	if file == null:
 		return false
-	file.store_string(JSON.stringify(envelope, "\t"))
+	var serialized := JSON.stringify(envelope, "\t")
+	file.store_string(serialized)
 	file.flush()
+	var write_error := file.get_error()
+	file.close()
+	if write_error != OK or not FileAccess.file_exists(temp_path):
+		if FileAccess.file_exists(temp_path):
+			DirAccess.remove_absolute(ProjectSettings.globalize_path(temp_path))
+		return false
+	if FileAccess.get_file_as_string(temp_path) != serialized:
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(temp_path))
+		return false
+
+	var had_final := FileAccess.file_exists(final_path)
+	if had_final:
+		if FileAccess.file_exists(backup_path):
+			if DirAccess.remove_absolute(ProjectSettings.globalize_path(backup_path)) != OK:
+				DirAccess.remove_absolute(ProjectSettings.globalize_path(temp_path))
+				return false
+		if DirAccess.rename_absolute(
+			ProjectSettings.globalize_path(final_path),
+			ProjectSettings.globalize_path(backup_path)
+		) != OK:
+			DirAccess.remove_absolute(ProjectSettings.globalize_path(temp_path))
+			return false
+	if DirAccess.rename_absolute(
+		ProjectSettings.globalize_path(temp_path),
+		ProjectSettings.globalize_path(final_path)
+	) != OK:
+		if had_final:
+			DirAccess.rename_absolute(
+				ProjectSettings.globalize_path(backup_path),
+				ProjectSettings.globalize_path(final_path)
+			)
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(temp_path))
+		return false
+	if had_final and FileAccess.file_exists(backup_path):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(backup_path))
 	return true
 
 
@@ -90,6 +133,8 @@ func read_slot(slot_id: String) -> Dictionary:
 		return {"success": false, "error": "存档版本不受支持"}
 	if typeof(envelope.get("state")) != TYPE_DICTIONARY:
 		return {"success": false, "error": "存档状态缺失"}
+	if not SAVE_STATE_VALIDATOR.validate_state(envelope["state"]):
+		return {"success": false, "error": "存档状态损坏"}
 	if typeof(envelope.get("metadata", {})) != TYPE_DICTIONARY:
 		return {"success": false, "error": "存档摘要损坏"}
 	return {

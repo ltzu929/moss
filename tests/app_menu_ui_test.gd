@@ -4,6 +4,7 @@ const APP_SCENE: PackedScene = preload("res://scenes/app_root.tscn")
 const SETTINGS_SERVICE_SCRIPT := preload("res://scripts/systems/settings_service.gd")
 const TEST_SAVE_DIR: String = "user://app_menu_ui_test_saves"
 const TEST_SETTINGS_PATH: String = "user://app_menu_ui_test_settings.cfg"
+const BLOCKED_SAVE_PATH: String = "user://app_menu_ui_test_blocked"
 
 
 func _ready() -> void:
@@ -110,11 +111,74 @@ func _assert_main_menu_flow() -> void:
 	add_child(reopened)
 	await get_tree().process_frame
 	_assert_true(not reopened.get_menu_button("continue").disabled, "存在自动档时继续游戏应可用")
-	reopened.get_menu_button("new_game").pressed.emit()
+	var good_auto := SaveService.new(TEST_SAVE_DIR).read_slot("autosave")
+	var bad_latest := FileAccess.open(TEST_SAVE_DIR + "/slot_2.json", FileAccess.WRITE)
+	bad_latest.store_string(
+		JSON.stringify(
+			{
+				"format_version": 1,
+				"saved_at_unix": float(good_auto.get("saved_at_unix", 0.0)) + 100.0,
+				"metadata": {"year": 2070, "month": 1},
+				"state": {},
+			}
+		)
+	)
+	bad_latest.flush()
+	bad_latest.close()
+	reopened.open_slot_browser("load")
 	await get_tree().process_frame
-	var confirmation := reopened.find_child("Confirmation", true, false) as ConfirmationDialog
-	_assert_true(confirmation != null and confirmation.visible, "覆盖自动档前应要求确认")
+	var bad_load_button := reopened.find_child("Slot2ActionButton", true, false) as Button
+	_assert_true(bad_load_button != null and bad_load_button.disabled, "损坏存档的读取按钮应禁用")
+	var slot_back := reopened.find_child("SlotBackButton", true, false) as Button
+	if slot_back != null:
+		slot_back.pressed.emit()
+	reopened.get_menu_button("continue").pressed.emit()
+	await get_tree().process_frame
+	await get_tree().process_frame
+	_assert_true(reopened.get_game_instance() != null, "继续游戏应跳过损坏的最新存档")
+	if reopened.get_game_instance() != null:
+		_assert_eq(reopened.get_game_instance().current_year, int(good_auto.get("state", {}).get("time", {}).get("year", 0)), "继续游戏应载入较旧有效存档")
 	reopened.queue_free()
+	await get_tree().process_frame
+	var blocked_file := FileAccess.open(BLOCKED_SAVE_PATH, FileAccess.WRITE)
+	blocked_file.store_string("blocked")
+	blocked_file.close()
+	var failing_app := _create_app()
+	failing_app.save_directory = BLOCKED_SAVE_PATH
+	add_child(failing_app)
+	await get_tree().process_frame
+	failing_app.get_menu_button("new_game").pressed.emit()
+	await get_tree().process_frame
+	failing_app.open_system_menu()
+	var failing_return := failing_app.find_child("ReturnToTitleButton", true, false) as Button
+	if failing_return != null:
+		failing_return.pressed.emit()
+	var failing_confirmation := failing_app.find_child("Confirmation", true, false) as ConfirmationDialog
+	if failing_confirmation != null:
+		failing_confirmation.confirmed.emit()
+	_assert_true(failing_app.get_game_instance() != null, "自动存档失败时不应销毁当前游戏")
+	_assert_eq(failing_app.get_active_overlay_name(), "system", "自动存档失败时应留在系统菜单")
+	var system_status := failing_app.find_child("SystemMenuStatus", true, false) as Label
+	_assert_true(system_status != null and "未返回主页面" in system_status.text, "自动存档失败时应明确提示")
+	failing_app.queue_free()
+	await get_tree().process_frame
+	_cleanup_test_files()
+	var reopened_after_failure := _create_app()
+	add_child(reopened_after_failure)
+	await get_tree().process_frame
+	_assert_true(reopened_after_failure.get_menu_button("continue").disabled, "失败保存不应伪造可继续存档")
+	reopened_after_failure.queue_free()
+	await get_tree().process_frame
+	var final_app := _create_app()
+	add_child(final_app)
+	await get_tree().process_frame
+	final_app.get_menu_button("new_game").pressed.emit()
+	await get_tree().process_frame
+	final_app.get_menu_button("new_game").pressed.emit()
+	await get_tree().process_frame
+	var confirmation := final_app.find_child("Confirmation", true, false) as ConfirmationDialog
+	_assert_true(confirmation != null and confirmation.visible, "覆盖自动档前应要求确认")
+	final_app.queue_free()
 	await get_tree().process_frame
 
 
@@ -157,6 +221,8 @@ func _cleanup_test_files() -> void:
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 	if FileAccess.file_exists(TEST_SETTINGS_PATH):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_SETTINGS_PATH))
+	if FileAccess.file_exists(BLOCKED_SAVE_PATH):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(BLOCKED_SAVE_PATH))
 	var absolute_dir := ProjectSettings.globalize_path(TEST_SAVE_DIR)
 	if DirAccess.dir_exists_absolute(absolute_dir):
 		DirAccess.remove_absolute(absolute_dir)

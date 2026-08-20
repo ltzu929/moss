@@ -19,6 +19,7 @@ var _slot_overlay: Control
 var _settings_overlay: Control
 var _slot_list: VBoxContainer
 var _slot_status: Label
+var _system_status: Label
 var _settings_status: Label
 var _display_mode_option: OptionButton
 var _resolution_option: OptionButton
@@ -92,6 +93,7 @@ func open_system_menu() -> void:
 	if not _game.can_open_system_menu():
 		return
 	_system_timer_was_running = bool(_game.pause_for_system_menu())
+	_system_status.text = ""
 	_system_overlay.show()
 	_system_overlay.move_to_front()
 
@@ -225,6 +227,10 @@ func _build_system_menu() -> void:
 	var return_button := _make_button("返回主页面", "ReturnToTitleButton")
 	return_button.pressed.connect(_on_return_to_title_pressed)
 	body.add_child(return_button)
+	_system_status = _make_label("", 14, MOSS_THEME.ACCENT_GOLD)
+	_system_status.name = "SystemMenuStatus"
+	_system_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	body.add_child(_system_status)
 	_system_overlay.hide()
 
 
@@ -593,7 +599,9 @@ func _on_return_to_title_pressed() -> void:
 
 
 func _return_to_title() -> void:
-	_save_auto()
+	if not _save_auto():
+		_system_status.text = "保存失败，未返回主页面"
+		return
 	_destroy_game()
 	_show_main_menu("当前进度已保存")
 

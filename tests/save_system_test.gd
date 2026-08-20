@@ -21,24 +21,60 @@ func _assert_slot_file_contract() -> void:
 	_assert_eq(slots.size(), 4, "存档服务应固定提供一个自动档和三个手动档")
 	_assert_true(service.get_latest_valid_slot().is_empty(), "空目录不应提供继续游戏存档")
 	_assert_true(
-		service.write_slot("autosave", {"value": 1}, {"year": 2044, "month": 1}),
+		service.write_slot("autosave", _minimal_valid_state(1), {"year": 2044, "month": 1}),
 		"应能写入自动存档"
 	)
 	_assert_true(
-		service.write_slot("slot_1", {"value": 2}, {"year": 2050, "month": 6}),
+		service.write_slot("slot_1", _minimal_valid_state(2), {"year": 2050, "month": 6}),
 		"应能写入手动存档"
 	)
 	var latest := service.get_latest_valid_slot()
 	_assert_eq(str(latest.get("slot_id", "")), "slot_1", "继续游戏应选择最近有效存档")
 	var loaded := service.read_slot("slot_1")
 	_assert_true(bool(loaded.get("success", false)), "手动存档应能读取")
-	_assert_eq(int(loaded.get("state", {}).get("value", 0)), 2, "读取应保留整数状态")
+	_assert_eq(int(loaded.get("state", {}).get("resources", {}).get("cpu", 0)), 2, "读取应保留整数状态")
+	_assert_true(
+		service.write_slot("slot_1", _minimal_valid_state(3), {"year": 2051, "month": 1}),
+		"覆盖手动存档应成功"
+	)
+	_assert_eq(
+		int(service.read_slot("slot_1").get("state", {}).get("resources", {}).get("cpu", 0)),
+		3,
+		"原子覆盖后应读取新状态"
+	)
+	_assert_true(
+		not FileAccess.file_exists(TEST_SAVE_DIR + "/slot_1.json.tmp")
+		and not FileAccess.file_exists(TEST_SAVE_DIR + "/slot_1.json.bak"),
+		"原子覆盖不应留下临时或备份文件"
+	)
+	var good_slot := service.read_slot("slot_1")
+	var newer_bad := FileAccess.open(TEST_SAVE_DIR + "/slot_2.json", FileAccess.WRITE)
+	newer_bad.store_string(
+		JSON.stringify(
+			{
+				"format_version": 1,
+				"saved_at_unix": float(good_slot.get("saved_at_unix", 0.0)) + 100.0,
+				"metadata": {"year": 2052, "month": 1},
+				"state": {},
+			}
+		)
+	)
+	newer_bad.flush()
+	newer_bad.close()
+	var bad_slot_summary := service.list_slots()[2]
+	_assert_true(not bool(bad_slot_summary.get("valid", true)), "结构损坏的最新档应标记为不可读取")
+	_assert_eq(
+		str(service.get_latest_valid_slot().get("slot_id", "")),
+		"slot_1",
+		"继续游戏应跳过更新但不可恢复的存档"
+	)
 	_assert_true(service.delete_slot("slot_1"), "应能删除手动存档")
 	_assert_true(not service.slot_exists("slot_1"), "删除后槽位文件应消失")
 
 	var corrupt := FileAccess.open(TEST_SAVE_DIR + "/slot_2.json", FileAccess.WRITE)
 	corrupt.store_string("{broken")
 	corrupt.flush()
+	corrupt.close()
 	_assert_true(
 		not bool(service.read_slot("slot_2").get("success", true)),
 		"损坏 JSON 应拒绝读取"
@@ -55,10 +91,61 @@ func _assert_slot_file_contract() -> void:
 		)
 	)
 	unsupported.flush()
+	unsupported.close()
 	_assert_true(
 		"版本" in str(service.read_slot("slot_3").get("error", "")),
 		"不支持的格式版本应给出明确错误"
 	)
+
+
+func _minimal_valid_state(cpu: int) -> Dictionary:
+	var sectors: Dictionary = {}
+	for region_id in [
+		"north_america", "south_america", "europe", "africa", "asia", "oceania"
+	]:
+		sectors[region_id] = {
+			"order": 50,
+			"hope": 50,
+			"authority": 50,
+			"population": 100,
+			"is_locked": false,
+		}
+	return {
+		"version": 1,
+		"time": {
+			"year": 2044,
+			"month": 1,
+			"speed_index": 1,
+			"manually_paused": true,
+			"situation_auto_paused": false,
+		},
+		"resources": {"cpu": cpu, "energy": 100},
+		"sectors": sectors,
+		"events": {
+			"triggered": [],
+			"states": {},
+			"decision_history": {"tags": {}, "records": []},
+		},
+		"technology": {
+			"available_points": 0,
+			"active_node_ids": [],
+			"granted_years": [],
+			"stage": 0,
+		},
+		"commands": {"cooldowns": {}},
+		"situations": {
+			"version": 1,
+			"seed": 1,
+			"rng_state": "1",
+			"instance_counter": 0,
+			"spawn_cooldown_months": 6,
+			"repeat_cooldowns": {},
+			"history": {},
+			"active": [],
+		},
+		"action_log": [],
+		"selected_region": "",
+	}
 
 
 func _assert_main_os_round_trip() -> void:
