@@ -27,6 +27,20 @@ func _assert_main_menu_flow() -> void:
 	add_child(app)
 	await get_tree().process_frame
 	await get_tree().process_frame
+	var background_music := app.find_child("BackgroundMusic", true, false) as AudioStreamPlayer
+	_assert_true(background_music != null, "应用根应创建背景音乐播放器")
+	if background_music != null:
+		_assert_true(background_music.stream != null, "背景音乐播放器应绑定音频流")
+		if background_music.stream != null:
+			_assert_eq(
+				background_music.stream.resource_path,
+				"res://assets/audio/background_music.ogg",
+				"背景音乐应绑定规范化 OGG 资源"
+			)
+			var music_stream := background_music.stream as AudioStreamOggVorbis
+			_assert_true(music_stream != null, "背景音乐应使用 OGG Vorbis 音频流")
+			if music_stream != null:
+				_assert_true(music_stream.loop, "背景音乐应启用音频流原生循环")
 	for action in ["new_game", "continue", "load", "settings", "quit"]:
 		_assert_true(app.get_menu_button(action) != null, "主页面应提供%s按钮" % action)
 	_assert_true(app.get_menu_button("continue").disabled, "无存档时继续游戏应禁用")

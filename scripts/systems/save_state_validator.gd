@@ -134,7 +134,9 @@ static func _validate_decision_history(history: Dictionary) -> bool:
 static func _validate_technology(technology: Dictionary) -> bool:
 	var system: TechnologySystem = TECHNOLOGY_SYSTEM_SCRIPT.new()
 	system.load_nodes_from_disk()
-	return system.can_restore_state(technology)
+	var valid := system.can_restore_state(technology)
+	system.free()
+	return valid
 
 
 static func _validate_commands(commands: Dictionary) -> bool:

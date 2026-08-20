@@ -49,7 +49,6 @@ func _setup_background_music() -> void:
 	_background_music.name = "BackgroundMusic"
 	_background_music.stream = BACKGROUND_MUSIC
 	_background_music.volume_db = -18.0
-	_background_music.finished.connect(_background_music.play)
 	add_child(_background_music)
 	_background_music.play()
 
