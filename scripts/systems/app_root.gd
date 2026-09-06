@@ -1,3 +1,4 @@
+@tool
 class_name AppRoot
 extends Control
 
@@ -10,6 +11,12 @@ const BACKGROUND_MUSIC: AudioStream = preload("res://assets/audio/background_mus
 @export var save_directory: String = "user://saves"
 @export var settings_path: String = "user://settings.cfg"
 @export var apply_display_settings: bool = true
+@export_group("编辑器预览")
+@export_enum("主页面", "系统菜单", "存档", "设置") var editor_preview_page: String = "主页面":
+	set(value):
+		editor_preview_page = value
+		if Engine.is_editor_hint() and is_inside_tree():
+			_render_editor_preview()
 
 var _save_service: SaveService
 var _settings_service: SettingsService
@@ -34,6 +41,12 @@ var _menu_buttons: Dictionary = {}
 
 func _ready() -> void:
 	set_process_unhandled_input(true)
+	if Engine.is_editor_hint():
+		_build_interface()
+		_render_editor_preview()
+		return
+	set_process(false)
+
 	_save_service = SAVE_SERVICE_SCRIPT.new(save_directory)
 	_settings_service = SETTINGS_SERVICE_SCRIPT.new(settings_path)
 	_build_interface()
@@ -42,6 +55,92 @@ func _ready() -> void:
 	if apply_display_settings:
 		_settings_service.apply_settings(settings)
 	_show_main_menu()
+
+
+func _process(_delta: float) -> void:
+	if not Engine.is_editor_hint():
+		return
+	set_process(false)
+	if _main_menu == null and is_inside_tree():
+		_build_interface()
+		_render_editor_preview()
+
+
+func _render_editor_preview() -> void:
+	if _main_menu == null:
+		return
+	_main_menu.hide()
+	_system_overlay.hide()
+	_slot_overlay.hide()
+	_settings_overlay.hide()
+
+	match editor_preview_page:
+		"系统菜单":
+			_system_status.text = "编辑器示例页面，不会暂停或保存游戏"
+			_system_overlay.show()
+		"存档":
+			_slot_mode = "load"
+			_render_editor_slot_rows()
+			_slot_status.text = "编辑器示例内容，不会读写真实存档"
+			_slot_overlay.show()
+		"设置":
+			_display_mode_option.select(0)
+			_resolution_option.select(0)
+			_resolution_option.disabled = false
+			_settings_status.text = "编辑器示例：窗口 / 1920 × 1080"
+			_settings_overlay.show()
+		_:
+			_main_menu.show()
+			var continue_button := get_menu_button("continue")
+			if continue_button != null:
+				continue_button.disabled = false
+
+
+func _render_editor_slot_rows() -> void:
+	for child in _slot_list.get_children():
+		_slot_list.remove_child(child)
+		child.queue_free()
+
+	var slots: Array[Dictionary] = [
+		{
+			"slot_id": "autosave",
+			"kind": "auto",
+			"exists": true,
+			"valid": true,
+			"saved_at_unix": 0.0,
+			"metadata": {"year": 2044, "month": 1, "model_name": "MOSS-550C"},
+			"error": "",
+		},
+		{
+			"slot_id": "slot_1",
+			"kind": "manual",
+			"exists": true,
+			"valid": true,
+			"saved_at_unix": 0.0,
+			"metadata": {"year": 2053, "month": 7, "model_name": "MOSS-550C"},
+			"error": "",
+		},
+		{
+			"slot_id": "slot_2",
+			"kind": "manual",
+			"exists": true,
+			"valid": true,
+			"saved_at_unix": 0.0,
+			"metadata": {"year": 2065, "month": 3, "model_name": "MOSS-550W"},
+			"error": "",
+		},
+		{
+			"slot_id": "slot_3",
+			"kind": "manual",
+			"exists": true,
+			"valid": true,
+			"saved_at_unix": 0.0,
+			"metadata": {"year": 2070, "month": 11, "model_name": "MOSS"},
+			"error": "",
+		},
+	]
+	for slot in slots:
+		_slot_list.add_child(_build_slot_row(slot))
 
 
 func _setup_background_music() -> void:
@@ -54,6 +153,8 @@ func _setup_background_music() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if Engine.is_editor_hint():
+		return
 	if not event.is_action_pressed("ui_cancel"):
 		return
 	if _settings_overlay.visible:
@@ -119,6 +220,10 @@ func close_system_menu() -> void:
 
 func open_slot_browser(mode: String = "load") -> void:
 	_slot_mode = "save" if mode == "save" else "load"
+	if Engine.is_editor_hint():
+		_render_editor_slot_rows()
+		_slot_overlay.show()
+		return
 	_rebuild_slot_rows()
 	_slot_status.text = ""
 	_slot_overlay.show()
@@ -126,6 +231,9 @@ func open_slot_browser(mode: String = "load") -> void:
 
 
 func open_settings() -> void:
+	if Engine.is_editor_hint():
+		_settings_overlay.show()
+		return
 	var settings := _settings_service.load_settings()
 	_display_mode_option.select(
 		1 if str(settings["mode"]) == SettingsService.FULLSCREEN else 0
@@ -410,6 +518,8 @@ func _show_main_menu(message: String = "") -> void:
 
 
 func _on_new_game_pressed() -> void:
+	if Engine.is_editor_hint():
+		return
 	if _save_service.slot_exists("autosave"):
 		_ask_confirmation(
 			"开始新游戏将覆盖自动存档，三个手动存档会保留。",
@@ -425,6 +535,8 @@ func _start_new_game() -> void:
 
 
 func _on_continue_pressed() -> void:
+	if Engine.is_editor_hint():
+		return
 	var latest := _save_service.get_latest_valid_slot()
 	if latest.is_empty():
 		_show_main_menu("没有可继续的有效存档")
@@ -433,10 +545,14 @@ func _on_continue_pressed() -> void:
 
 
 func _on_load_pressed() -> void:
+	if Engine.is_editor_hint():
+		return
 	open_slot_browser("load")
 
 
 func _on_quit_pressed() -> void:
+	if Engine.is_editor_hint():
+		return
 	get_tree().quit()
 
 
@@ -538,14 +654,16 @@ func _format_slot_text(slot: Dictionary) -> String:
 		int(metadata.get("year", 2044)),
 		int(metadata.get("month", 1)),
 	]
-	var saved := Time.get_datetime_dict_from_unix_time(int(slot["saved_at_unix"]))
-	var saved_text := "%04d-%02d-%02d %02d:%02d" % [
-		int(saved.get("year", 0)),
-		int(saved.get("month", 0)),
-		int(saved.get("day", 0)),
-		int(saved.get("hour", 0)),
-		int(saved.get("minute", 0)),
-	]
+	var saved_text := "编辑器示例" if Engine.is_editor_hint() else ""
+	if not Engine.is_editor_hint():
+		var saved := Time.get_datetime_dict_from_unix_time(int(slot["saved_at_unix"]))
+		saved_text = "%04d-%02d-%02d %02d:%02d" % [
+			int(saved.get("year", 0)),
+			int(saved.get("month", 0)),
+			int(saved.get("day", 0)),
+			int(saved.get("hour", 0)),
+			int(saved.get("minute", 0)),
+		]
 	return "%s\n%s  //  %s  //  %s" % [
 		slot_name,
 		date_text,
@@ -623,6 +741,8 @@ func _on_display_mode_selected(index: int) -> void:
 
 
 func _on_apply_settings_pressed() -> void:
+	if Engine.is_editor_hint():
+		return
 	var size := SettingsService.RESOLUTIONS[_resolution_option.selected]
 	var settings := {
 		"mode": (

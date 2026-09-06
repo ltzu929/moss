@@ -1,5 +1,6 @@
 ## 主界面 HUD 组件。
 ## 只接收主控制器传入的资源、时间和指令快照，不读取 MainOS 或战略工作区内部节点。
+@tool
 class_name MainHud
 extends Control
 
@@ -14,6 +15,7 @@ signal system_requested
 
 const MOSS_THEME := preload("res://scripts/ui/moss_ui_theme.gd")
 const COMMAND_BUTTON_SCENE := preload("res://scenes/command_button.tscn")
+const EDITOR_PREVIEW_COMMAND: CommandData = preload("res://data/commands/command_allocate.tres")
 
 const SIDE_MARGIN: float = 16.0
 const TOP_MARGIN: float = 16.0
@@ -55,6 +57,28 @@ func _ready() -> void:
 	_time_speed_option.select(1)
 	_apply_theme()
 	_layout_children()
+	if Engine.is_editor_hint():
+		_render_editor_preview()
+
+
+func _render_editor_preview() -> void:
+	update_resources("MOSS-550C", 30, 100, 1, 0, 0, 2)
+	set_time_state(2044, 1, false, true, false, 1.0)
+	set_command_context("未选择区域  //  请选择地图或底部区域条")
+	var preview_command := EDITOR_PREVIEW_COMMAND.duplicate(true) as CommandData
+	if preview_command == null:
+		return
+	var preview_commands: Array[CommandData] = [preview_command]
+	set_commands(preview_commands)
+	set_command_availability(
+		{
+			preview_command.command_id: {
+				"available": false,
+				"reason": "未选择区域，无法执行算力分配",
+				"cost_text": "需要先选择区域",
+			}
+		}
+	)
 
 
 func _notification(what: int) -> void:
@@ -288,34 +312,50 @@ func _style_action_button(
 
 
 func _on_decision_archive_pressed() -> void:
+	if Engine.is_editor_hint():
+		return
 	decision_archive_requested.emit()
 
 
 func _on_technology_pressed() -> void:
+	if Engine.is_editor_hint():
+		return
 	technology_requested.emit()
 
 
 func _on_situation_pressed() -> void:
+	if Engine.is_editor_hint():
+		return
 	situation_requested.emit()
 
 
 func _on_time_speed_selected(index: int) -> void:
+	if Engine.is_editor_hint():
+		return
 	var speeds: Array[float] = [0.5, 1.0, 2.0]
 	if index >= 0 and index < speeds.size():
 		time_speed_requested.emit(speeds[index])
 
 
 func _on_single_step_pressed() -> void:
+	if Engine.is_editor_hint():
+		return
 	single_step_requested.emit()
 
 
 func _on_time_control_pressed() -> void:
+	if Engine.is_editor_hint():
+		return
 	time_control_requested.emit()
 
 
 func _on_system_pressed() -> void:
+	if Engine.is_editor_hint():
+		return
 	system_requested.emit()
 
 
 func _on_command_pressed(command: CommandData) -> void:
+	if Engine.is_editor_hint():
+		return
 	command_requested.emit(command)

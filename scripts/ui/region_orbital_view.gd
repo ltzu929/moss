@@ -1,3 +1,4 @@
+@tool
 class_name RegionOrbitalView
 extends Control
 
@@ -26,7 +27,7 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_build_viewport()
 	focus_region(_focused_region)
-	set_process(true)
+	set_process(not Engine.is_editor_hint())
 
 
 func _process(delta: float) -> void:

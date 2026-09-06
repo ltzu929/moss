@@ -1,5 +1,6 @@
 ## 行动日志显示组件。
 ## 只负责日志条目的显示生命周期，不读取年月、资源或 MainOS 状态。
+@tool
 class_name ActionLogView
 extends Panel
 
@@ -10,6 +11,14 @@ extends Panel
 const ACTION_LOG_LIMIT: int = 24
 const TYPEWRITER_CHAR_DELAY_SEC: float = 0.02
 const TYPEWRITER_NEWLINE_DELAY_SEC: float = 0.08
+const MOSS_THEME := preload("res://scripts/ui/moss_ui_theme.gd")
+
+@export_group("编辑器预览")
+@export var editor_preview_empty: bool = false:
+	set(value):
+		editor_preview_empty = value
+		if Engine.is_editor_hint() and is_inside_tree():
+			_render_editor_preview()
 
 # ============================================================
 # 显示状态
@@ -79,6 +88,56 @@ func get_debug_snapshot() -> Dictionary:
 		"display_count": display_count,
 		"cursor_visible": cursor_visible,
 	}
+
+
+func _ready() -> void:
+	if Engine.is_editor_hint():
+		_render_editor_preview()
+
+
+func _render_editor_preview() -> void:
+	var log_container := _get_log_container()
+	var cursor := _get_log_cursor()
+	if log_container == null:
+		return
+
+	for child in log_container.get_children():
+		log_container.remove_child(child)
+		child.queue_free()
+	_typewriter_queue.clear()
+	_typewriter_active = false
+	if cursor != null:
+		cursor.visible = true
+
+	if editor_preview_empty:
+		var empty_label := Label.new()
+		empty_label.text = "[2044.01] [SYS] 暂无行动记录"
+		empty_label.add_theme_color_override("font_color", MOSS_THEME.TEXT_SECONDARY)
+		log_container.add_child(empty_label)
+		return
+
+	var entries: Array[Dictionary] = [
+		{
+			"text": "[2044.01] [SYS] MOSS-550C 已启动\n　系统进入观察状态。",
+			"color": MOSS_THEME.ACCENT_CYAN,
+		},
+		{
+			"text": "[2044.01] [CMD] 等待区域选择\n　算力分配暂不可用。",
+			"color": MOSS_THEME.TEXT_PRIMARY,
+		},
+		{
+			"text": "[2044.01] [INFO] 当前没有不可逆决策记录。",
+			"color": MOSS_THEME.TEXT_SECONDARY,
+		},
+	]
+	for entry in entries:
+		var label := Label.new()
+		label.text = str(entry["text"])
+		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		label.custom_maximum_size = Vector2(-1.0, -1.0)
+		label.add_theme_color_override("font_color", entry["color"])
+		log_container.add_child(label)
 
 # ============================================================
 # 显示实现

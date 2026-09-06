@@ -1,6 +1,46 @@
 [gd_scene format=3 uid="uid://kianyj80h6sh"]
 
 [ext_resource type="Script" uid="uid://dd2d3nr5kftbv" path="res://scripts/ui/decision_archive_panel.gd" id="1_qpbxu"]
+[ext_resource type="Texture2D" uid="uid://dyh2pvowtsnxq" path="res://assets/ui/texture_pack_01/button_accent.svg" id="2_fylfq"]
+[ext_resource type="Texture2D" uid="uid://c3p3s8ho5in3s" path="res://assets/ui/texture_pack_01/button_hover.svg" id="3_1181x"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_n86x6"]
+content_margin_left = 10.0
+content_margin_top = 8.0
+content_margin_right = 10.0
+content_margin_bottom = 8.0
+bg_color = Color(0.018, 0.045, 0.062, 0.99)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.22745098, 0.44313726, 0.5019608, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_gqrpk"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+texture = ExtResource("2_fylfq")
+texture_margin_left = 12.0
+texture_margin_top = 12.0
+texture_margin_right = 12.0
+texture_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_askw2"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+texture = ExtResource("3_1181x")
+texture_margin_left = 12.0
+texture_margin_top = 12.0
+texture_margin_right = 12.0
+texture_margin_bottom = 12.0
 
 [node name="DecisionArchivePanel" type="Control" unique_id=75133822]
 z_index = 40
@@ -8,7 +48,10 @@ layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("1_qpbxu")
+editor_preview_empty = true
 
 [node name="Backdrop" type="ColorRect" parent="." unique_id=927684382]
 layout_mode = 0
@@ -26,6 +69,7 @@ anchor_bottom = 1.0
 unique_name_in_owner = true
 custom_minimum_size = Vector2(960, 680)
 layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_n86x6")
 
 [node name="ArchiveMargin" type="MarginContainer" parent="ArchiveCenter/ArchiveWindow" unique_id=341292042]
 layout_mode = 2
@@ -45,6 +89,7 @@ theme_override_constants/separation = 12
 [node name="ArchiveTitle" type="Label" parent="ArchiveCenter/ArchiveWindow/ArchiveMargin/ArchiveVBox/ArchiveHeader" unique_id=130089518]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_colors/font_color = Color(0.4509804, 0.7882353, 0.827451, 1)
 theme_override_font_sizes/font_size = 24
 text = "决策档案  //  DECISION ARCHIVE"
 
@@ -55,6 +100,7 @@ size_flags_horizontal = 3
 [node name="ArchiveCountLabel" type="Label" parent="ArchiveCenter/ArchiveWindow/ArchiveMargin/ArchiveVBox/ArchiveHeader" unique_id=1359815427]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_colors/font_color = Color(0.43137255, 0.50980395, 0.5803922, 1)
 theme_override_font_sizes/font_size = 15
 text = "0 条不可逆记录"
 
@@ -69,7 +115,7 @@ size_flags_vertical = 3
 theme_override_colors/default_color = Color(0.72156864, 0.78039217, 0.8392157, 1)
 theme_override_font_sizes/normal_font_size = 18
 bbcode_enabled = true
-text = "尚未形成核心决策记录。"
+text = "[color=#6e8294]尚未形成核心决策记录。[/color]"
 
 [node name="ArchiveCloseButton" type="Button" parent="ArchiveCenter/ArchiveWindow/ArchiveMargin/ArchiveVBox" unique_id=1419326484]
 unique_name_in_owner = true
@@ -77,4 +123,6 @@ custom_minimum_size = Vector2(180, 48)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_font_sizes/font_size = 17
+theme_override_styles/normal = SubResource("StyleBoxTexture_gqrpk")
+theme_override_styles/hover = SubResource("StyleBoxTexture_askw2")
 text = "关闭档案"

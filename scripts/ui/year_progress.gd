@@ -1,5 +1,6 @@
 ## 日期进度条组件
 ## 显示 2044.01→2075.01 的游戏进程
+@tool
 class_name YearProgress
 extends Control
 

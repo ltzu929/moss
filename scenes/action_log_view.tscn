@@ -15,7 +15,7 @@ border_width_bottom = 1
 border_color = Color(0.118, 0.204, 0.267, 1)
 
 [node name="ActionLogView" type="Panel"]
-custom_minimum_size = Vector2(0, 120)
+custom_minimum_size = Vector2(640, 160)
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_hud")

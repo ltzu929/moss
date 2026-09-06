@@ -1,5 +1,6 @@
 ## 结局界面脚本
 ## 显示游戏结束时的全屏渐变界面、标题、统计摘要和打字机文本效果
+@tool
 extends Control
 
 # ============================================================
@@ -38,6 +39,18 @@ const GRAD_BOTTOM_FAILED := Color(0.05, 0.05, 0.05, 1)
 ## 游戏起始年份，用于结局详情展示
 const START_YEAR: int = 2044
 
+@export_group("编辑器预览")
+@export_enum("共存协议", "全域托管", "人类自主", "系统失败") var editor_preview_result: String = "共存协议":
+	set(value):
+		editor_preview_result = value
+		if Engine.is_editor_hint() and is_inside_tree():
+			_render_editor_preview()
+@export_multiline var editor_preview_message: String = "MOSS 与人类保持有限协作。\n文明在控制与自主之间继续前进。":
+	set(value):
+		editor_preview_message = value
+		if Engine.is_editor_hint() and is_inside_tree():
+			_render_editor_preview()
+
 # ============================================================
 # 成员变量
 # ============================================================
@@ -50,8 +63,37 @@ var _is_typing: bool = false
 # ============================================================
 
 func _ready() -> void:
-	# 初始隐藏，等待游戏结束时显示
-	hide()
+	if Engine.is_editor_hint():
+		_render_editor_preview()
+	else:
+		# 初始隐藏，等待游戏结束时显示
+		hide()
+
+
+func _render_editor_preview() -> void:
+	var result: String = "coexistence"
+	if editor_preview_result == "全域托管":
+		result = "managed"
+	elif editor_preview_result == "人类自主":
+		result = "human_autonomy"
+	elif editor_preview_result == "系统失败":
+		result = "failed"
+	var title: String = editor_preview_result
+	show_end(
+		title,
+		editor_preview_message,
+		result,
+		68,
+		74,
+		23,
+		2075,
+		1,
+		3,
+		25,
+		6,
+		6,
+		"托管 2  核心 3  人类 2\n核心：分布式认知 / 公共决策",
+	)
 
 # ============================================================
 # 公共函数
@@ -217,6 +259,13 @@ func _set_label_color(path: String, color: Color) -> void:
 
 ## 打字机效果：逐字显示文本
 func _start_typewriter(full_text: String, target_label: Label) -> void:
+	if Engine.is_editor_hint():
+		target_label.text = full_text
+		_is_typing = false
+		if has_node("%RestartButton"):
+			%RestartButton.visible = true
+		return
+
 	_is_typing = true
 	var chars := full_text.length()
 
@@ -241,5 +290,7 @@ func _start_typewriter(full_text: String, target_label: Label) -> void:
 
 ## 重新开始按钮点击回调
 func _on_restart_button_pressed() -> void:
+	if Engine.is_editor_hint():
+		return
 	restart_requested.emit()
 	hide_end()

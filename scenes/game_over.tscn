@@ -52,17 +52,18 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_xeevv")
+editor_preview_result = "系统失败"
 
-[node name="BackgroundGradient" type="ColorRect" parent="."]
+[node name="BackgroundGradient" type="ColorRect" parent="." unique_id=1114055412]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.1, 0, 0, 1)
+color = Color(0, 0, 0, 1)
 
-[node name="MainMargin" type="MarginContainer" parent="."]
+[node name="MainMargin" type="MarginContainer" parent="." unique_id=694076988]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -78,96 +79,96 @@ theme_override_constants/margin_top = 0
 theme_override_constants/margin_right = 0
 theme_override_constants/margin_bottom = 0
 
-[node name="TerminalFrame" type="PanelContainer" parent="MainMargin"]
+[node name="TerminalFrame" type="PanelContainer" parent="MainMargin" unique_id=1256609262]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_frame")
 
-[node name="TerminalMargin" type="MarginContainer" parent="MainMargin/TerminalFrame"]
+[node name="TerminalMargin" type="MarginContainer" parent="MainMargin/TerminalFrame" unique_id=1377742304]
 layout_mode = 2
 theme_override_constants/margin_left = 28
 theme_override_constants/margin_top = 28
 theme_override_constants/margin_right = 28
 theme_override_constants/margin_bottom = 28
 
-[node name="MainVBox" type="VBoxContainer" parent="MainMargin/TerminalFrame/TerminalMargin"]
+[node name="MainVBox" type="VBoxContainer" parent="MainMargin/TerminalFrame/TerminalMargin" unique_id=461567225]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 18
 
-[node name="Header" type="VBoxContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox"]
+[node name="Header" type="VBoxContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox" unique_id=823898866]
 layout_mode = 2
 size_flags_horizontal = 3
-alignment = 1
 theme_override_constants/separation = 8
+alignment = 1
 
 [node name="EndTitle" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/Header" unique_id=619900840]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.4, 0.4, 1)
 theme_override_font_sizes/font_size = 52
-theme_override_colors/font_color = Color(1, 0.267, 0.267, 1)
-text = "MOSS 协议结算"
+text = "系统失败"
 horizontal_alignment = 1
 
-[node name="EndSubtitle" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/Header"]
+[node name="EndSubtitle" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/Header" unique_id=1469254324]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 14
 theme_override_colors/font_color = Color(0.5, 0.56, 0.62, 1)
-text = "DOMINATION PROTOCOL"
+theme_override_font_sizes/font_size = 14
+text = "SYSTEM FAILURE"
 horizontal_alignment = 1
 
-[node name="BodyRow" type="HBoxContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox"]
+[node name="BodyRow" type="HBoxContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox" unique_id=1696284926]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 24
 
-[node name="VisualPanel" type="PanelContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow"]
+[node name="VisualPanel" type="PanelContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow" unique_id=153656175]
 custom_minimum_size = Vector2(540, 0)
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
-[node name="VisualMargin" type="MarginContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/VisualPanel"]
+[node name="VisualMargin" type="MarginContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/VisualPanel" unique_id=203917679]
 layout_mode = 2
 theme_override_constants/margin_left = 24
 theme_override_constants/margin_top = 24
 theme_override_constants/margin_right = 24
 theme_override_constants/margin_bottom = 24
 
-[node name="VisualVBox" type="VBoxContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/VisualPanel/VisualMargin"]
+[node name="VisualVBox" type="VBoxContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/VisualPanel/VisualMargin" unique_id=1605413319]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-alignment = 1
 theme_override_constants/separation = 18
+alignment = 1
 
-[node name="VisualPlaceholderTitle" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/VisualPanel/VisualMargin/VisualVBox"]
+[node name="VisualPlaceholderTitle" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/VisualPanel/VisualMargin/VisualVBox" unique_id=284787257]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
 theme_override_colors/font_color = Color(0.545, 0.867, 0.851, 1)
-text = "EARTH STATUS PLACEHOLDER"
+theme_override_font_sizes/font_size = 20
+text = "SYSTEM FAILURE VIEW PLACEHOLDER"
 horizontal_alignment = 1
 
-[node name="VisualOrbitalPlaceholder" type="PanelContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/VisualPanel/VisualMargin/VisualVBox"]
+[node name="VisualOrbitalPlaceholder" type="PanelContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/VisualPanel/VisualMargin/VisualVBox" unique_id=1895092007]
 custom_minimum_size = Vector2(0, 300)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_badge")
 
-[node name="VisualOrbitalLabel" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/VisualPanel/VisualMargin/VisualVBox/VisualOrbitalPlaceholder"]
+[node name="VisualOrbitalLabel" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/VisualPanel/VisualMargin/VisualVBox/VisualOrbitalPlaceholder" unique_id=1704964606]
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
 theme_override_colors/font_color = Color(0.43, 0.51, 0.58, 1)
+theme_override_font_sizes/font_size = 16
 text = "ORBIT / EARTH RENDER SLOT"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="VisualPlaceholderNote" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/VisualPanel/VisualMargin/VisualVBox"]
+[node name="VisualPlaceholderNote" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/VisualPanel/VisualMargin/VisualVBox" unique_id=1679512356]
 custom_maximum_size = Vector2(490, -1)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.43, 0.51, 0.58, 1)
@@ -175,216 +176,218 @@ text = "主视觉占位，后续可替换为地球/太空素材。"
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="CenterColumn" type="VBoxContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow"]
+[node name="CenterColumn" type="VBoxContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow" unique_id=1524345897]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 22
 
-[node name="ProtocolBadge" type="PanelContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn"]
+[node name="ProtocolBadge" type="PanelContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn" unique_id=291044987]
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_badge")
 
-[node name="ProtocolBadgeLabel" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/ProtocolBadge"]
+[node name="ProtocolBadgeLabel" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/ProtocolBadge" unique_id=141595354]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.4, 0.4, 1)
 theme_override_font_sizes/font_size = 16
-theme_override_colors/font_color = Color(1, 0.267, 0.267, 1)
-text = "Lv.2 控制权: 23%"
+text = "阶段 3  控制权: 23%"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="StatsContainer" type="HBoxContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn"]
+[node name="StatsContainer" type="HBoxContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn" unique_id=1399407356]
 layout_mode = 2
 theme_override_constants/separation = 58
 alignment = 1
 
-[node name="StatOrder" type="VBoxContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/StatsContainer"]
+[node name="StatOrder" type="VBoxContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/StatsContainer" unique_id=435964430]
 layout_mode = 2
 alignment = 1
 
-[node name="StatOrderValue" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/StatsContainer/StatOrder"]
+[node name="StatOrderValue" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/StatsContainer/StatOrder" unique_id=250369489]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 34
 theme_override_colors/font_color = Color(0.27, 0.53, 1, 1)
-text = "0"
+theme_override_font_sizes/font_size = 34
+text = "68"
 horizontal_alignment = 1
 
-[node name="StatOrderLabel" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/StatsContainer/StatOrder"]
+[node name="StatOrderLabel" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/StatsContainer/StatOrder" unique_id=1729321930]
 layout_mode = 2
-theme_override_font_sizes/font_size = 12
 theme_override_colors/font_color = Color(0.58, 0.64, 0.7, 1)
+theme_override_font_sizes/font_size = 12
 text = "平均秩序"
 horizontal_alignment = 1
 
-[node name="StatHope" type="VBoxContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/StatsContainer"]
+[node name="StatHope" type="VBoxContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/StatsContainer" unique_id=1433520453]
 layout_mode = 2
 alignment = 1
 
-[node name="StatHopeValue" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/StatsContainer/StatHope"]
+[node name="StatHopeValue" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/StatsContainer/StatHope" unique_id=1278047658]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 34
 theme_override_colors/font_color = Color(0.27, 0.8, 0.27, 1)
-text = "0"
+theme_override_font_sizes/font_size = 34
+text = "74"
 horizontal_alignment = 1
 
-[node name="StatHopeLabel" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/StatsContainer/StatHope"]
+[node name="StatHopeLabel" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/StatsContainer/StatHope" unique_id=1636298161]
 layout_mode = 2
-theme_override_font_sizes/font_size = 12
 theme_override_colors/font_color = Color(0.58, 0.64, 0.7, 1)
+theme_override_font_sizes/font_size = 12
 text = "平均希望"
 horizontal_alignment = 1
 
-[node name="StatAuthority" type="VBoxContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/StatsContainer"]
+[node name="StatAuthority" type="VBoxContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/StatsContainer" unique_id=1221802242]
 layout_mode = 2
 alignment = 1
 
-[node name="StatAuthorityValue" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/StatsContainer/StatAuthority"]
+[node name="StatAuthorityValue" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/StatsContainer/StatAuthority" unique_id=80141982]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 34
 theme_override_colors/font_color = Color(1, 0.267, 0.267, 1)
-text = "0"
+theme_override_font_sizes/font_size = 34
+text = "23"
 horizontal_alignment = 1
 
-[node name="StatAuthorityLabel" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/StatsContainer/StatAuthority"]
+[node name="StatAuthorityLabel" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/StatsContainer/StatAuthority" unique_id=797037420]
 layout_mode = 2
-theme_override_font_sizes/font_size = 12
 theme_override_colors/font_color = Color(0.58, 0.64, 0.7, 1)
+theme_override_font_sizes/font_size = 12
 text = "平均控制权"
 horizontal_alignment = 1
 
-[node name="MilestonePanel" type="PanelContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn"]
+[node name="MilestonePanel" type="PanelContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn" unique_id=2085795481]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
-[node name="MilestoneMargin" type="MarginContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/MilestonePanel"]
+[node name="MilestoneMargin" type="MarginContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/MilestonePanel" unique_id=888993603]
 layout_mode = 2
 theme_override_constants/margin_left = 18
 theme_override_constants/margin_top = 18
 theme_override_constants/margin_right = 18
 theme_override_constants/margin_bottom = 18
 
-[node name="MilestoneVBox" type="VBoxContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/MilestonePanel/MilestoneMargin"]
+[node name="MilestoneVBox" type="VBoxContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/MilestonePanel/MilestoneMargin" unique_id=1835509414]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="MilestoneTitle" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/MilestonePanel/MilestoneMargin/MilestoneVBox"]
+[node name="MilestoneTitle" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/MilestonePanel/MilestoneMargin/MilestoneVBox" unique_id=1853102803]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.545, 0.867, 0.851, 1)
 text = "关键里程碑"
 horizontal_alignment = 1
 
-[node name="MilestoneGrid" type="GridContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/MilestonePanel/MilestoneMargin/MilestoneVBox"]
+[node name="MilestoneGrid" type="GridContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/MilestonePanel/MilestoneMargin/MilestoneVBox" unique_id=1056510933]
 layout_mode = 2
-columns = 2
 theme_override_constants/h_separation = 20
 theme_override_constants/v_separation = 8
+columns = 2
 
-[node name="MilestoneOrder" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/MilestonePanel/MilestoneMargin/MilestoneVBox/MilestoneGrid"]
+[node name="MilestoneOrder" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/MilestonePanel/MilestoneMargin/MilestoneVBox/MilestoneGrid" unique_id=1308851840]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.27, 0.53, 1, 1)
 text = "秩序网络"
 
-[node name="MilestoneHope" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/MilestonePanel/MilestoneMargin/MilestoneVBox/MilestoneGrid"]
+[node name="MilestoneHope" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/MilestonePanel/MilestoneMargin/MilestoneVBox/MilestoneGrid" unique_id=767293259]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.27, 0.8, 0.27, 1)
 text = "希望变量"
 
-[node name="MilestoneProtocol" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/MilestonePanel/MilestoneMargin/MilestoneVBox/MilestoneGrid"]
+[node name="MilestoneProtocol" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/MilestonePanel/MilestoneMargin/MilestoneVBox/MilestoneGrid" unique_id=1451069797]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.267, 0.267, 1)
 text = "协议升级"
 
-[node name="MilestoneResult" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/MilestonePanel/MilestoneMargin/MilestoneVBox/MilestoneGrid"]
+[node name="MilestoneResult" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/CenterColumn/MilestonePanel/MilestoneMargin/MilestoneVBox/MilestoneGrid" unique_id=1767259504]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.267, 0.267, 1)
-text = "终局确立"
+theme_override_colors/font_color = Color(0.4, 0.4, 0.4, 1)
+text = "系统终止"
 
-[node name="DetailsPanel" type="PanelContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow"]
+[node name="DetailsPanel" type="PanelContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow" unique_id=1701028315]
 custom_minimum_size = Vector2(380, 0)
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
-[node name="DetailsMargin" type="MarginContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/DetailsPanel"]
+[node name="DetailsMargin" type="MarginContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/DetailsPanel" unique_id=1695940381]
 layout_mode = 2
 theme_override_constants/margin_left = 20
 theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 20
 
-[node name="DetailsVBox" type="VBoxContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/DetailsPanel/DetailsMargin"]
+[node name="DetailsVBox" type="VBoxContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/DetailsPanel/DetailsMargin" unique_id=1401726999]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="DetailsTitle" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/DetailsPanel/DetailsMargin/DetailsVBox"]
+[node name="DetailsTitle" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/DetailsPanel/DetailsMargin/DetailsVBox" unique_id=291919439]
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
 theme_override_colors/font_color = Color(0.545, 0.867, 0.851, 1)
+theme_override_font_sizes/font_size = 18
 text = "详细数据"
 
-[node name="DetailDurationValue" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/DetailsPanel/DetailsMargin/DetailsVBox"]
+[node name="DetailDurationValue" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/DetailsPanel/DetailsMargin/DetailsVBox" unique_id=612331286]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.78, 0.84, 1)
-text = "游戏时段: --"
+text = "游戏时段: 2044 - 2075"
 
-[node name="DetailEndYearValue" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/DetailsPanel/DetailsMargin/DetailsVBox"]
+[node name="DetailEndYearValue" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/DetailsPanel/DetailsMargin/DetailsVBox" unique_id=1714252310]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.78, 0.84, 1)
-text = "结束时间: --"
+text = "结束时间: 2075.01"
 
-[node name="DetailTechnologyValue" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/DetailsPanel/DetailsMargin/DetailsVBox"]
+[node name="DetailTechnologyValue" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/DetailsPanel/DetailsMargin/DetailsVBox" unique_id=407435263]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.78, 0.84, 1)
-text = "最终科技阶段: --"
+text = "最终形态: MOSS
+托管 2  核心 3  人类 2
+核心：分布式认知 / 公共决策"
 
-[node name="DetailAuthorityValue" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/DetailsPanel/DetailsMargin/DetailsVBox"]
+[node name="DetailAuthorityValue" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/DetailsPanel/DetailsMargin/DetailsVBox" unique_id=1203450998]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.78, 0.84, 1)
-text = "最终控制权: --"
+text = "最终控制权: 23%"
 
-[node name="DetailRegionsValue" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/DetailsPanel/DetailsMargin/DetailsVBox"]
+[node name="DetailRegionsValue" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/DetailsPanel/DetailsMargin/DetailsVBox" unique_id=1249975675]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.78, 0.84, 1)
-text = "接管区域: --"
+text = "接管区域: 6 / 6"
 
-[node name="DetailEventsValue" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/DetailsPanel/DetailsMargin/DetailsVBox"]
+[node name="DetailEventsValue" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/BodyRow/DetailsPanel/DetailsMargin/DetailsVBox" unique_id=538289075]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.78, 0.84, 1)
-text = "事件触发: --"
+text = "事件触发: 25"
 
-[node name="EvaluationPanel" type="PanelContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox"]
+[node name="EvaluationPanel" type="PanelContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox" unique_id=1831813488]
 custom_minimum_size = Vector2(0, 132)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
-[node name="EvaluationMargin" type="MarginContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/EvaluationPanel"]
+[node name="EvaluationMargin" type="MarginContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/EvaluationPanel" unique_id=1711718250]
 layout_mode = 2
 theme_override_constants/margin_left = 22
 theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 22
 theme_override_constants/margin_bottom = 16
 
-[node name="EvaluationRow" type="HBoxContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/EvaluationPanel/EvaluationMargin"]
+[node name="EvaluationRow" type="HBoxContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/EvaluationPanel/EvaluationMargin" unique_id=1014020350]
 layout_mode = 2
 theme_override_constants/separation = 22
 
-[node name="EvaluationTitle" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/EvaluationPanel/EvaluationMargin/EvaluationRow"]
+[node name="EvaluationTitle" type="Label" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox/EvaluationPanel/EvaluationMargin/EvaluationRow" unique_id=491275121]
 custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
 theme_override_colors/font_color = Color(0.545, 0.867, 0.851, 1)
+theme_override_font_sizes/font_size = 18
 text = "最终评价"
 vertical_alignment = 1
 
@@ -393,13 +396,14 @@ unique_name_in_owner = true
 custom_maximum_size = Vector2(1610, -1)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 16
 theme_override_colors/font_color = Color(0.72, 0.78, 0.84, 1)
-text = ""
+theme_override_font_sizes/font_size = 16
+text = "MOSS 与人类保持有限协作。
+文明在控制与自主之间继续前进。"
 vertical_alignment = 1
 autowrap_mode = 3
 
-[node name="ActionRow" type="HBoxContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox"]
+[node name="ActionRow" type="HBoxContainer" parent="MainMargin/TerminalFrame/TerminalMargin/MainVBox" unique_id=596987412]
 custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
 theme_override_constants/separation = 18
@@ -413,8 +417,8 @@ theme_override_colors/font_color = Color(1, 0.82, 0.82, 1)
 theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 18
 theme_override_styles/normal = SubResource("StyleBoxFlat_button")
-theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
 text = "重新开始"
 
 [connection signal="pressed" from="MainMargin/TerminalFrame/TerminalMargin/MainVBox/ActionRow/RestartButton" to="." method="_on_restart_button_pressed"]

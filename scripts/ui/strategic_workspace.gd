@@ -1,5 +1,6 @@
 ## 战略工作区组件。
 ## 管理地图、区域卡、区域详情、全局概览、局势摘要和行动日志显示，不推进时间或结算资源。
+@tool
 class_name StrategicWorkspace
 extends Control
 
@@ -75,6 +76,10 @@ func _ready() -> void:
 	_apply_theme()
 	_set_details_visibility(false)
 	_layout_children()
+	if Engine.is_editor_hint():
+		_current_cpu = 30
+		_current_energy = 100
+		_current_year = 2044
 	_refresh_views()
 
 
@@ -245,6 +250,8 @@ func _refresh_views() -> void:
 
 
 func _emit_selection() -> void:
+	if Engine.is_editor_hint():
+		return
 	var region_id := get_selected_region_id()
 	region_selected.emit(region_id)
 	if region_id == "":
@@ -610,16 +617,22 @@ func _get_global_threat_text(avg_authority: int) -> String:
 
 
 func _on_more_approaches_pressed() -> void:
+	if Engine.is_editor_hint():
+		return
 	var snapshot := _get_selected_situation(get_selected_region_id())
 	if not snapshot.is_empty():
 		situation_details_requested.emit(str(snapshot.get("instance_id", "")))
 
 
 func _on_inline_approach_pressed(instance_id: String, approach_id: String) -> void:
+	if Engine.is_editor_hint():
+		return
 	situation_approach_requested.emit(instance_id, approach_id)
 
 
 func _on_inline_node_option_pressed(instance_id: String, option_id: String) -> void:
+	if Engine.is_editor_hint():
+		return
 	situation_node_option_requested.emit(instance_id, option_id)
 
 

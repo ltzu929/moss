@@ -1,3 +1,4 @@
+@tool
 extends PanelContainer
 
 # ============================================================
@@ -19,6 +20,22 @@ const IMPACT_PREVIEW_DELAY: float = 1.0
 const TOOLTIP_OFFSET: Vector2 = Vector2(16.0, 16.0)
 const TOOLTIP_EDGE_MARGIN: float = 8.0
 
+const EDITOR_PREVIEW_EVENT: GameEvent = preload(
+	"res://data/events/event_2044_space_elevator_crisis.tres"
+)
+
+@export_group("编辑器预览")
+@export var editor_preview_event: GameEvent = EDITOR_PREVIEW_EVENT:
+	set(value):
+		editor_preview_event = value
+		if Engine.is_editor_hint() and is_inside_tree():
+			_render_editor_preview()
+@export_range(0, 100, 1) var editor_preview_energy: int = 100:
+	set(value):
+		editor_preview_energy = value
+		if Engine.is_editor_hint() and is_inside_tree():
+			_render_editor_preview()
+
 var _hover_generation: int = 0
 var _hovered_button: Button
 
@@ -28,7 +45,51 @@ func _ready() -> void:
 		"panel",
 		MOSS_THEME.panel_style()
 	)
-	hide()
+	set_process(not Engine.is_editor_hint())
+	if Engine.is_editor_hint():
+		_render_editor_preview()
+	else:
+		hide()
+
+
+func _render_editor_preview() -> void:
+	if editor_preview_event == null:
+		return
+	var preview_event := editor_preview_event.duplicate(true) as GameEvent
+	if preview_event == null:
+		return
+	var region_name := REGION_IDENTITY.display_name(preview_event.event_region)
+	%EventTitle.text = preview_event.event_title
+	%EventLevelLabel.text = preview_event.event_level
+	%EventMetaLabel.text = "影响区域：%s  /  记录时间：%04d.%02d  /  编辑器示例" % [
+		region_name,
+		preview_event.event_time,
+		preview_event.event_month,
+	]
+	%EventImage.texture = (
+		preview_event.event_image
+		if preview_event.event_image != null
+		else FALLBACK_EVENT_IMAGE
+	)
+	%RichTextLabel.text = "[color=#73C9D3]影响板块：%s[/color]\n%s" % [
+		region_name,
+		preview_event.event_description,
+	]
+	_hide_impact_tooltip()
+	for child in %OptionList.get_children():
+		%OptionList.remove_child(child)
+		child.queue_free()
+	for index in range(preview_event.options.size()):
+		var option: EventOption = preview_event.options[index]
+		add_custom_button(
+			option,
+			region_name,
+			index if option.energy_cost <= editor_preview_energy else -1,
+			index + 1
+		)
+	# 独立场景保持可见，主场景实例的 visible=false 覆盖值不被预览代码改写。
+	if visible:
+		show()
 
 
 func _process(_delta: float) -> void:
@@ -160,14 +221,15 @@ func add_custom_button(
 	)
 
 	%OptionList.add_child(button)
-	button.mouse_entered.connect(
-		_on_option_mouse_entered.bind(button, option, region, index != -1)
-	)
-	button.mouse_exited.connect(_on_option_mouse_exited.bind(button))
+	if not Engine.is_editor_hint():
+		button.mouse_entered.connect(
+			_on_option_mouse_entered.bind(button, option, region, index != -1)
+		)
+		button.mouse_exited.connect(_on_option_mouse_exited.bind(button))
 
 	if index == -1:
 		button.disabled = true
-	else:
+	elif not Engine.is_editor_hint():
 		button.pressed.connect(_on_new_button_pressed.bind(index))
 
 

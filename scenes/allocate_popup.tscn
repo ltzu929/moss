@@ -1,6 +1,202 @@
 [gd_scene format=3 uid="uid://dellv4e6qlqpr"]
 
 [ext_resource type="Script" uid="uid://ddm2s7iv0qrfv" path="res://scripts/ui/allocate_popup.gd" id="1_51q68"]
+[ext_resource type="Texture2D" uid="uid://4ac7vbjhdjxy" path="res://assets/ui/texture_pack_01/button_normal.svg" id="2_7eal1"]
+[ext_resource type="Texture2D" uid="uid://b7b4mlmiwquei" path="res://assets/ui/texture_pack_01/button_pressed.svg" id="3_0nhui"]
+[ext_resource type="Texture2D" uid="uid://c3p3s8ho5in3s" path="res://assets/ui/texture_pack_01/button_hover.svg" id="4_ol6b8"]
+[ext_resource type="Texture2D" uid="uid://bmfavhii0uuq2" path="res://assets/ui/texture_pack_01/button_disabled.svg" id="5_3qgu2"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gjtj4"]
+content_margin_left = 10.0
+content_margin_top = 8.0
+content_margin_right = 10.0
+content_margin_bottom = 8.0
+bg_color = Color(0.018, 0.045, 0.062, 0.99)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.22745098, 0.44313726, 0.5019608, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_tkgte"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+texture = ExtResource("2_7eal1")
+texture_margin_left = 12.0
+texture_margin_top = 12.0
+texture_margin_right = 12.0
+texture_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_6b6ol"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+texture = ExtResource("3_0nhui")
+texture_margin_left = 12.0
+texture_margin_top = 12.0
+texture_margin_right = 12.0
+texture_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_g7f0r"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+texture = ExtResource("4_ol6b8")
+texture_margin_left = 12.0
+texture_margin_top = 12.0
+texture_margin_right = 12.0
+texture_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_b0np6"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+texture = ExtResource("5_3qgu2")
+texture_margin_left = 12.0
+texture_margin_top = 12.0
+texture_margin_right = 12.0
+texture_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_6cukg"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+texture = ExtResource("2_7eal1")
+texture_margin_left = 12.0
+texture_margin_top = 12.0
+texture_margin_right = 12.0
+texture_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_en7fs"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+texture = ExtResource("3_0nhui")
+texture_margin_left = 12.0
+texture_margin_top = 12.0
+texture_margin_right = 12.0
+texture_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_ixlui"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+texture = ExtResource("4_ol6b8")
+texture_margin_left = 12.0
+texture_margin_top = 12.0
+texture_margin_right = 12.0
+texture_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_ki6b2"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+texture = ExtResource("5_3qgu2")
+texture_margin_left = 12.0
+texture_margin_top = 12.0
+texture_margin_right = 12.0
+texture_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_lik6q"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+texture = ExtResource("2_7eal1")
+texture_margin_left = 12.0
+texture_margin_top = 12.0
+texture_margin_right = 12.0
+texture_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_q16j1"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+texture = ExtResource("3_0nhui")
+texture_margin_left = 12.0
+texture_margin_top = 12.0
+texture_margin_right = 12.0
+texture_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_p3kmr"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+texture = ExtResource("4_ol6b8")
+texture_margin_left = 12.0
+texture_margin_top = 12.0
+texture_margin_right = 12.0
+texture_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_jconi"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+texture = ExtResource("5_3qgu2")
+texture_margin_left = 12.0
+texture_margin_top = 12.0
+texture_margin_right = 12.0
+texture_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_eefay"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+texture = ExtResource("2_7eal1")
+texture_margin_left = 12.0
+texture_margin_top = 12.0
+texture_margin_right = 12.0
+texture_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_ll7tf"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+texture = ExtResource("3_0nhui")
+texture_margin_left = 12.0
+texture_margin_top = 12.0
+texture_margin_right = 12.0
+texture_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_okbs2"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+texture = ExtResource("4_ol6b8")
+texture_margin_left = 12.0
+texture_margin_top = 12.0
+texture_margin_right = 12.0
+texture_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_y1dwu"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+texture = ExtResource("5_3qgu2")
+texture_margin_left = 12.0
+texture_margin_top = 12.0
+texture_margin_right = 12.0
+texture_margin_bottom = 12.0
 
 [node name="AllocatePopup" type="PanelContainer" unique_id=1777844314]
 anchors_preset = 8
@@ -14,7 +210,9 @@ offset_right = 4.0
 offset_bottom = 43.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_gjtj4")
 script = ExtResource("1_51q68")
+editor_preview_state = "综合调度"
 
 [node name="VBoxContainer2" type="VBoxContainer" parent="." unique_id=1809652037]
 layout_mode = 2
@@ -22,30 +220,68 @@ layout_mode = 2
 [node name="AllocateTitle" type="Label" parent="VBoxContainer2" unique_id=512184389]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_colors/font_color = Color(0.4509804, 0.7882353, 0.827451, 1)
+theme_override_font_sizes/font_size = 18
+text = "算力分配 - 亚洲"
 
 [node name="AllocateDesc" type="Label" parent="VBoxContainer2" unique_id=512978559]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_colors/font_color = Color(0.43137255, 0.50980395, 0.5803922, 1)
+theme_override_font_sizes/font_size = 14
+text = "调配算力资源，提升板块稳定性
+请选择要提升的属性："
 
 [node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer2" unique_id=359136600]
 layout_mode = 2
 
 [node name="OrderButton" type="Button" parent="VBoxContainer2/VBoxContainer" unique_id=1598295303]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 36)
 layout_mode = 2
+theme_override_colors/font_color = Color(0.72156864, 0.78039217, 0.8392157, 1)
+theme_override_colors/font_disabled_color = Color(0.45, 0.52, 0.58, 1)
+theme_override_styles/normal = SubResource("StyleBoxTexture_tkgte")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_6b6ol")
+theme_override_styles/hover = SubResource("StyleBoxTexture_g7f0r")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_b0np6")
+text = "提升秩序 (+15)"
 
 [node name="HopeButton" type="Button" parent="VBoxContainer2/VBoxContainer" unique_id=1910157037]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 36)
 layout_mode = 2
+theme_override_colors/font_color = Color(0.72156864, 0.78039217, 0.8392157, 1)
+theme_override_colors/font_disabled_color = Color(0.45, 0.52, 0.58, 1)
+theme_override_styles/normal = SubResource("StyleBoxTexture_6cukg")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_en7fs")
+theme_override_styles/hover = SubResource("StyleBoxTexture_ixlui")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_ki6b2")
+text = "提升希望 (+15)"
 
-[node name="CombinedButton" type="Button" parent="VBoxContainer2/VBoxContainer"]
+[node name="CombinedButton" type="Button" parent="VBoxContainer2/VBoxContainer" unique_id=1664215770]
 unique_name_in_owner = true
-visible = false
+custom_minimum_size = Vector2(240, 36)
 layout_mode = 2
+theme_override_colors/font_color = Color(0.72156864, 0.78039217, 0.8392157, 1)
+theme_override_colors/font_disabled_color = Color(0.45, 0.52, 0.58, 1)
+theme_override_styles/normal = SubResource("StyleBoxTexture_lik6q")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_q16j1")
+theme_override_styles/hover = SubResource("StyleBoxTexture_p3kmr")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_jconi")
+text = "综合调度（秩序 +10 / 希望 +10 / 控制权 +2）"
 
 [node name="CancelButton" type="Button" parent="VBoxContainer2/VBoxContainer" unique_id=400173149]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 36)
 layout_mode = 2
+theme_override_colors/font_color = Color(0.72156864, 0.78039217, 0.8392157, 1)
+theme_override_colors/font_disabled_color = Color(0.45, 0.52, 0.58, 1)
+theme_override_styles/normal = SubResource("StyleBoxTexture_eefay")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_ll7tf")
+theme_override_styles/hover = SubResource("StyleBoxTexture_okbs2")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_y1dwu")
+text = "取消"
 
 [connection signal="pressed" from="VBoxContainer2/VBoxContainer/OrderButton" to="." method="_on_order_button_pressed"]
 [connection signal="pressed" from="VBoxContainer2/VBoxContainer/HopeButton" to="." method="_on_hope_button_pressed"]

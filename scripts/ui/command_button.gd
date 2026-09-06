@@ -1,5 +1,6 @@
 ## 指令按钮组件 - 显示单个MOSS指令按钮
 ## 负责按钮状态更新和点击响应
+@tool
 class_name CommandButton
 extends Button
 
@@ -16,6 +17,14 @@ signal command_pressed(cmd: CommandData)
 
 ## MOSS 界面主题工具
 const MOSS_THEME := preload("res://scripts/ui/moss_ui_theme.gd")
+const EDITOR_PREVIEW_COMMAND: CommandData = preload("res://data/commands/command_allocate.tres")
+
+@export_group("编辑器预览")
+@export var editor_preview_command: CommandData = EDITOR_PREVIEW_COMMAND:
+	set(value):
+		editor_preview_command = value
+		if Engine.is_editor_hint() and is_inside_tree():
+			_render_editor_preview()
 
 # ============================================================
 # 状态变量
@@ -30,8 +39,19 @@ var command_data: CommandData = null
 
 func _ready() -> void:
 	_apply_terminal_style()
-	if command_data != null:
+	if Engine.is_editor_hint():
+		_render_editor_preview()
+	elif command_data != null:
 		text = command_data.command_name
+
+
+func _render_editor_preview() -> void:
+	if editor_preview_command == null:
+		text = "未绑定指令"
+		return
+	text = editor_preview_command.command_name
+	disabled = true
+	tooltip_text = "编辑器预览：未选择区域，指令不可用"
 
 # ============================================================
 # 状态更新
@@ -55,6 +75,8 @@ func set_availability(is_available: bool, reason: String, cost_text: String) -> 
 # ============================================================
 
 func _pressed() -> void:
+	if Engine.is_editor_hint():
+		return
 	if command_data != null and not disabled:
 		command_pressed.emit(command_data)
 

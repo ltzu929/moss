@@ -115,6 +115,8 @@ func open_screen(
 func close_screen() -> void:
 	hide()
 	_clear_selection()
+	if Engine.is_editor_hint():
+		return
 	if _timer != null and not _timer_was_stopped:
 		_timer.start()
 	screen_closed.emit()
@@ -182,6 +184,8 @@ func _apply_control_theme() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if Engine.is_editor_hint():
+		return
 	if visible and event.is_action_pressed("ui_cancel"):
 		close_screen()
 		get_viewport().set_input_as_handled()

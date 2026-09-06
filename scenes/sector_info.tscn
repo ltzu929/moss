@@ -1,6 +1,7 @@
-[gd_scene format=3 uid="uid://xn0mj5mp0u12"]
+[gd_scene load_steps=3 format=3 uid="uid://xn0mj5mp0u12"]
 
 [ext_resource type="Script" uid="uid://g2le40hscppk" path="res://scripts/resources/sector_info.gd" id="1_ntx5u"]
+[ext_resource type="Resource" uid="uid://de5nghry0twj7" path="res://data/sector_asia.tres" id="2_asia"]
 
 [node name="SectorInfo" type="Panel" unique_id=349971974]
 custom_minimum_size = Vector2(150, 84)
@@ -8,6 +9,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
 script = ExtResource("1_ntx5u")
+data_card = ExtResource("2_asia")
 
 [node name="TitleLabel" type="Label" parent="." unique_id=1689910912]
 layout_mode = 1

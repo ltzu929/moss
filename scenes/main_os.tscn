@@ -81,6 +81,7 @@ layout_mode = 1
 
 [node name="AllocatePopup" parent="." instance=ExtResource("4_allocate")]
 unique_name_in_owner = true
+visible = false
 z_index = 30
 layout_mode = 1
 offset_top = -60.5
@@ -95,6 +96,7 @@ grow_vertical = 2
 
 [node name="SituationPanel" parent="." instance=ExtResource("9_situation_panel")]
 unique_name_in_owner = true
+visible = false
 layout_mode = 1
 
 [connection signal="decision_archive_requested" from="MainLayout/MainHud" to="." method="_on_decision_archive_button_pressed"]

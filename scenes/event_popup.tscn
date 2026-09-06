@@ -1,26 +1,22 @@
 [gd_scene format=3 uid="uid://jls1m2vbj8iu"]
 
-[ext_resource type="Texture2D" uid="uid://b0a26ww4028b8" path="res://assets/ui/event_fallback_flood.png" id="1_fallback"]
 [ext_resource type="Script" uid="uid://c0i11ic4aqi82" path="res://scripts/ui/event_popup.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://c56gtri6uf4kb" path="res://assets/ui/texture_pack_01/panel_frame.svg" id="2_exwe5"]
+[ext_resource type="Texture2D" uid="uid://bpalqmf4u3qlu" path="res://assets/event/太空电梯危机.png" id="3_df5lu"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBackdrop"]
 bg_color = Color(0.004, 0.009, 0.014, 0.78)
 
-[sub_resource type="StyleBoxFlat" id="StyleReport"]
-content_margin_left = 0.0
-content_margin_top = 0.0
-content_margin_right = 0.0
-content_margin_bottom = 0.0
-bg_color = Color(0.018, 0.047, 0.066, 0.985)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.263, 0.607, 0.663, 0.9)
-corner_radius_top_left = 2
-corner_radius_top_right = 2
-corner_radius_bottom_right = 2
-corner_radius_bottom_left = 2
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_jfwbn"]
+content_margin_left = 10.0
+content_margin_top = 8.0
+content_margin_right = 10.0
+content_margin_bottom = 8.0
+texture = ExtResource("2_exwe5")
+texture_margin_left = 18.0
+texture_margin_top = 18.0
+texture_margin_right = 18.0
+texture_margin_bottom = 18.0
 
 [sub_resource type="StyleBoxFlat" id="StyleImage"]
 bg_color = Color(0.008, 0.025, 0.037, 1)
@@ -60,6 +56,7 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBackdrop")
 script = ExtResource("1_script")
+editor_preview_energy = 0
 
 [node name="CenterContainer" type="CenterContainer" parent="." unique_id=1339765129]
 layout_mode = 2
@@ -68,7 +65,7 @@ mouse_filter = 2
 [node name="MainPanel" type="PanelContainer" parent="CenterContainer" unique_id=512124178]
 custom_minimum_size = Vector2(1120, 780)
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleReport")
+theme_override_styles/panel = SubResource("StyleBoxTexture_jfwbn")
 
 [node name="MainMargin" type="MarginContainer" parent="CenterContainer/MainPanel" unique_id=1001495299]
 layout_mode = 2
@@ -97,7 +94,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.78, 0.84, 0.89, 1)
 theme_override_font_sizes/font_size = 30
-text = "事件标题"
+text = "太空电梯危机"
 text_overrun_behavior = 3
 
 [node name="EventLevelLabel" type="Label" parent="CenterContainer/MainPanel/MainMargin/MainVBox/HeaderRow" unique_id=960912878]
@@ -113,7 +110,7 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.42, 0.51, 0.58, 1)
 theme_override_font_sizes/font_size = 13
-text = "事件区域：--  /  记录时间：----.--"
+text = "影响区域：亚洲  /  记录时间：2044.01  /  编辑器示例"
 
 [node name="HeaderDivider" type="ColorRect" parent="CenterContainer/MainPanel/MainMargin/MainVBox" unique_id=198012904]
 custom_minimum_size = Vector2(0, 1)
@@ -129,7 +126,7 @@ theme_override_styles/panel = SubResource("StyleImage")
 [node name="EventImage" type="TextureRect" parent="CenterContainer/MainPanel/MainMargin/MainVBox/ImageFrame" unique_id=1387508571]
 unique_name_in_owner = true
 layout_mode = 2
-texture = ExtResource("1_fallback")
+texture = ExtResource("3_df5lu")
 expand_mode = 1
 stretch_mode = 6
 
@@ -154,7 +151,8 @@ theme_override_colors/default_color = Color(0.68, 0.74, 0.79, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.5)
 theme_override_font_sizes/normal_font_size = 16
 bbcode_enabled = true
-text = "事件描述"
+text = "[color=#73C9D3]影响板块：亚洲[/color]
+数字生命派袭击方舟号空间站"
 scroll_active = false
 
 [node name="OptionsHeader" type="HBoxContainer" parent="CenterContainer/MainPanel/MainMargin/MainVBox" unique_id=2017078728]

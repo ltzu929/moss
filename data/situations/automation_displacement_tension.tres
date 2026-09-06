@@ -1,9 +1,9 @@
-[gd_resource type="Resource" script_class="SituationData" load_steps=9 format=3]
+[gd_resource type="Resource" script_class="SituationData" format=3 uid="uid://cru6inne6vrj1"]
 
-[ext_resource type="Script" path="res://scripts/resources/situation_data.gd" id="1_data"]
-[ext_resource type="Script" path="res://scripts/resources/situation_approach_data.gd" id="2_approach"]
-[ext_resource type="Script" path="res://scripts/resources/situation_node_data.gd" id="3_node"]
-[ext_resource type="Script" path="res://scripts/resources/situation_node_option_data.gd" id="4_option"]
+[ext_resource type="Script" uid="uid://btmhguh5uttcf" path="res://scripts/resources/situation_data.gd" id="1_data"]
+[ext_resource type="Script" uid="uid://dauuvma7kv877" path="res://scripts/resources/situation_approach_data.gd" id="2_approach"]
+[ext_resource type="Script" uid="uid://dc54dlorsfnci" path="res://scripts/resources/situation_node_data.gd" id="3_node"]
+[ext_resource type="Script" uid="uid://bpi3ouvf26neb" path="res://scripts/resources/situation_node_option_data.gd" id="4_option"]
 
 [sub_resource type="Resource" id="Approach_human_review"]
 script = ExtResource("2_approach")
@@ -70,16 +70,24 @@ situation_id = "automation_displacement_tension"
 title = "工程自动化替岗张力"
 description = "自动化改造正在压缩现场岗位与复核权限，工程效率和人员信任开始冲突。"
 eligible_regions = Array[String](["africa", "asia", "europe"])
-region_descriptions = {"africa": "前线工程自动化正在替换高风险岗位，现场班组担心失去最终复核权。", "asia": "工业核心区加速自动化改造，岗位培训与设备替换速度已经失衡。", "europe": "发动机维护系统扩大自动排班范围，治理中枢面临效率与申诉压力。"}
+region_descriptions = {
+"africa": "前线工程自动化正在替换高风险岗位，现场班组担心失去最终复核权。",
+"asia": "工业核心区加速自动化改造，岗位培训与设备替换速度已经失衡。",
+"europe": "发动机维护系统扩大自动排班范围，治理中枢面临效率与申诉压力。"
+}
 min_year = 2045
 max_year = 2064
 base_weight = 85
 low_hope_weight = 6
 high_authority_weight = 5
 initial_severity = 36
-monthly_growth = 3
 failure_order_delta = -6
 failure_hope_delta = -12
 approaches = Array[ExtResource("2_approach")]([SubResource("Approach_human_review"), SubResource("Approach_phased_training"), SubResource("Approach_risk_elimination")])
 situation_node = SubResource("Node_automation_tension")
-command_interventions = {"allocate": 12, "takeover": 16, "technology_aid": 18, "global_takeover": 10}
+command_interventions = {
+"allocate": 12,
+"global_takeover": 10,
+"takeover": 16,
+"technology_aid": 18
+}

@@ -1,4 +1,5 @@
 ## 非模态局势追踪与应对面板。
+@tool
 class_name SituationPanel
 extends Control
 
@@ -7,6 +8,16 @@ signal node_option_requested(instance_id: String, option_id: String)
 signal focus_region_requested(region_id: String)
 
 const MOSS_THEME := preload("res://scripts/ui/moss_ui_theme.gd")
+const EDITOR_PREVIEW_SITUATION: SituationData = preload(
+	"res://data/situations/automation_displacement_tension.tres"
+)
+
+@export_group("编辑器预览")
+@export_enum("空态", "活跃局势", "待处理节点") var editor_preview_mode: String = "活跃局势":
+	set(value):
+		editor_preview_mode = value
+		if Engine.is_editor_hint() and is_inside_tree():
+			_render_editor_preview()
 
 var _snapshots: Array[Dictionary] = []
 var _selected_id: String = ""
@@ -40,7 +51,94 @@ func _ready() -> void:
 	%SituationProgress.add_theme_color_override("font_color", MOSS_THEME.TEXT_PRIMARY)
 	get_viewport().size_changed.connect(_update_window_bounds)
 	_update_window_bounds()
-	hide()
+	if Engine.is_editor_hint():
+		_render_editor_preview()
+	else:
+		hide()
+
+
+func _render_editor_preview() -> void:
+	var should_show := visible
+	if editor_preview_mode == "空态":
+		set_situations([], 30, 100)
+	else:
+		set_situations([_build_editor_snapshot(editor_preview_mode == "待处理节点")], 30, 100)
+	visible = should_show
+
+
+func _build_editor_snapshot(include_pending_node: bool) -> Dictionary:
+	var data: SituationData = EDITOR_PREVIEW_SITUATION
+	var approaches: Array[Dictionary] = []
+	for approach in data.approaches:
+		if approach == null:
+			continue
+		approaches.append(
+			{
+				"approach_id": approach.approach_id,
+				"display_name": approach.display_name,
+				"description": approach.description,
+				"monthly_severity_delta": approach.monthly_severity_delta,
+				"monthly_cpu_cost": approach.monthly_cpu_cost,
+				"monthly_energy_cost": approach.monthly_energy_cost,
+			}
+		)
+
+	var node: Dictionary = {}
+	if data.situation_node != null:
+		var options: Array[Dictionary] = []
+		for option in data.situation_node.options:
+			if option == null:
+				continue
+			options.append(
+				{
+					"option_id": option.option_id,
+					"display_name": option.display_name,
+					"description": option.description,
+					"result_text": option.result_text,
+					"cpu_cost": option.cpu_cost,
+					"energy_cost": option.energy_cost,
+					"severity_delta": option.severity_delta,
+				}
+			)
+		node = {
+			"pending": include_pending_node,
+			"resolved": false,
+			"node_id": data.situation_node.node_id,
+			"title": data.situation_node.title,
+			"description": data.situation_node.description,
+			"options": options,
+		}
+
+	var region_description: String = str(data.region_descriptions.get("asia", data.description))
+	var stage_name: String = "预警"
+	if data.stage_names.size() > 1:
+		stage_name = data.stage_names[1]
+	return {
+		"instance_id": "editor:automation_displacement:asia",
+		"situation_id": data.situation_id,
+		"title": data.title,
+		"description": region_description,
+		"region_id": "asia",
+		"region_name": "亚洲",
+		"severity": 58,
+		"stage": 1,
+		"stage_name": stage_name,
+		"progress_label": data.progress_label,
+		"is_opportunity": data.situation_kind == 1,
+		"approach_id": "",
+		"approach_name": "尚未选择",
+		"switch_lock_months": 0,
+		"expected_monthly_delta": data.monthly_growth,
+		"funding_required": false,
+		"funding_known": true,
+		"is_funded": true,
+		"last_unfunded": false,
+		"started_year": 2044,
+		"started_month": 1,
+		"approaches": approaches,
+		"node": node,
+		"history_echo": "上次在亚洲的同类局势最终成功处理。",
+	}
 
 
 func calculate_window_rect(viewport_size: Vector2) -> Rect2:
@@ -52,7 +150,11 @@ func calculate_window_rect(viewport_size: Vector2) -> Rect2:
 
 
 func _update_window_bounds() -> void:
-	var viewport_size := get_viewport_rect().size
+	var viewport_size := Vector2(1920, 1080)
+	if not Engine.is_editor_hint():
+		if not is_inside_tree():
+			return
+		viewport_size = get_viewport_rect().size
 	var window_rect := calculate_window_rect(viewport_size)
 	%ApproachScroll.custom_minimum_size.y = 150.0 if viewport_size.y <= 720.0 else 210.0
 	%SituationWindow.offset_left = window_rect.position.x - viewport_size.x
@@ -321,14 +423,20 @@ func _on_entry_pressed(instance_id: String) -> void:
 
 
 func _on_approach_pressed(instance_id: String, approach_id: String) -> void:
+	if Engine.is_editor_hint():
+		return
 	approach_requested.emit(instance_id, approach_id)
 
 
 func _on_node_option_pressed(instance_id: String, option_id: String) -> void:
+	if Engine.is_editor_hint():
+		return
 	node_option_requested.emit(instance_id, option_id)
 
 
 func _on_focus_region_pressed() -> void:
+	if Engine.is_editor_hint():
+		return
 	var snapshot := _get_snapshot(_selected_id)
 	if not snapshot.is_empty():
 		focus_region_requested.emit(str(snapshot.get("region_id", "")))

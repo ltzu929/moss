@@ -21,6 +21,15 @@ signal node_selected(node_id: String)
 		node_data = value
 		_refresh_text()
 
+@export_group("编辑器预览")
+@export_enum("可激活", "已激活", "锁定") var editor_preview_state: String = "可激活":
+	set(value):
+		editor_preview_state = value
+		if Engine.is_editor_hint() and is_inside_tree():
+			_state = _editor_state_to_runtime(value)
+			_refresh_text()
+			_apply_style()
+
 # ============================================================
 # 常量
 # ============================================================
@@ -59,6 +68,8 @@ var _selected: bool = false
 
 ## 初始化编辑器预览和运行时样式
 func _ready() -> void:
+	if Engine.is_editor_hint():
+		_state = _editor_state_to_runtime(editor_preview_state)
 	_refresh_text()
 	_apply_style()
 
@@ -79,8 +90,16 @@ func refresh_state(state: String, selected: bool) -> void:
 
 ## 将按钮点击转换为带稳定节点 ID 的业务信号
 func _on_pressed() -> void:
-	if node_data != null and node_data.node_id != "":
+	if not Engine.is_editor_hint() and node_data != null and node_data.node_id != "":
 		node_selected.emit(node_data.node_id)
+
+
+func _editor_state_to_runtime(value: String) -> String:
+	return {
+		"可激活": "available",
+		"已激活": "active",
+		"锁定": "stage_locked",
+	}.get(value, "stage_locked")
 
 # ============================================================
 # 显示辅助方法

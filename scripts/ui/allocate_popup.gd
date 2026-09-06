@@ -1,5 +1,6 @@
 ## 算力分配选择弹窗
 ## 让玩家选择提升秩序、希望，或在科技解锁后执行综合调度
+@tool
 class_name AllocatePopup
 extends PanelContainer
 
@@ -17,6 +18,14 @@ signal choice_selected(choice: String)
 
 ## MOSS 界面主题工具
 const MOSS_THEME := preload("res://scripts/ui/moss_ui_theme.gd")
+const EDITOR_PREVIEW_COMMAND: CommandData = preload("res://data/commands/command_allocate.tres")
+
+@export_group("编辑器预览")
+@export_enum("未选择区", "基础分配", "综合调度") var editor_preview_state: String = "基础分配":
+	set(value):
+		editor_preview_state = value
+		if Engine.is_editor_hint() and is_inside_tree():
+			_render_editor_preview()
 
 # ============================================================
 # 状态变量
@@ -32,7 +41,22 @@ var current_cmd: CommandData = null
 ## 初始化时应用主题并隐藏弹窗
 func _ready() -> void:
 	_apply_theme()
-	hide()
+	if Engine.is_editor_hint():
+		_render_editor_preview()
+	else:
+		hide()
+
+
+func _render_editor_preview() -> void:
+	var should_show := visible
+	current_cmd = EDITOR_PREVIEW_COMMAND.duplicate(true) as CommandData
+	if current_cmd == null:
+		return
+	if editor_preview_state == "综合调度":
+		current_cmd.set_meta("combined_enabled", true)
+	update_display("亚洲" if editor_preview_state != "未选择区" else "未选择板块")
+	%CombinedButton.visible = editor_preview_state == "综合调度"
+	visible = should_show
 
 # ============================================================
 # 弹窗显示
@@ -130,22 +154,30 @@ func _style_action_button(button: Button) -> void:
 
 ## 选择提升秩序并关闭弹窗
 func _on_order_button_pressed() -> void:
+	if Engine.is_editor_hint():
+		return
 	choice_selected.emit("order")
 	hide()
 
 ## 选择提升希望并关闭弹窗
 func _on_hope_button_pressed() -> void:
+	if Engine.is_editor_hint():
+		return
 	choice_selected.emit("hope")
 	hide()
 
 
 ## 选择综合调度并关闭弹窗
 func _on_combined_button_pressed() -> void:
+	if Engine.is_editor_hint():
+		return
 	choice_selected.emit("combined")
 	hide()
 
 
 ## 取消本次算力分配并关闭弹窗
 func _on_cancel_button_pressed() -> void:
+	if Engine.is_editor_hint():
+		return
 	choice_selected.emit("")
 	hide()

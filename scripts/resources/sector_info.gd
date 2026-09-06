@@ -1,3 +1,4 @@
+@tool
 class_name SectorInfo
 extends Panel
 
@@ -61,8 +62,9 @@ func _ready() -> void:
 
 	# 如果插槽里有卡，就读取数据
 	if data_card != null:
-		# 外部 .tres 是只读模板；每个场景实例持有独立运行态副本。
-		data_card = data_card.duplicate(true) as SectorData
+		if not Engine.is_editor_hint():
+			# 外部 .tres 是只读模板；每个场景实例持有独立运行态副本。
+			data_card = data_card.duplicate(true) as SectorData
 		update_display()
 
 	# 设置默认边框
@@ -148,6 +150,8 @@ func set_selected(value: bool) -> void:
 
 ## 面板被点击时发出信号
 func _gui_input(event: InputEvent) -> void:
+	if Engine.is_editor_hint():
+		return
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 			sector_clicked.emit(self)
