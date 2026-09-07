@@ -18,6 +18,7 @@ MOSS 的守护者 AI，在 2044 至 2075 年的危机中权衡文明存续、人
 - 主控制器：`scripts/systems/main_os.gd`
 - 核心数据：`data/` 下的 `.tres` 资源
 - 自动化播放测试：`tests/test_runner.tscn` + `tests/test_runner.gd`
+- 文档阅读导航：[docs/README.md](docs/README.md)
 - 当前路线图：`docs/dev/开发流程.md`
 - 解耦专项执行依据：`docs/dev/解耦专项计划.md`
 - 产品设计入口：`docs/design/游戏设计.md`
@@ -64,7 +65,7 @@ MOSS 的守护者 AI，在 2044 至 2075 年的危机中权衡文明存续、人
 | 当前目标、工作顺序、不做事项 | `docs/dev/开发流程.md` |
 | `main_os.gd` 解耦专项边界与阶段 | `docs/dev/解耦专项计划.md` |
 | 事件、决策标签、事件链、台词、结局 | `docs/design/游戏内容规范.md` |
-| 指令、进化与未来科技树 | `docs/design/科技树设计.md` |
+| 指令、进化与当前科技树 | `docs/design/科技树设计.md` |
 | UI 结构、交互和视觉规则 | `docs/design/UI交互规范.md` |
 | 当前数值与平衡原则 | `docs/design/数值设计.md` |
 | 目录结构和文件职责 | `docs/dev/项目结构.md` |

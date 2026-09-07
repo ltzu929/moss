@@ -32,3 +32,6 @@ docs/worldbuilding/sources/*.srt
 
 # Sisyphus local plans and state
 .sisyphus/
+
+# Local Wiki research archive
+docs/worldbuilding/sources/unitedearth-cache/
