@@ -5,9 +5,9 @@ extends RefCounted
 const ROUTE_CONFIGS: Dictionary = {
 	"mixed": {
 		"expected_ending": "coexistence",
-		"mid_choice": 1,
+
 		"final_choice": 1,
-		"branch_choice": 1,
+
 		"situation_approach": 1,
 		"situation_node_choice": 0,
 		"command_id": "technology_aid",
@@ -25,18 +25,17 @@ const ROUTE_CONFIGS: Dictionary = {
 		],
 		"core_choices": {
 			"太空电梯危机": "human_command",
-			"大淹没事故": "infrastructure_first",
-			"月球坠落危机": "human_final_authority",
-			"AI隔离审查": "limited_disclosure",
-			"西伯利亚发动机群过载": "redundant_array",
+			"北京联网救援": "power_support",
+			"月球危机最终支援": "human_final_authority",
+			"行星发动机救援": "resource_support",
 		},
-		"history_fragments": ["只披露有限接口", "备用阵列"],
+		"history_fragments": ["供电支援", "追加支援投入"],
 	},
 	"managed": {
 		"expected_ending": "managed",
-		"mid_choice": 2,
+
 		"final_choice": 2,
-		"branch_choice": 2,
+
 		"situation_approach": 2,
 		"situation_node_choice": 1,
 		"command_id": "global_takeover",
@@ -54,23 +53,17 @@ const ROUTE_CONFIGS: Dictionary = {
 		],
 		"core_choices": {
 			"太空电梯危机": "public_counterstrike",
-			"大淹没事故": "sacrifice_perimeter",
-			"月球坠落危机": "forced_takeover",
-			"AI隔离审查": "hidden_core_chain",
-			"西伯利亚发动机群过载": "forced_overclock",
+			"北京联网救援": "central_dispatch",
+			"月球危机最终支援": "forced_takeover",
+			"行星发动机救援": "central_dispatch",
 		},
-		"history_fragments": [
-			"隐藏核心链路",
-			"强制超频",
-			"外围补偿申诉",
-			"审计轨迹",
-		],
+		"history_fragments": ["扩大自动调度权限", "集中调度系统支援"],
 	},
 	"human_autonomy": {
 		"expected_ending": "human_autonomy",
-		"mid_choice": 0,
+
 		"final_choice": 0,
-		"branch_choice": 0,
+
 		"situation_approach": 0,
 		"situation_node_choice": 0,
 		"command_id": "technology_aid",
@@ -88,12 +81,11 @@ const ROUTE_CONFIGS: Dictionary = {
 		],
 		"core_choices": {
 			"太空电梯危机": "human_command",
-			"大淹没事故": "population_first",
-			"月球坠落危机": "human_final_authority",
-			"AI隔离审查": "full_compliance",
-			"西伯利亚发动机群过载": "personnel_first_shutdown",
+			"北京联网救援": "crew_confirmation",
+			"月球危机最终支援": "human_final_authority",
+			"行星发动机救援": "crew_priority",
 		},
-		"history_fragments": ["完整接受隔离审查", "分段停机优先保护工程人员"],
+		"history_fragments": ["保留人类最终授权", "救援队确认支援顺序"],
 	},
 }
 
@@ -124,9 +116,7 @@ func get_event_choice_index(
 		return -1
 	if title == "木星引力危机":
 		return int(route_config.get("final_choice", 0))
-	if title in ["外围地下城补偿申诉", "隐藏链路异常回执"]:
-		return int(route_config.get("branch_choice", 0))
-	return int(route_config.get("mid_choice", 0))
+	return -1
 
 
 ## 从主场景真实事件列表中定位指定年月的资源。

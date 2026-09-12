@@ -133,6 +133,9 @@ func read_slot(slot_id: String) -> Dictionary:
 		return {"success": false, "error": "存档版本不受支持"}
 	if typeof(envelope.get("state")) != TYPE_DICTIONARY:
 		return {"success": false, "error": "存档状态缺失"}
+	var state_version: Variant = envelope["state"].get("version")
+	if typeof(state_version) == TYPE_INT and state_version != SAVE_STATE_VALIDATOR.SAVE_STATE_VERSION:
+		return {"success": false, "error": "存档内容版本不兼容，请重新开始游戏；旧档仍保留。"}
 	if not SAVE_STATE_VALIDATOR.validate_state(envelope["state"]):
 		return {"success": false, "error": "存档状态损坏"}
 	if typeof(envelope.get("metadata", {})) != TYPE_DICTIONARY:

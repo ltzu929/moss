@@ -6,7 +6,7 @@
 script = ExtResource("1")
 node_id = "human_collaborative_governance"
 display_name = "协作治理协议"
-description = "由联合政府在 MOSS 辅助下维护的技术标准和公共决策流程。"
+description = "治理选择：由人类与系统共同约定支援范围，不声称原作联合政府颁布过这一协议。 效果数值与解锁阶段属于游戏规则。"
 effect_text = "技术援助改为消耗 10 算力与 5 能源，冷却 2 年，秩序 +15、希望 +15、控制权 -5。"
 route = 2
 stage = 2

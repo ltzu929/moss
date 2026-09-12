@@ -14,6 +14,8 @@ extends Resource
 @export var event_time: int = 0
 ## 触发月份
 @export_range(1, 12, 1) var event_month: int = 1
+## 同月危机阶段的先后顺序；不是原作中的日期。
+@export var event_order: int = 0
 ## 事件影响区域稳定 ID；显示层通过 RegionIdentity 恢复区域名称
 @export var event_region: String = "事件地区"
 ## 事件正文

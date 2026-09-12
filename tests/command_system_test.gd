@@ -179,14 +179,14 @@ func _assert_refresh_command_configuration() -> void:
 		CommandSystem.COMMAND_GLOBAL_TAKEOVER
 	)
 	_assert_true(energy_convert != null, "能量映射应解锁能源转换")
-	_assert_true(global_takeover != null, "全域协调网络应解锁全局接管")
+	_assert_true(global_takeover != null, "跨区域调度托管应解锁全局接管")
 	_assert_eq(allocate.get_meta("combined_enabled"), true, "辅助决策应开放综合调度")
-	_assert_eq(takeover.cpu_cost, 25, "基础设施托管应降低接管算力消耗")
-	_assert_eq(takeover.energy_cost, 10, "权限审计链应继续降低接管能源")
-	_assert_eq(takeover.authority_delta, 15, "基础设施托管应提高控制权收益")
-	_assert_eq(takeover.hope_delta, -5, "基础设施托管应降低希望")
-	_assert_eq(takeover.cooldown_years, 4, "行为预测模型应降低接管基础冷却")
-	_assert_eq(global_takeover.energy_cost, 5, "权限审计链应降低全局接管能源")
+	_assert_eq(takeover.cpu_cost, 25, "工程调度托管应降低接管算力消耗")
+	_assert_eq(takeover.energy_cost, 10, "支援权限协调应继续降低接管能源")
+	_assert_eq(takeover.authority_delta, 15, "工程调度托管应提高控制权收益")
+	_assert_eq(takeover.hope_delta, -5, "工程调度托管应降低希望")
+	_assert_eq(takeover.cooldown_years, 4, "观测信息集中应降低接管基础冷却")
+	_assert_eq(global_takeover.energy_cost, 5, "支援权限协调应降低全局接管能源")
 
 	_technology.reset()
 	_system.refresh_command_configuration(commands, cooldowns, _technology)
@@ -222,12 +222,12 @@ func _assert_human_command_parameter_overrides() -> void:
 	_system.refresh_command_configuration(commands, cooldowns, _technology)
 
 	var technology_aid := _system.get_command_by_id(commands, CommandSystem.COMMAND_TECHNOLOGY_AID)
-	_assert_true(technology_aid != null, "开放技术接口应解锁技术援助")
-	_assert_eq(technology_aid.cpu_cost, 15, "区域互助网络应降低技术援助算力消耗")
-	_assert_eq(technology_aid.energy_cost, 5, "区域互助网络应降低技术援助能源消耗")
-	_assert_eq(technology_aid.order_delta, 12, "区域互助网络应提高技术援助秩序收益")
-	_assert_eq(technology_aid.hope_delta, 12, "区域互助网络应提高技术援助希望收益")
-	_assert_eq(technology_aid.authority_delta, -4, "区域互助网络应提高技术援助自治代价")
+	_assert_true(technology_aid != null, "工程工具培训应解锁技术援助")
+	_assert_eq(technology_aid.cpu_cost, 15, "救援互助协调应降低技术援助算力消耗")
+	_assert_eq(technology_aid.energy_cost, 5, "救援互助协调应降低技术援助能源消耗")
+	_assert_eq(technology_aid.order_delta, 12, "救援互助协调应提高技术援助秩序收益")
+	_assert_eq(technology_aid.hope_delta, 12, "救援互助协调应提高技术援助希望收益")
+	_assert_eq(technology_aid.authority_delta, -4, "救援互助协调应提高技术援助自治代价")
 	_assert_true(
 		cooldowns.has(CommandSystem.COMMAND_TECHNOLOGY_AID),
 		"新增技术援助时应创建冷却键"

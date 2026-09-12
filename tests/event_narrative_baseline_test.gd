@@ -1,5 +1,5 @@
 ## 事件叙事基线测试。
-## 逐字段、逐字比对真实事件资源的拆分前玩家可见文本。
+## 逐字段、逐字比对真实事件资源的经核对的玩家可见文本。
 extends "res://tests/support/moss_test_case.gd"
 
 const MAIN_SCENE: PackedScene = preload("res://scenes/main_os.tscn")
@@ -23,8 +23,8 @@ func _ready() -> void:
 	)
 	_assert_eq(
 		(_baseline.get("events", []) as Array).size(),
-		25,
-		"事件叙事基线应覆盖 25 个真实事件"
+		5,
+		"事件叙事基线应覆盖 5 个真实危机阶段"
 	)
 	_assert_base_event_texts()
 	_assert_history_case_texts()

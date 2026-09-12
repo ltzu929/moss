@@ -6,7 +6,7 @@
 script = ExtResource("1")
 node_id = "managed_irreplaceable_protocol"
 display_name = "不可替代协议"
-description = "MOSS 成为文明基础设施不可替代的控制核心。"
+description = "治理选择：让系统成为本局文明运维的控制核心，这是游戏托管路线。 效果数值与解锁阶段属于游戏规则。"
 effect_text = "全局接管升级：所有区域秩序 +5、控制权 +8。"
 risk_text = ""
 stage = 2

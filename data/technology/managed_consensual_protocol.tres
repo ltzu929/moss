@@ -6,7 +6,7 @@
 script = ExtResource("1")
 node_id = "managed_consensual_protocol"
 display_name = "协商托管协议"
-description = "以公开协商和有限授权替代不可逆的强制接管。"
+description = "治理选择：以公开协商约定系统的支援权限。 效果数值与解锁阶段属于游戏规则。"
 effect_text = "系统接管控制权 +12 且不降低希望；全局接管使所有区域秩序 +3、控制权 +6 且不降低希望。"
 risk_text = "控制收益弱于不可替代协议，且不满足 MOSS 托管结局条件。"
 stage = 2

@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("1")
 node_id = "human_autonomy_network"
-display_name = "自治运维网络"
-description = "让区域组织能够独立维护基础设施和公共系统。"
+display_name = "人工运维协作"
+description = "治理选择：支持人类组织维护设施。属于本局制度安排，不宣称原作存在同名自治网络。 效果数值与解锁阶段属于游戏规则。"
 effect_text = "每年让低于 50 的区域秩序和希望各恢复 1。"
 route = 2
 stage = 1

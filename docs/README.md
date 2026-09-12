@@ -9,7 +9,7 @@
 | 游戏是什么、玩家能做什么 | [游戏设计](design/游戏设计.md) | [当前开发流程](dev/开发流程.md) |
 | 世界发生了什么、哪些设定可用 | [世界观总纲](worldbuilding/世界观总纲.md) | [世界观资料库](worldbuilding/README.md) |
 | 哪些内容来自电影，哪些是游戏改编 | [来源与设定分级](lore/世界观资料来源与设定分级.md) | [冲突与待确认事项](worldbuilding/设定冲突与待确认事项.md) |
-| 已同意怎样替换原创事件与科技 | [原作事件替代方向](design/游戏内容规范.md#原作事件替代方向已确认待实施) | [科技重整方向](design/科技树设计.md#原作依据重整方向已确认待实施)、[证据核验](worldbuilding/sources/网络资料核对.md) |
+| 已同意怎样替换原创事件与科技 | [原作事件替代方向](design/游戏内容规范.md#当前实现五个危机阶段) | [科技重整方向](design/科技树设计.md#当前原作依据与游戏规则)、[证据核验](worldbuilding/sources/网络资料核对.md) |
 | 准备丰富事件与科技 | [游戏系统世界观映射](worldbuilding/游戏系统世界观映射.md)中的扩写准备表 | [游戏内容规范](design/游戏内容规范.md)、[科技树设计](design/科技树设计.md) |
 | 核对 Wiki、官方美术资料和解析字幕 | [Wiki 完整索引](worldbuilding/sources/联合地球百科索引.md)、[网络资料核对](worldbuilding/sources/网络资料核对.md) | [解析字幕整理](worldbuilding/sources/流浪地球2解析整理.md) |
 | 纠正名称、区分小说与电影术语 | [名称与术语](worldbuilding/canon/名称与术语.md) | [结构化时间线](worldbuilding/canon/时间线.md) |

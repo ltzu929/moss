@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("1")
 node_id = "core_energy_mapping"
-display_name = "超负荷运算"
-description = "在短时间内通过消耗能源来提高算力"
+display_name = "工程供电调配"
+description = "原作设备：北京旧址救援使用电缆和门框机器人恢复供电。本节点把工程投入抽象为算力资源，不表示电能与算力存在固定物理兑换。 效果数值与解锁阶段属于游戏规则。"
 effect_text = "解锁“能源转换”指令：20 能源转换为 10 算力。"
 route = 1
 tags = Array[String](["unlock_energy_convert"])

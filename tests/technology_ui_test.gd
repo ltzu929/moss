@@ -46,14 +46,14 @@ func _ready() -> void:
 	var first_instance_ids := _get_card_instance_ids(cards)
 	var managed_card := _find_card(cards, "managed_decision")
 	var core_card := _find_card(cards, "core_energy_mapping")
-	_assert_true(managed_card != null, "应找到辅助决策接口卡片")
+	_assert_true(managed_card != null, "应找到空间站管理辅助卡片")
 	_assert_true(core_card != null, "应找到能量映射卡片")
 	if managed_card == null or core_card == null:
 		get_tree().quit(_failed)
 		return
 
 	managed_card.pressed.emit()
-	_assert_eq(_screen.get_node("%DetailName").text, "辅助决策接口", "详情应同步节点名称")
+	_assert_eq(_screen.get_node("%DetailName").text, "空间站管理辅助", "详情应同步节点名称")
 	_screen.get_node("%ActivateButton").pressed.emit()
 	_assert_true(_technology.is_active("managed_decision"), "首次点击应直接激活节点")
 	_assert_eq(_screen.get_node("%ActivateButton").text, "协议已激活", "激活后按钮应立即更新")

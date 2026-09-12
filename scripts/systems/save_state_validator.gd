@@ -4,7 +4,7 @@
 class_name SaveStateValidator
 extends RefCounted
 
-const SAVE_STATE_VERSION: int = 1
+const SAVE_STATE_VERSION: int = 2
 const INITIAL_YEAR: int = 2044
 const END_YEAR: int = 2075
 const ACTION_LOG_LIMIT: int = 24

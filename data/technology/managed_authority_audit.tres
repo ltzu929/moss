@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("1")
 node_id = "managed_authority_audit"
-display_name = "权限审计链"
-description = "持续审计接管链路中的权限消耗，减少重复授权与能源浪费。"
+display_name = "支援权限协调"
+description = "治理选择：协调本局已获得的支援权限，不对应一场原作 AI 隔离审查。 效果数值与解锁阶段属于游戏规则。"
 effect_text = "系统接管与全局接管的能源消耗各降低 5。"
 stage = 1
 prerequisite_ids = Array[String](["managed_behavior_prediction"])

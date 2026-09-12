@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("1")
 node_id = "core_load_migration"
-display_name = "负载迁移协议"
-description = "在能源节点与计算阵列之间动态迁移负载，降低转换损耗。"
+display_name = "供电作业协调"
+description = "原作任务：北京旧址救援需要恢复供电。本节点表示改善支援投入的分配方式，不设定负载迁移会产生能源。 效果数值与解锁阶段属于游戏规则。"
 effect_text = "能源转换消耗由 20 降为 15，基础冷却由 2 年降为 1 年。"
 route = 1
 stage = 1

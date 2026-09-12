@@ -1,0 +1,55 @@
+[gd_resource type="Resource" script_class="GameEvent" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/event/北京联网救援示意.svg" id="stage_image"]
+[ext_resource type="Script" path="res://scripts/resources/game_event.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/resources/event_option.gd" id="2_option"]
+
+[sub_resource type="Resource" id="Option_1"]
+script = ExtResource("2_option")
+option_id = "option_01"
+button_text = "集中供电支援"
+order_delta = 12
+hope_delta = 4
+authority_delta = 4
+energy_cost = 30
+decision_tag_key = "decision.core_2058_network_support"
+decision_tag_value = "power_support"
+decision_record_title = "2058 集中供电支援"
+decision_record_summary = "游戏决策：将支援能源集中于现场供电，降低后续联网配合的能源负担。"
+
+[sub_resource type="Resource" id="Option_2"]
+script = ExtResource("2_option")
+option_id = "option_02"
+button_text = "由现场人员确认支援需求"
+order_delta = 4
+hope_delta = 12
+authority_delta = -4
+energy_cost = 0
+decision_tag_key = "decision.core_2058_network_support"
+decision_tag_value = "crew_confirmation"
+decision_record_title = "2058 由现场人员确认支援需求"
+decision_record_summary = "游戏决策：保留人工确认，为后续危机行动积累协作信任。"
+
+[sub_resource type="Resource" id="Option_3"]
+script = ExtResource("2_option")
+option_id = "option_03"
+button_text = "集中调度支援接口"
+order_delta = 16
+hope_delta = -12
+authority_delta = 12
+energy_cost = 15
+decision_tag_key = "decision.core_2058_network_support"
+decision_tag_value = "central_dispatch"
+decision_record_title = "2058 集中调度支援接口"
+decision_record_summary = "游戏决策：扩大系统对支援接口的调度范围，减少后续集中调度成本。"
+
+[resource]
+script = ExtResource("1_event")
+event_image = ExtResource("stage_image")
+event_id = "event_2058_beijing_network_rescue"
+event_title = "北京联网救援"
+event_time = 2058
+event_order = 0
+event_region = "asia"
+event_description = "月球危机已经发生。马兆、图恒宇所在的先遣队前往中国互联网中心北京旧址执行任务。现场使用门框机器人携带绞盘电缆恢复供电。你需要为这项人类主导的现场行动分配系统支援。\n\n以下为游戏中的支援与授权取舍；不改写原作人物的行动和命运。触发月份为游戏配置。"
+options = Array[ExtResource("2_option")]([SubResource("Option_1"), SubResource("Option_2"), SubResource("Option_3")])

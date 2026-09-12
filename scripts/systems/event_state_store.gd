@@ -1,5 +1,5 @@
 ## 轻量事件状态存取服务。
-## 只保存中型事件和条件分支写入的 event_state.* 事实，不依赖场景树或 UI。
+## 保存事件选项写入的 event_state.* 事实，不依赖场景树或 UI。
 class_name EventStateStore
 extends RefCounted
 

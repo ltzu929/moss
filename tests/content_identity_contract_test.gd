@@ -160,8 +160,8 @@ func _assert_event_resources(baseline: Dictionary, sectors_by_id: Dictionary) ->
 				] = true
 			option_ids[option.option_id] = true
 
-	_assert_eq(event_count, 25, "应覆盖全部 25 个事件资源")
-	_assert_eq(branch_count, 2, "应保留两个条件分支事件")
+	_assert_eq(event_count, 5, "应覆盖全部 5 个事件资源")
+	_assert_eq(branch_count, 0, "旧灾难条件分支应退出")
 	_assert_eq(
 		decision_tag_writes.size(),
 		expected_decision_tag_writes.size(),

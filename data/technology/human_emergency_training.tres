@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("1")
 node_id = "human_emergency_training"
-display_name = "应急组织训练"
-description = "建立不依赖 MOSS 即时指挥的区域应急体系。"
+display_name = "太空电梯抗荷训练"
+description = "原作训练：太空电梯人员运输配有抗荷训练。本节点借此表达人员应急准备，不表示训练可消除所有灾难损失。 效果数值与解锁阶段属于游戏规则。"
 effect_text = "事件造成的负秩序和负希望影响减轻 25%。"
 route = 2
 stage = 1

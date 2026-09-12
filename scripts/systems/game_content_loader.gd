@@ -8,13 +8,22 @@ const SITUATIONS_PATH: String = "res://data/situations/"
 const COMMANDS_PATH: String = "res://data/commands/"
 
 
-## 按文件名顺序加载事件资源；事件 Resource 保持只读模板语义。
+## 按年月、危机阶段和稳定标识排序；事件 Resource 保持只读模板语义。
 func load_events() -> Array[GameEvent]:
 	var events: Array[GameEvent] = []
 	for file_name in _list_resource_files(EVENTS_PATH, "事件"):
 		var event := load(EVENTS_PATH + file_name)
 		if event is GameEvent:
 			events.append(event)
+	events.sort_custom(func(a: GameEvent, b: GameEvent) -> bool:
+		if a.event_time != b.event_time:
+			return a.event_time < b.event_time
+		if a.event_month != b.event_month:
+			return a.event_month < b.event_month
+		if a.event_order != b.event_order:
+			return a.event_order < b.event_order
+		return a.event_id < b.event_id
+	)
 	return events
 
 

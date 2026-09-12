@@ -66,7 +66,7 @@ const COMMAND_TECHNOLOGY_AID: String = COMMAND_SYSTEM_SCRIPT.COMMAND_TECHNOLOGY_
 const ACTION_LOG_LIMIT: int = 24
 const DEFAULT_TIME_SPEED: float = 1.0
 const TIME_SPEED_OPTIONS: Array[float] = [0.5, 1.0, 2.0]
-const SAVE_STATE_VERSION: int = 1
+const SAVE_STATE_VERSION: int = 2
 
 # ============================================================
 # 游戏状态变量

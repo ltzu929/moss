@@ -182,7 +182,7 @@ func _assert_content_loader_contracts() -> void:
 	var situations := loader.load_situations()
 	var commands := loader.load_commands()
 
-	_assert_eq(events.size(), 25, "内容加载器应按文件名扫描25个事件资源")
+	_assert_eq(events.size(), 5, "内容加载器应扫描5个危机阶段资源")
 	_assert_eq(situations.size(), 9, "内容加载器应按文件名扫描9个局势模板")
 	_assert_eq(commands.size(), 2, "内容加载器应扫描两条基础指令")
 
@@ -191,7 +191,7 @@ func _assert_content_loader_contracts() -> void:
 		event_ids.append(event.event_id)
 	var sorted_event_ids := event_ids.duplicate()
 	sorted_event_ids.sort()
-	_assert_eq(event_ids, sorted_event_ids, "事件资源应按文件名顺序返回")
+	_assert_eq(event_ids, sorted_event_ids, "事件资源应按年月与危机阶段顺序返回")
 
 	var situation_ids: Array[String] = []
 	for situation in situations:

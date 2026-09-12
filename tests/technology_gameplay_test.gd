@@ -27,35 +27,35 @@ func _ready() -> void:
 	_assert_true(_main_os.has_command_id("energy_convert"), "应解锁能源转换")
 
 	technology.grant_research_for_year(2048)
-	_assert_true(technology.activate("managed_decision"), "应激活辅助决策接口")
+	_assert_true(technology.activate("managed_decision"), "应激活空间站管理辅助")
 	_assert_true(_main_os.can_allocate_combined(), "算力分配应开放综合调度")
 
 	technology.grant_research_for_year(2052)
-	_assert_true(technology.activate("core_parallel"), "应激活并行核心")
-	_assert_eq(_main_os.max_cpu, 150, "并行核心应提高算力上限")
+	_assert_true(technology.activate("core_parallel"), "应激活月面建设计算支援")
+	_assert_eq(_main_os.max_cpu, 150, "月面建设计算支援应提高算力上限")
 
 	technology.grant_research_for_year(2056)
-	_assert_true(technology.activate("core_self_repair"), "应激活自修复进程")
+	_assert_true(technology.activate("core_self_repair"), "应激活工程设备维护")
 	_assert_eq(_main_os.cpu_recovery_rate, 15, "自修复应提高恢复率")
 
 	technology.grant_research_for_year(2060)
-	_assert_true(technology.activate("managed_infrastructure"), "应激活基础设施托管")
+	_assert_true(technology.activate("managed_infrastructure"), "应激活工程调度托管")
 	var takeover: CommandData = _main_os.get_command_by_id("takeover")
-	_assert_eq(takeover.cpu_cost, 25, "基础设施托管应降低接管算力成本")
-	_assert_eq(takeover.energy_cost, 15, "基础设施托管应降低接管能源成本")
-	_assert_eq(takeover.authority_delta, 15, "基础设施托管应提高控制权收益")
-	_assert_eq(takeover.hope_delta, -5, "基础设施托管应损失希望")
+	_assert_eq(takeover.cpu_cost, 25, "工程调度托管应降低接管算力成本")
+	_assert_eq(takeover.energy_cost, 15, "工程调度托管应降低接管能源成本")
+	_assert_eq(takeover.authority_delta, 15, "工程调度托管应提高控制权收益")
+	_assert_eq(takeover.hope_delta, -5, "工程调度托管应损失希望")
 
 	technology.grant_research_for_year(2064)
-	_assert_true(technology.activate("managed_global_network"), "应激活全域协调网络")
+	_assert_true(technology.activate("managed_global_network"), "应激活跨区域调度托管")
 	_assert_true(_main_os.has_command_id("global_takeover"), "应解锁全局接管")
 
 	technology.grant_research_for_year(2068)
-	_assert_true(technology.activate("core_recursive"), "应激活递归优化")
-	_assert_eq(_main_os.cooldown_reduction, 1, "递归优化应减少1年冷却")
+	_assert_true(technology.activate("core_recursive"), "应激活空间站任务协调")
+	_assert_eq(_main_os.cooldown_reduction, 1, "空间站任务协调应减少1年冷却")
 	_main_os.current_cpu = 0
 	_main_os.apply_special_command_effect(_main_os.get_command_by_id("energy_convert"))
-	_assert_eq(_main_os.current_cpu, 15, "递归优化应使能源转换获得15算力")
+	_assert_eq(_main_os.current_cpu, 15, "空间站任务协调应使能源转换获得15算力")
 
 	var mitigated: int = _main_os.get_technology_adjusted_event_delta(-20, "order")
 	_assert_eq(mitigated, -20, "未激活应急训练时不减损")
@@ -79,7 +79,7 @@ func _ready() -> void:
 			"human_civilization_self_sustain",
 		]
 	)
-	_assert_true(_main_os.has_command_id("technology_aid"), "开放技术接口应解锁技术援助")
+	_assert_true(_main_os.has_command_id("technology_aid"), "工程工具培训应解锁技术援助")
 	mitigated = _main_os.get_technology_adjusted_event_delta(-20, "hope")
 	_assert_eq(mitigated, -15, "应急训练应将负面秩序希望影响减轻25%")
 
@@ -151,12 +151,12 @@ func _assert_new_technology_effects() -> void:
 		]
 	)
 	var takeover: CommandData = _main_os.get_command_by_id("takeover")
-	_assert_eq(takeover.cooldown_years, 4, "行为预测模型应将系统接管基础冷却降为4年")
-	_assert_eq(takeover.energy_cost, 10, "权限审计链应在基础设施托管后继续降低接管能源")
+	_assert_eq(takeover.cooldown_years, 4, "观测信息集中应将系统接管基础冷却降为4年")
+	_assert_eq(takeover.energy_cost, 10, "支援权限协调应在工程调度托管后继续降低接管能源")
 	_assert_eq(takeover.authority_delta, 12, "协商托管协议应覆盖接管控制权收益")
 	_assert_eq(takeover.hope_delta, 0, "协商托管协议不应降低希望")
 	var global_takeover: CommandData = _main_os.get_command_by_id("global_takeover")
-	_assert_eq(global_takeover.energy_cost, 5, "权限审计链应降低全局接管能源消耗")
+	_assert_eq(global_takeover.energy_cost, 5, "支援权限协调应降低全局接管能源消耗")
 	var first_sector: SectorInfo = _get_first_sector()
 	var authority_before := first_sector.data_card.authority
 	var order_before := first_sector.data_card.order
@@ -181,12 +181,12 @@ func _assert_new_technology_effects() -> void:
 			"core_distributed_cognition",
 		]
 	)
-	_assert_eq(_main_os.max_cpu, 200, "分布式认知应在并行核心基础上再提高50算力上限")
-	_assert_eq(_main_os.cpu_recovery_rate, 25, "分布式认知应额外提高10年度算力恢复")
-	_assert_eq(_main_os.energy_recovery_rate, 10, "热冗余与分布式认知的能源恢复修正应相互抵消")
+	_assert_eq(_main_os.max_cpu, 200, "空间站观测支援应在月面建设计算支援基础上再提高50算力上限")
+	_assert_eq(_main_os.cpu_recovery_rate, 25, "空间站观测支援应额外提高10年度算力恢复")
+	_assert_eq(_main_os.energy_recovery_rate, 10, "热冗余与空间站观测支援的能源恢复修正应相互抵消")
 	var energy_convert: CommandData = _main_os.get_command_by_id("energy_convert")
-	_assert_eq(energy_convert.energy_cost, 15, "负载迁移协议应降低能源转换消耗")
-	_assert_eq(energy_convert.cooldown_years, 1, "负载迁移协议应降低能源转换基础冷却")
+	_assert_eq(energy_convert.energy_cost, 15, "供电作业协调应降低能源转换消耗")
+	_assert_eq(energy_convert.cooldown_years, 1, "供电作业协调应降低能源转换基础冷却")
 
 	_main_os.restart_game_for_test()
 	_main_os.get_node("Timer").stop()
@@ -203,11 +203,11 @@ func _assert_new_technology_effects() -> void:
 		]
 	)
 	var technology_aid: CommandData = _main_os.get_command_by_id("technology_aid")
-	_assert_eq(technology_aid.cpu_cost, 15, "区域互助网络应降低技术援助算力消耗")
-	_assert_eq(technology_aid.energy_cost, 5, "区域互助网络应降低技术援助能源消耗")
-	_assert_eq(technology_aid.order_delta, 12, "区域互助网络应提高12秩序")
-	_assert_eq(technology_aid.hope_delta, 12, "区域互助网络应提高12希望")
-	_assert_eq(technology_aid.authority_delta, -4, "区域互助网络应降低4控制权")
+	_assert_eq(technology_aid.cpu_cost, 15, "救援互助协调应降低技术援助算力消耗")
+	_assert_eq(technology_aid.energy_cost, 5, "救援互助协调应降低技术援助能源消耗")
+	_assert_eq(technology_aid.order_delta, 12, "救援互助协调应提高12秩序")
+	_assert_eq(technology_aid.hope_delta, 12, "救援互助协调应提高12希望")
+	_assert_eq(technology_aid.authority_delta, -4, "救援互助协调应降低4控制权")
 	_assert_true(technology.grant_research_for_year(2068), "应为协作治理发放第7点协议点")
 	_assert_true(technology.activate("human_collaborative_governance"), "应激活协作治理协议")
 	technology_aid = _main_os.get_command_by_id("technology_aid")

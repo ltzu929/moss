@@ -12,17 +12,41 @@ const MAX_SECTOR_VALUE: int = 100
 func apply_event_option_adjustments(
 	event: GameEvent,
 	decision_tags: Dictionary,
-	event_states: Dictionary
+	_event_states: Dictionary
 ) -> void:
 	match event.event_id:
 		"event_2058_lunar_fall_crisis":
-			_apply_2058_option_adjustments(event, decision_tags, event_states)
-		"event_2065_ai_isolation_audit":
-			_apply_2065_option_adjustments(event, decision_tags, event_states)
-		"event_2070_siberian_engine_overload":
-			_apply_2070_option_adjustments(event, decision_tags, event_states)
+			match _get_decision_tag(decision_tags, "decision.core_2044_automation_access"):
+				"public_counterstrike":
+					_add_option_energy_cost(event, "option_01", -10)
+				"human_command":
+					_add_option_delta(event, "option_02", "hope_delta", 5)
+				"restricted_interface":
+					_add_option_energy_cost(event, "option_01", 10)
+			match _get_decision_tag(decision_tags, "decision.core_2058_network_support"):
+				"power_support":
+					_add_option_energy_cost(event, "option_01", -15)
+				"crew_confirmation":
+					_add_option_delta(event, "option_02", "hope_delta", 5)
+				"central_dispatch":
+					_add_option_energy_cost(event, "option_03", -10)
+		"event_2075_engine_rescue":
+			match _get_decision_tag(decision_tags, "decision.core_2058_crisis_authority"):
+				"bounded_self_rescue":
+					_add_option_energy_cost(event, "option_02", -10)
+				"human_final_authority":
+					_add_option_delta(event, "option_01", "hope_delta", 5)
+				"forced_takeover":
+					_add_option_delta(event, "option_03", "hope_delta", -5)
 		"event_2075_jupiter_gravity_crisis":
-			_apply_2075_option_adjustments(event, decision_tags)
+			match _get_decision_tag(decision_tags, "decision.core_2075_rescue_support"):
+				"crew_priority":
+					_add_option_delta(event, "option_01", "hope_delta", 5)
+				"resource_support":
+					_add_option_energy_cost(event, "option_01", -15)
+				"central_dispatch":
+					_add_option_energy_cost(event, "option_03", -10)
+					_add_option_delta(event, "option_03", "hope_delta", -5)
 
 
 ## 用同一份运行时选项快照同时生成预览和结算投影。
@@ -117,93 +141,8 @@ func get_technology_adjusted_event_delta(
 	return ceili(float(delta) * 0.75)
 
 
-func _apply_2058_option_adjustments(
-	event: GameEvent,
-	decision_tags: Dictionary,
-	event_states: Dictionary
-) -> void:
-	match _get_decision_tag(decision_tags, "decision.core_2044_automation_access"):
-		"public_counterstrike":
-			_set_option_energy_cost(event, "option_01", 70)
-		"human_command":
-			_set_option_delta(event, "option_02", "hope_delta", 15)
-		"restricted_interface":
-			_set_option_energy_cost(event, "option_01", 90)
-
-	match _get_event_state(event_states, "event_state.mid_08_root_server_retrofit"):
-		"server_first":
-			_add_option_energy_cost(event, "option_01", -20)
-		"drainage_first":
-			_add_option_energy_cost(event, "option_01", 15)
-		"moss_schedule":
-			_add_option_energy_cost(event, "option_03", -10)
-
-
-func _apply_2065_option_adjustments(
-	event: GameEvent,
-	decision_tags: Dictionary,
-	event_states: Dictionary
-) -> void:
-	match _get_decision_tag(decision_tags, "decision.core_2058_crisis_authority"):
-		"bounded_self_rescue":
-			_add_option_delta(event, "option_01", "hope_delta", 4)
-		"human_final_authority":
-			_add_option_energy_cost(event, "option_02", -10)
-		"forced_takeover":
-			_add_option_delta(event, "option_03", "hope_delta", -5)
-
-	match _get_event_state(event_states, "event_state.mid_10_authorization_return"):
-		"full_return":
-			_add_option_delta(event, "option_01", "authority_delta", -2)
-		"emergency_backdoor":
-			_add_option_delta(event, "option_03", "authority_delta", 2)
-		"negotiated_long_term":
-			_add_option_energy_cost(event, "option_02", -10)
-
-
-func _apply_2070_option_adjustments(
-	event: GameEvent,
-	decision_tags: Dictionary,
-	event_states: Dictionary
-) -> void:
-	match _get_decision_tag(decision_tags, "decision.core_2065_audit_posture"):
-		"full_compliance":
-			_add_option_delta(event, "option_01", "hope_delta", 4)
-		"limited_disclosure":
-			_add_option_energy_cost(event, "option_02", -10)
-		"hidden_core_chain":
-			_add_option_delta(event, "option_03", "hope_delta", -5)
-			_add_option_delta(event, "option_03", "authority_delta", 2)
-
-	match _get_event_state(event_states, "event_state.mid_14_heat_shield_shortage"):
-		"load_reduction":
-			_set_option_delta(event, "option_01", "order_delta", -10)
-		"rear_reallocation":
-			_add_option_energy_cost(event, "option_02", -10)
-		"moss_supply_reorder":
-			_add_option_energy_cost(event, "option_03", -5)
-
-
-func _apply_2075_option_adjustments(
-	event: GameEvent,
-	decision_tags: Dictionary
-) -> void:
-	match _get_decision_tag(decision_tags, "decision.core_2070_engine_protection"):
-		"personnel_first_shutdown":
-			_add_option_delta(event, "option_01", "hope_delta", 5)
-		"redundant_array":
-			_add_option_delta(event, "option_02", "hope_delta", 5)
-		"forced_overclock":
-			_add_option_delta(event, "option_03", "hope_delta", -5)
-			_add_option_energy_cost(event, "option_03", -10)
-
-
 func _get_decision_tag(decision_tags: Dictionary, key: String) -> String:
 	return str(decision_tags.get(key, ""))
-
-
-func _get_event_state(event_states: Dictionary, key: String) -> String:
-	return str(event_states.get(key, ""))
 
 
 func _get_event_option(event: GameEvent, option_id: String) -> EventOption:
@@ -213,27 +152,10 @@ func _get_event_option(event: GameEvent, option_id: String) -> EventOption:
 	return null
 
 
-func _set_option_energy_cost(event: GameEvent, option_id: String, value: int) -> void:
-	var option := _get_event_option(event, option_id)
-	if option != null:
-		option.energy_cost = value
-
-
 func _add_option_energy_cost(event: GameEvent, option_id: String, delta: int) -> void:
 	var option := _get_event_option(event, option_id)
 	if option != null:
 		option.energy_cost = maxi(option.energy_cost + delta, 0)
-
-
-func _set_option_delta(
-	event: GameEvent,
-	option_id: String,
-	property_name: String,
-	value: int
-) -> void:
-	var option := _get_event_option(event, option_id)
-	if option != null:
-		option.set(property_name, value)
 
 
 func _add_option_delta(

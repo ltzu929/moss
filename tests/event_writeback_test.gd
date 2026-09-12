@@ -16,8 +16,8 @@ func _ready() -> void:
 	await get_tree().process_frame
 	_event_popup = _main_os.get_node("%EventPopup")
 
-	await _assert_real_2070_to_2075_writeback_matrix()
-	await _assert_event_state_adjustment_through_real_event()
+	await _assert_real_rescue_to_final_writeback_matrix()
+	await _assert_network_decision_adjustment_through_real_event()
 	await _assert_lower_bounds_through_real_event()
 	await _assert_energy_cap_and_upper_bounds_through_real_event()
 
@@ -26,37 +26,37 @@ func _ready() -> void:
 	get_tree().quit(_failed)
 
 
-func _assert_real_2070_to_2075_writeback_matrix() -> void:
+func _assert_real_rescue_to_final_writeback_matrix() -> void:
 	var cases: Array[Dictionary] = [
 		{
-			"decision": "personnel_first_shutdown",
+			"decision": "crew_priority",
 			"option_id": "option_01",
 			"index": 0,
 			"hope_delta": 25,
 			"order_delta": 15,
 			"authority_delta": 8,
-			"energy_cost": 100,
-			"suffix": "人员安全记录在案",
+			"energy_cost": 70,
+			"suffix": "现场协作支援",
 		},
 		{
-			"decision": "redundant_array",
-			"option_id": "option_02",
-			"index": 1,
-			"hope_delta": -10,
-			"order_delta": 25,
-			"authority_delta": 5,
-			"energy_cost": 0,
-			"suffix": "冗余阵列仍可维持",
+			"decision": "resource_support",
+			"option_id": "option_01",
+			"index": 0,
+			"hope_delta": 20,
+			"order_delta": 15,
+			"authority_delta": 8,
+			"energy_cost": 55,
+			"suffix": "救援投入延续",
 		},
 		{
-			"decision": "forced_overclock",
+			"decision": "central_dispatch",
 			"option_id": "option_03",
 			"index": 2,
-			"hope_delta": -45,
-			"order_delta": 40,
+			"hope_delta": -30,
+			"order_delta": 30,
 			"authority_delta": 20,
-			"energy_cost": 20,
-			"suffix": "超频链路已验证",
+			"energy_cost": 10,
+			"suffix": "集中调度延续",
 		},
 	]
 
@@ -73,10 +73,10 @@ func _run_2075_writeback_case(case: Dictionary) -> void:
 		"res://data/events/event_2075_jupiter_gravity_crisis.tres"
 	) as GameEvent
 	var source_decision_event := load(
-		"res://data/events/event_2070_siberian_engine_overload.tres"
+		"res://data/events/event_2075_engine_rescue.tres"
 	) as GameEvent
 	_assert_true(source_event != null, "2075 写回矩阵应加载真实终局事件")
-	_assert_true(source_decision_event != null, "2075 写回矩阵应加载真实 2070 决策事件")
+	_assert_true(source_decision_event != null, "2075 写回矩阵应加载真实 2075救援 决策事件")
 	if source_event == null or source_decision_event == null:
 		return
 
@@ -86,7 +86,7 @@ func _run_2075_writeback_case(case: Dictionary) -> void:
 	)
 	_assert_true(
 		decision_option != null,
-		"2070 决策应能为 2075 写回矩阵提供真实历史标签"
+		"2075救援 决策应能为 2075 写回矩阵提供真实历史标签"
 	)
 	if decision_option == null:
 		return
@@ -124,12 +124,12 @@ func _run_2075_writeback_case(case: Dictionary) -> void:
 	_assert_eq(
 		preview_option.hope_delta,
 		int(case["hope_delta"]),
-		"2070 决策到 2075 的预览希望应使用同一运行时选项快照"
+		"2075救援 决策到 2075 的预览希望应使用同一运行时选项快照"
 	)
 	_assert_eq(
 		preview_option.energy_cost,
 		int(case["energy_cost"]),
-		"2070 决策到 2075 的预览能源应使用同一运行时选项快照"
+		"2075救援 决策到 2075 的预览能源应使用同一运行时选项快照"
 	)
 	_assert_true(
 		str(case["suffix"]) in preview_option.button_text,
@@ -214,14 +214,14 @@ func _run_2075_writeback_case(case: Dictionary) -> void:
 	)
 	_assert_eq(
 		_get_option(source_event, str(case["option_id"])).energy_cost,
-		100 if str(case["option_id"]) == "option_01" else (
-			30 if str(case["option_id"]) == "option_03" else 0
+		70 if str(case["option_id"]) == "option_01" else (
+			20 if str(case["option_id"]) == "option_03" else 0
 		),
 		"真实 2075 资源能源代价不应被历史调整污染"
 	)
 
 
-func _assert_event_state_adjustment_through_real_event() -> void:
+func _assert_network_decision_adjustment_through_real_event() -> void:
 	_main_os.restart_game_for_test()
 	_main_os.get_node("Timer").stop()
 	await get_tree().process_frame
@@ -229,7 +229,7 @@ func _assert_event_state_adjustment_through_real_event() -> void:
 	var source_event := load(
 		"res://data/events/event_2058_lunar_fall_crisis.tres"
 	) as GameEvent
-	_assert_true(source_event != null, "event_state 写回应加载真实 2058 事件")
+	_assert_true(source_event != null, "北京决策 写回应加载真实 2058 事件")
 	if source_event == null:
 		return
 
@@ -239,8 +239,8 @@ func _assert_event_state_adjustment_through_real_event() -> void:
 		return
 	_assert_eq(
 		source_option.energy_cost,
-		80,
-		"真实 2058 资源的原始能源代价应为 80"
+		60,
+		"真实 2058 资源的原始能源代价应为 60"
 	)
 
 	var runtime_event := source_event.duplicate(true) as GameEvent
@@ -251,27 +251,25 @@ func _assert_event_state_adjustment_through_real_event() -> void:
 	_main_os.current_year = 2058
 	_main_os.current_month = 1
 	_main_os.current_energy = 100
-	_main_os.set_event_state(
-		"event_state.mid_08_root_server_retrofit",
-		"server_first"
-	)
+	var network := load("res://data/events/event_2058_beijing_network_rescue.tres") as GameEvent
+	_main_os.apply_event_option_decision(network.options[0], network.event_title)
 
 	var preview_event: GameEvent = _main_os.build_display_event(runtime_event)
 	var preview_option := _get_option(preview_event, "option_01")
 	_assert_true(
 		preview_option != null,
-		"真实 2058 预览应返回包含 event_state 调整的运行时选项"
+		"真实 2058 预览应返回包含 北京决策 调整的运行时选项"
 	)
 	if preview_option == null:
 		return
 	_assert_eq(
 		preview_option.energy_cost,
-		60,
-		"server_first 应将 2058 真实预览能源代价从 80 调整为 60"
+		45,
+		"power_support 应将 2058 真实预览能源代价从 60 调整为 45"
 	)
 	_assert_true(
-		"根服务器预改造" in preview_option.button_text,
-		"2058 真实预览按钮应保留 event_state 调整说明"
+		"供电支援已投入" in preview_option.button_text,
+		"2058 真实预览按钮应保留 北京决策 调整说明"
 	)
 
 	_preview_button_text = ""
@@ -283,16 +281,16 @@ func _assert_event_state_adjustment_through_real_event() -> void:
 
 	_assert_true(
 		not _preview_button_disabled,
-		"当前能源足够时 event_state 调整后的真实方案应可执行"
+		"当前能源足够时 北京决策 调整后的真实方案应可执行"
 	)
 	_assert_true(
-		"根服务器预改造" in _preview_button_text,
-		"真实 EventPopup 应消费 event_state 调整后的按钮文案"
+		"供电支援已投入" in _preview_button_text,
+		"真实 EventPopup 应消费 北京决策 调整后的按钮文案"
 	)
 	_assert_eq(
 		_main_os.current_energy,
-		40,
-		"真实 MainOS 结算应按 event_state 调整后的 60 能源扣除"
+		55,
+		"真实 MainOS 结算应按 北京决策 调整后的 45 能源扣除"
 	)
 	_assert_eq(
 		_main_os.triggered_events[0],
@@ -301,8 +299,8 @@ func _assert_event_state_adjustment_through_real_event() -> void:
 	)
 	_assert_eq(
 		_get_option(source_event, "option_01").energy_cost,
-		80,
-		"真实 event_state 结算不应污染 2058 原始资源能源代价"
+		60,
+		"真实 北京决策 结算不应污染 2058 原始资源能源代价"
 	)
 
 
@@ -312,9 +310,9 @@ func _assert_lower_bounds_through_real_event() -> void:
 	await get_tree().process_frame
 
 	var source_event := load(
-		"res://data/events/event_2070_siberian_engine_overload.tres"
+		"res://data/events/event_2075_engine_rescue.tres"
 	) as GameEvent
-	_assert_true(source_event != null, "边界写回应加载真实 2070 事件")
+	_assert_true(source_event != null, "边界写回应加载真实 2075救援 事件")
 	if source_event == null:
 		return
 	var sector := _get_sector("europe")
@@ -339,15 +337,15 @@ func _assert_lower_bounds_through_real_event() -> void:
 	)
 	await _main_os.process_month_tick()
 
-	_assert_true(not _preview_button_disabled, "2070 零能源方案应在真实弹窗中可执行")
-	_assert_eq(sector.data_card.order, 0, "秩序下限写回不得低于 0")
+	_assert_true(not _preview_button_disabled, "2075救援 零能源方案应在真实弹窗中可执行")
+	_assert_eq(sector.data_card.order, 4, "救援队支援秩序应正确写回")
 	_assert_eq(sector.data_card.hope, 100, "希望上限写回不得超过 100")
 	_assert_eq(sector.data_card.authority, 0, "控制权下限写回不得低于 0")
 	_assert_eq(_main_os.current_energy, 100, "零能源方案写回不得错误扣除能源")
 	_assert_eq(
 		_get_option(source_event, "option_01").order_delta,
-		-15,
-		"真实 2070 资源秩序代价不应被边界写回污染"
+		4,
+		"真实 2075救援 资源秩序代价不应被边界写回污染"
 	)
 
 
@@ -386,7 +384,7 @@ func _assert_energy_cap_and_upper_bounds_through_real_event() -> void:
 
 	_assert_true(
 		_preview_button_disabled,
-		"能源不足时真实 EventPopup 应禁用 100 能源方案"
+		"能源不足时真实 EventPopup 应禁用 70 能源方案"
 	)
 	_assert_eq(sector.data_card.order, 100, "秩序上限写回不得超过 100")
 	_assert_eq(sector.data_card.hope, 100, "希望上限写回不得超过 100")

@@ -1,0 +1,55 @@
+[gd_resource type="Resource" script_class="GameEvent" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/event/行星发动机救援示意.svg" id="stage_image"]
+[ext_resource type="Script" path="res://scripts/resources/game_event.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/resources/event_option.gd" id="2_option"]
+
+[sub_resource type="Resource" id="Option_1"]
+script = ExtResource("2_option")
+option_id = "option_01"
+button_text = "由救援队确认支援顺序"
+order_delta = 4
+hope_delta = 12
+authority_delta = -6
+energy_cost = 0
+decision_tag_key = "decision.core_2075_rescue_support"
+decision_tag_value = "crew_priority"
+decision_record_title = "2075 由救援队确认支援顺序"
+decision_record_summary = "游戏决策：将现场支援顺序交由救援人员确认。"
+
+[sub_resource type="Resource" id="Option_2"]
+script = ExtResource("2_option")
+option_id = "option_02"
+button_text = "增加救援支援投入"
+order_delta = 15
+hope_delta = 4
+authority_delta = 4
+energy_cost = 35
+decision_tag_key = "decision.core_2075_rescue_support"
+decision_tag_value = "resource_support"
+decision_record_title = "2075 增加救援支援投入"
+decision_record_summary = "游戏决策：投入更多能源支持救援，为最终支援保留协作余地。"
+
+[sub_resource type="Resource" id="Option_3"]
+script = ExtResource("2_option")
+option_id = "option_03"
+button_text = "集中调度救援支援"
+order_delta = 22
+hope_delta = -16
+authority_delta = 14
+energy_cost = 20
+decision_tag_key = "decision.core_2075_rescue_support"
+decision_tag_value = "central_dispatch"
+decision_record_title = "2075 集中调度救援支援"
+decision_record_summary = "游戏决策：集中调度系统支援，提高控制权并承担当事人的信任损失。"
+
+[resource]
+script = ExtResource("1_event")
+event_image = ExtResource("stage_image")
+event_id = "event_2075_engine_rescue"
+event_title = "行星发动机救援"
+event_time = 2075
+event_order = 0
+event_region = "europe"
+event_description = "木星引力危机已经发生。全球救援力量投入行星发动机救援。面对正在进行的救援行动，你需要分配信息、能源和调度支援。现场操作由救援队员承担。\n\n以下为游戏中的支援与授权取舍；不改写原作人物的行动和命运。触发月份为游戏配置。"
+options = Array[ExtResource("2_option")]([SubResource("Option_1"), SubResource("Option_2"), SubResource("Option_3")])

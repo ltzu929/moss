@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("1")
 node_id = "core_distributed_cognition"
-display_name = "分布式认知"
-description = "将 MOSS 的认知过程分散到多组相互校验的计算核心。"
+display_name = "空间站观测支援"
+description = "原作用途：550W 与空间站联网观测相关。本节点表示增加观测和计算投入，不断言多核心共享意识。 效果数值与解锁阶段属于游戏规则。"
 effect_text = "算力上限额外 +50，每年算力恢复额外 +10。"
 risk_text = "分布式核心持续占用能源，每年能源恢复 -5。"
 route = 1

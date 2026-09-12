@@ -49,12 +49,12 @@ func _render_editor_preview() -> void:
 		var preview_text: String = "[color=#73c9d3]2044.01  公开扩大自动化接入[/color]\n"
 		preview_text += "危机中公开扩展关键工程接口，后续社会知道 MOSS 已进入高风险调度链。\n"
 		preview_text += "[color=#6e8294]来源：太空电梯危机[/color]\n\n"
-		preview_text += "[color=#73c9d3]2053.07  人口优先撤离[/color]\n"
-		preview_text += "保留人口迁移优先级，基础设施承受额外调度压力。\n"
-		preview_text += "[color=#6e8294]来源：大洪水事故[/color]\n\n"
-		preview_text += "[color=#73c9d3]2058.11  保留人类最终授权[/color]\n"
+		preview_text += "[color=#73c9d3]2058.01  集中供电支援[/color]\n"
+		preview_text += "将支援能源集中于现场供电，降低后续联网配合的能源负担。\n"
+		preview_text += "[color=#6e8294]来源：北京联网救援[/color]\n\n"
+		preview_text += "[color=#73c9d3]2058.01  保留人类最终授权[/color]\n"
 		preview_text += "危机期间仍保留人工确认边界，后续高权限行动需要公开说明。\n"
-		preview_text += "[color=#6e8294]来源：月面坠落危机[/color]"
+		preview_text += "[color=#6e8294]来源：月球危机最终支援[/color]"
 		%DecisionArchiveText.text = preview_text
 
 

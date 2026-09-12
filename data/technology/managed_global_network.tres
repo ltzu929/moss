@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("1")
 node_id = "managed_global_network"
-display_name = "全域协调网络"
-description = "把分散区域接入统一控制与协调网络。"
+display_name = "跨区域调度托管"
+description = "治理选择：集中各区域的系统支援，不将其视为原作既有的全球控制网络。 效果数值与解锁阶段属于游戏规则。"
 effect_text = "解锁“全局接管”指令：所有区域控制权 +5。"
 stage = 1
 prerequisite_ids = Array[String](["managed_decision"])

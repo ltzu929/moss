@@ -6,7 +6,7 @@
 script = ExtResource("1")
 node_id = "human_civilization_self_sustain"
 display_name = "文明自持"
-description = "人类文明脱离 MOSS 独立运转的能力增强。"
+description = "治理选择：建设能够独立承担决策与运维的人类组织，这是游戏结局方向。 效果数值与解锁阶段属于游戏规则。"
 effect_text = "自治恢复提高至每年 +2、上限 60。"
 risk_text = "节点代价
 这可能导致人类脱离控制！"

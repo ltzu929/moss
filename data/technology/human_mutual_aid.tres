@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("1")
 node_id = "human_mutual_aid"
-display_name = "区域互助网络"
-description = "建立跨区域技术协作和物资互助网络，提高援助效率。"
+display_name = "救援互助协调"
+description = "治理选择：支持区域之间的人员与物资协作。 效果数值与解锁阶段属于游戏规则。"
 effect_text = "技术援助改为消耗 15 算力与 5 能源，秩序 +12、希望 +12、控制权 -4。"
 risk_text = ""
 route = 2

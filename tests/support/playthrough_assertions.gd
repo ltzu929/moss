@@ -423,21 +423,17 @@ func _assert_event_triggering() -> void:
 			"year": 2044,
 			"key": "decision.core_2044_automation_access",
 		},
-		"大淹没事故": {
-			"year": 2053,
-			"key": "decision.core_2053_population_vs_infrastructure",
+		"北京联网救援": {
+			"year": 2058,
+			"key": "decision.core_2058_network_support",
 		},
-		"月球坠落危机": {
+		"月球危机最终支援": {
 			"year": 2058,
 			"key": "decision.core_2058_crisis_authority",
 		},
-		"AI隔离审查": {
-			"year": 2065,
-			"key": "decision.core_2065_audit_posture",
-		},
-		"西伯利亚发动机群过载": {
-			"year": 2070,
-			"key": "decision.core_2070_engine_protection",
+		"行星发动机救援": {
+			"year": 2075,
+			"key": "decision.core_2075_rescue_support",
 		},
 		"木星引力危机": {
 			"year": 2075,
@@ -464,44 +460,19 @@ func _assert_event_triggering() -> void:
 		)
 	assert_eq(
 		_main_os.get_decision_records().size(),
-		5,
-		"完整通关应保留五条不可逆核心决策档案",
+		4,
+		"完整通关应保留四条不可逆核心决策档案",
 		"event_triggering"
 	)
 
-	var expects_branches := _route_id == "managed"
-	for branch_title in ["外围地下城补偿申诉", "隐藏链路异常回执"]:
-		assert_eq(
-			_event_was_logged(
-				2054 if branch_title == "外围地下城补偿申诉" else 2066,
-				6,
-				branch_title
-			),
-			expects_branches,
-			"条件分支触发应与核心路线一致：%s" % branch_title,
-			"event_triggering"
-		)
-	if expects_branches:
-		assert_eq(
-			_main_os.get_event_state("event_state.branch_01_perimeter_compensation"),
-			"moss_archive",
-			"托管路线应真实结算外围补偿分支",
-			"event_triggering"
-		)
-		assert_eq(
-			_main_os.get_event_state("event_state.branch_02_hidden_chain_receipt"),
-			"audit_trail_rewrite",
-			"托管路线应真实结算隐藏链路回执分支",
-			"event_triggering"
-		)
+	assert_eq(_event_log.size(), 5, "应恰好结算五个危机阶段", "event_triggering")
+	var expected_log: Array[String] = [
+		"2044.01:太空电梯危机", "2058.01:北京联网救援", "2058.01:月球危机最终支援",
+		"2075.01:行星发动机救援", "2075.01:木星引力危机",
+	]
+	for index in range(mini(_event_log.size(), expected_log.size())):
+		assert_eq(str(_event_log.keys()[index]), expected_log[index], "同月救援必须先于最终支援", "event_triggering")
 
-	var expected_event_count := 25 if expects_branches else 23
-	assert_eq(
-		_event_log.size(),
-		expected_event_count,
-		"路线应处理全部固定事件及应触发的条件分支",
-		"event_triggering"
-	)
 
 
 func _event_was_logged(year: int, month: int, title: String) -> bool:
@@ -632,7 +603,7 @@ func _assert_game_logic() -> void:
 		% [_main_os.triggered_events.size(), _event_log.size()],
 		"game_logic"
 	)
-	assert_eq(_main_os.max_cpu, 100, "未激活并行核心时最大算力应为100", "game_logic")
+	assert_eq(_main_os.max_cpu, 100, "未激活月面建设计算支援时最大算力应为100", "game_logic")
 
 
 func _assert_region_detail_sync() -> void:

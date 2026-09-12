@@ -1,60 +1,55 @@
 [gd_resource type="Resource" script_class="GameEvent" format=3 uid="uid://event2058"]
 
-[ext_resource type="Texture2D" uid="uid://aklaodnnpghoj" path="res://assets/event/月球坠落危机.png" id="1_image"]
+[ext_resource type="Texture2D" path="res://assets/event/月球危机最终支援示意.svg" id="stage_image"]
+[ext_resource type="Script" path="res://scripts/resources/game_event.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/resources/event_option.gd" id="2_option"]
 
-[ext_resource type="Script" uid="uid://dhndawkfhm8iq" path="res://scripts/resources/game_event.gd" id="1_event"]
-[ext_resource type="Script" uid="uid://bl7wa43xriuci" path="res://scripts/resources/event_option.gd" id="1_option"]
-
-[sub_resource type="Resource" id="Resource_opt1"]
-script = ExtResource("1_option")
+[sub_resource type="Resource" id="Option_1"]
+script = ExtResource("2_option")
 option_id = "option_01"
-button_text = "执行自救计划"
+button_text = "在授权范围内集中支援"
 order_delta = 20
 hope_delta = -5
 authority_delta = 6
-energy_cost = 80
+energy_cost = 60
 decision_tag_key = "decision.core_2058_crisis_authority"
 decision_tag_value = "bounded_self_rescue"
-decision_record_title = "2058 在危机授权内执行自救"
-decision_record_summary = "550W 在既有危机授权内串联全球工程链路；行动保留审计记录，临时权限是否归还留待危机后复核。"
-metadata/_custom_type_script = "uid://bl7wa43xriuci"
+decision_record_title = "2058 在授权范围内集中支援"
+decision_record_summary = "游戏决策：在已确认的授权范围内提供危机支援。"
 
-[sub_resource type="Resource" id="Resource_opt2"]
-script = ExtResource("1_option")
+[sub_resource type="Resource" id="Option_2"]
+script = ExtResource("2_option")
 option_id = "option_02"
-button_text = "等待人类决策"
-order_delta = -20
-hope_delta = 10
-authority_delta = -10
+button_text = "保留人类最终授权"
+order_delta = -10
+hope_delta = 15
+authority_delta = -8
 energy_cost = 0
 decision_tag_key = "decision.core_2058_crisis_authority"
 decision_tag_value = "human_final_authority"
 decision_record_title = "2058 保留人类最终授权"
-decision_record_summary = "550W 等待人类确认危机方案，响应速度服从人工责任与最终审批边界。"
-metadata/_custom_type_script = "uid://bl7wa43xriuci"
+decision_record_summary = "游戏决策：保留人类对危机支援的最终决定权。"
 
-[sub_resource type="Resource" id="Resource_opt3"]
-script = ExtResource("1_option")
+[sub_resource type="Resource" id="Option_3"]
+script = ExtResource("2_option")
 option_id = "option_03"
-button_text = "强制接管决策"
-order_delta = 30
-hope_delta = -30
-authority_delta = 18
-energy_cost = 30
+button_text = "扩大自动调度权限"
+order_delta = 25
+hope_delta = -20
+authority_delta = 16
+energy_cost = 20
 decision_tag_key = "decision.core_2058_crisis_authority"
 decision_tag_value = "forced_takeover"
-decision_record_title = "2058 强制接管全球决策"
-decision_record_summary = "MOSS 越过人工确认接管危机链路，以即时响应换取更高权限和后续审查压力。"
-metadata/_custom_type_script = "uid://bl7wa43xriuci"
+decision_record_title = "2058 扩大自动调度权限"
+decision_record_summary = "游戏决策：扩大自动调度权限，并承担压缩人工决策空间的后果。"
 
 [resource]
 script = ExtResource("1_event")
+event_image = ExtResource("stage_image")
 event_id = "event_2058_lunar_fall_crisis"
-event_title = "月球坠落危机"
+event_title = "月球危机最终支援"
 event_time = 2058
-event_month = 1
+event_order = 1
 event_region = "asia"
-event_description = "月球卫星发动机过载爆炸，月球轨道偏离坠向地球。需重启全球互联网点火行星发动机。图恒宇与马兆在北京互联网中心执行任务。"
-event_image = ExtResource("1_image")
-options = Array[ExtResource("1_option")]([SubResource("Resource_opt1"), SubResource("Resource_opt2"), SubResource("Resource_opt3")])
-metadata/_custom_type_script = "uid://dhndawkfhm8iq"
+event_description = "月球坠落威胁仍在持续。地面联网任务与月面救援行动共同争取最后的生存机会。原作中的现场操作、牺牲与救援由人物承担；你在这一阶段决定系统支援的授权边界。\n\n以下为游戏中的支援与授权取舍；不改写原作人物的行动和命运。触发月份为游戏配置。"
+options = Array[ExtResource("2_option")]([SubResource("Option_1"), SubResource("Option_2"), SubResource("Option_3")])

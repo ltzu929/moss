@@ -97,6 +97,23 @@ func _assert_slot_file_contract() -> void:
 		"不支持的格式版本应给出明确错误"
 	)
 
+	var old_state := _minimal_valid_state(3)
+	old_state["version"] = 1
+	var old_text := JSON.stringify({"format_version": 1, "state": old_state, "metadata": {}})
+	var old_file := FileAccess.open(TEST_SAVE_DIR + "/slot_3.json", FileAccess.WRITE)
+	old_file.store_string(old_text)
+	old_file.close()
+	var rejected := service.read_slot("slot_3")
+	_assert_true(not rejected.get("success", true), "旧内容版本不得载入新事件链")
+	_assert_true("重新开始" in str(rejected.get("error", "")), "旧档应明确提示重新开始")
+	_assert_eq(FileAccess.get_file_as_string(TEST_SAVE_DIR + "/slot_3.json"), old_text, "拒绝旧档不得改写或删除用户文件")
+	old_state["version"] = {}
+	old_file = FileAccess.open(TEST_SAVE_DIR + "/slot_3.json", FileAccess.WRITE)
+	old_file.store_string(JSON.stringify({"format_version": 1, "state": old_state, "metadata": {}}))
+	old_file.close()
+	_assert_eq(service.read_slot("slot_3").get("error"), "存档状态损坏", "损坏版本字段不得被强制转为整数")
+
+
 
 func _minimal_valid_state(cpu: int) -> Dictionary:
 	var sectors: Dictionary = {}
@@ -111,7 +128,7 @@ func _minimal_valid_state(cpu: int) -> Dictionary:
 			"is_locked": false,
 		}
 	return {
-		"version": 1,
+		"version": 2,
 		"time": {
 			"year": 2044,
 			"month": 1,

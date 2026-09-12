@@ -119,7 +119,9 @@ func popup_event(event: GameEvent, current_energy: int) -> void:
 
 	_hide_impact_tooltip()
 	for child in %OptionList.get_children():
-		child.free()
+		# 同月下一阶段可能在上个按钮的 pressed 信号中打开。
+		%OptionList.remove_child(child)
+		child.queue_free()
 
 	for i in range(event.options.size()):
 		var option: EventOption = event.options[i]
@@ -302,5 +304,5 @@ func _on_new_button_pressed(index: int) -> void:
 	_hover_generation += 1
 	_hovered_button = null
 	_hide_impact_tooltip()
-	option_selected.emit(index)
 	hide()
+	option_selected.emit(index)

@@ -12,9 +12,9 @@ const CORE_EVENT_CASES := [
 		"values": ["public_counterstrike", "human_command", "restricted_interface"],
 	},
 	{
-		"path": "res://data/events/event_2053_great_flood_accident.tres",
-		"key": "decision.core_2053_population_vs_infrastructure",
-		"values": ["population_first", "infrastructure_first", "sacrifice_perimeter"],
+		"path": "res://data/events/event_2058_beijing_network_rescue.tres",
+		"key": "decision.core_2058_network_support",
+		"values": ["power_support", "crew_confirmation", "central_dispatch"],
 	},
 	{
 		"path": "res://data/events/event_2058_lunar_fall_crisis.tres",
@@ -22,14 +22,9 @@ const CORE_EVENT_CASES := [
 		"values": ["bounded_self_rescue", "human_final_authority", "forced_takeover"],
 	},
 	{
-		"path": "res://data/events/event_2065_ai_isolation_audit.tres",
-		"key": "decision.core_2065_audit_posture",
-		"values": ["full_compliance", "limited_disclosure", "hidden_core_chain"],
-	},
-	{
-		"path": "res://data/events/event_2070_siberian_engine_overload.tres",
-		"key": "decision.core_2070_engine_protection",
-		"values": ["personnel_first_shutdown", "redundant_array", "forced_overclock"],
+		"path": "res://data/events/event_2075_engine_rescue.tres",
+		"key": "decision.core_2075_rescue_support",
+		"values": ["crew_priority", "resource_support", "central_dispatch"],
 	},
 ]
 
@@ -122,10 +117,10 @@ func _assert_restart_clears_history() -> void:
 	_main_os.get_node("Timer").stop()
 	for key in [
 		"decision.core_2044_automation_access",
-		"decision.core_2053_population_vs_infrastructure",
+		"decision.core_2058_network_support",
 		"decision.core_2058_crisis_authority",
 		"decision.core_2065_audit_posture",
-		"decision.core_2070_engine_protection",
+		"decision.core_2075_rescue_support",
 	]:
 		_assert_eq(_main_os.get_decision_tag(key), "", "重开应清空核心标签：%s" % key)
 	_assert_eq(_main_os.get_decision_records().size(), 0, "重开应清空不可逆档案记录")

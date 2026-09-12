@@ -12,34 +12,8 @@ const VALID_EVENT_REGIONS: Array[String] = [
 	"oceania",
 ]
 const EVENT_DESCRIPTION_CONTRACTS: Dictionary = {
-	"event_2065_ai_isolation_audit.tres": {
-		"required": "联合政府",
-		"forbidden": "欧洲势力",
-	},
-	"event_mid_02_automation_interface_hearing.tres": {
-		"required": "UEG",
-		"forbidden": "欧洲势力",
-	},
-	"event_mid_13_post_audit_interface_restructure.tres": {
-		"required": "UEG",
-		"forbidden": "欧洲势力",
-	},
-	"event_mid_15_propulsion_window_compression_report.tres": {
-		"required": "UEG",
-		"forbidden": "欧洲势力",
-	},
-	"event_mid_16_civilization_backup_ethics_hearing.tres": {
-		"required": "UEG",
-		"forbidden": "欧洲势力",
-	},
-	"event_mid_17_final_authorization_meeting.tres": {
-		"required": "UEG",
-		"forbidden": "欧洲势力",
-	},
-	"event_2070_siberian_engine_overload.tres": {
-		"required": "西伯利亚发动机群",
-		"forbidden": "欧洲负责",
-	},
+	"event_2058_beijing_network_rescue.tres": {"required": "月球危机已经发生", "forbidden": "牺牲外围"},
+	"event_2075_engine_rescue.tres": {"required": "木星引力危机已经发生", "forbidden": "强制超频"},
 }
 
 
@@ -111,8 +85,8 @@ func _assert_all_events_have_safe_choices() -> void:
 		_assert_true(not trigger_key.is_empty(), "事件触发键不得为空：%s" % file_name)
 		_assert_true(not trigger_keys.has(trigger_key), "事件触发键不得重复：%s" % trigger_key)
 		trigger_keys[trigger_key] = true
-	_assert_true(event_count >= 25, "应覆盖全部现有事件资源")
-	_assert_eq(branch_event_count, 2, "首个可玩版应注册两个受核心选择控制的短分支")
+	_assert_true(event_count == 5, "应覆盖全部现有事件资源")
+	_assert_eq(branch_event_count, 0, "退出旧灾难衍生分支")
 
 
 func _assert_runtime_emergency_fallback() -> void:

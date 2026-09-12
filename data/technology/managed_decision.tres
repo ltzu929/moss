@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 node_id = "managed_decision"
-display_name = "辅助决策接口"
-description = "将区域决策模型接入 MOSS 协议层，让人类逐步依赖统一调度。"
+display_name = "空间站管理辅助"
+description = "原作用途：550W 用于空间站管理。本节点把管理辅助用于本局的区域支援选择。 效果数值与解锁阶段属于游戏规则。"
 effect_text = "算力分配新增“综合调度”：秩序 +10，希望 +10，控制权 +2。"
 tags = Array[String](["managed_decision"])

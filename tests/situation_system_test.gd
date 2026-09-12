@@ -250,10 +250,11 @@ func _assert_conditional_opportunity_contract() -> void:
 		not system.is_template_eligible(
 			"regional_mutual_aid_window",
 			2056,
-			{"event_state.mid_05_dispatch_pilot": "closed_model"}
+			{"decision.core_2058_network_support": "central_dispatch"}
 		),
 		"不匹配的历史值不得错误解锁条件型机会"
 	)
+	_assert_true(system.is_template_eligible("regional_mutual_aid_window", 2058, {"decision.core_2058_network_support": "crew_confirmation"}), "北京现场协作应解锁区域互助机会")
 	var started := system.start_situation_for_test(
 		"regional_mutual_aid_window", "south_america", 2056, 6
 	)
