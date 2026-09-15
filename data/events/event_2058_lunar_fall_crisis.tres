@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="GameEvent" format=3 uid="uid://event2058"]
 
-[ext_resource type="Texture2D" path="res://assets/event/月球危机最终支援示意.svg" id="stage_image"]
+[ext_resource type="Texture2D" uid="uid://aklaodnnpghoj" path="res://assets/event/月球坠落危机.png" id="1_image"]
 [ext_resource type="Script" path="res://scripts/resources/game_event.gd" id="1_event"]
 [ext_resource type="Script" path="res://scripts/resources/event_option.gd" id="2_option"]
 
@@ -45,7 +45,7 @@ decision_record_summary = "游戏决策：扩大自动调度权限，并承担�
 
 [resource]
 script = ExtResource("1_event")
-event_image = ExtResource("stage_image")
+event_image = ExtResource("1_image")
 event_id = "event_2058_lunar_fall_crisis"
 event_title = "月球危机最终支援"
 event_time = 2058

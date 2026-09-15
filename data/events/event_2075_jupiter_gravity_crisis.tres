@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="GameEvent" format=3 uid="uid://event2075"]
 
-[ext_resource type="Texture2D" path="res://assets/event/木星引力危机示意.svg" id="stage_image"]
+[ext_resource type="Texture2D" uid="uid://dcjadhilcabhh" path="res://assets/event/木星引力危机.png" id="1_image"]
 [ext_resource type="Script" path="res://scripts/resources/game_event.gd" id="1_event"]
 [ext_resource type="Script" path="res://scripts/resources/event_option.gd" id="2_option"]
 
@@ -33,7 +33,7 @@ energy_cost = 20
 
 [resource]
 script = ExtResource("1_event")
-event_image = ExtResource("stage_image")
+event_image = ExtResource("1_image")
 event_id = "event_2075_jupiter_gravity_crisis"
 event_title = "木星引力危机"
 event_time = 2075

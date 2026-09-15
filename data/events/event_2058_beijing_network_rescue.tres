@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="GameEvent" format=3]
 
-[ext_resource type="Texture2D" path="res://assets/event/北京联网救援示意.svg" id="stage_image"]
+[ext_resource type="Texture2D" path="res://assets/event/北京联网救援.png" id="stage_image"]
 [ext_resource type="Script" path="res://scripts/resources/game_event.gd" id="1_event"]
 [ext_resource type="Script" path="res://scripts/resources/event_option.gd" id="2_option"]
 
