@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://kianyj80h6sh"]
+[gd_scene format=3 uid="uid://0n5qpybooyud"]
 
 [ext_resource type="Script" uid="uid://dd2d3nr5kftbv" path="res://scripts/ui/decision_archive_panel.gd" id="1_qpbxu"]
 [ext_resource type="Texture2D" uid="uid://dyh2pvowtsnxq" path="res://assets/ui/texture_pack_01/button_accent.svg" id="2_fylfq"]

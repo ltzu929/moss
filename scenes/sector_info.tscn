@@ -1,4 +1,4 @@
-[gd_scene load_steps=3 format=3 uid="uid://xn0mj5mp0u12"]
+[gd_scene format=3 uid="uid://35idm33t7evd"]
 
 [ext_resource type="Script" uid="uid://g2le40hscppk" path="res://scripts/resources/sector_info.gd" id="1_ntx5u"]
 [ext_resource type="Resource" uid="uid://de5nghry0twj7" path="res://data/sector_asia.tres" id="2_asia"]

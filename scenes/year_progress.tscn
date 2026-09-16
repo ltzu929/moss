@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://bqxj2k3n4m5p"]
+[gd_scene format=3 uid="uid://dggn5ucr3noe"]
 
 [ext_resource type="Script" uid="uid://sgbdb01w6lj1" path="res://scripts/ui/year_progress.gd" id="1"]
 

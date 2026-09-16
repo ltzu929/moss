@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://dellv4e6qlqpr"]
+[gd_scene format=3 uid="uid://8rgfagskn1s1"]
 
 [ext_resource type="Script" uid="uid://ddm2s7iv0qrfv" path="res://scripts/ui/allocate_popup.gd" id="1_51q68"]
 [ext_resource type="Texture2D" uid="uid://4ac7vbjhdjxy" path="res://assets/ui/texture_pack_01/button_normal.svg" id="2_7eal1"]
