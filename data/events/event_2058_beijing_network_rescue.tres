@@ -51,5 +51,5 @@ event_title = "北京联网救援"
 event_time = 2058
 event_order = 0
 event_region = "asia"
-event_description = "月球危机已经发生。马兆、图恒宇所在的先遣队前往中国互联网中心北京旧址执行任务。现场使用门框机器人携带绞盘电缆恢复供电。你需要为这项人类主导的现场行动分配系统支援。\n\n以下为游戏中的支援与授权取舍；不改写原作人物的行动和命运。触发月份为游戏配置。"
+event_description = "月球危机已经发生。马兆、图恒宇所在的先遣队前往中国互联网中心北京旧址执行任务。现场使用门框机器人携带绞盘电缆恢复供电。你需要为这项人类主导的现场行动分配系统支援。"
 options = Array[ExtResource("2_option")]([SubResource("Option_1"), SubResource("Option_2"), SubResource("Option_3")])

@@ -39,5 +39,5 @@ event_title = "木星引力危机"
 event_time = 2075
 event_order = 1
 event_region = "europe"
-event_description = "地球面临木星引力危机的最后关头。地面的点燃木星尝试与刘培强驾驶空间站的行动属于原作人物的选择。你决定系统如何支援人类，以及在危机之后保留怎样的控制边界。游戏结局评价这些治理选择，不把人物的救援和牺牲归功于 MOSS。\n\n以下为游戏中的支援与授权取舍；不改写原作人物的行动和命运。触发月份为游戏配置。"
+event_description = "地球面临木星引力危机的最后关头。地面的点燃木星尝试与刘培强驾驶空间站的行动属于原作人物的选择。你决定系统如何支援人类，以及在危机之后保留怎样的控制边界。游戏结局评价这些治理选择，不把人物的救援和牺牲归功于 MOSS。"
 options = Array[ExtResource("2_option")]([SubResource("Option_1"), SubResource("Option_2"), SubResource("Option_3")])

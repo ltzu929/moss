@@ -7,7 +7,7 @@
 [sub_resource type="StyleBoxFlat" id="StyleBackdrop"]
 bg_color = Color(0.004, 0.009, 0.014, 0.78)
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_jfwbn"]
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_exwe5"]
 content_margin_left = 10.0
 content_margin_top = 8.0
 content_margin_right = 10.0
@@ -65,7 +65,7 @@ mouse_filter = 2
 [node name="MainPanel" type="PanelContainer" parent="CenterContainer" unique_id=512124178]
 custom_minimum_size = Vector2(1120, 780)
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxTexture_jfwbn")
+theme_override_styles/panel = SubResource("StyleBoxTexture_exwe5")
 
 [node name="MainMargin" type="MarginContainer" parent="CenterContainer/MainPanel" unique_id=1001495299]
 layout_mode = 2
@@ -152,7 +152,7 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 0.5)
 theme_override_font_sizes/normal_font_size = 16
 bbcode_enabled = true
 text = "[color=#73C9D3]影响板块：亚洲[/color]
-数字生命派袭击方舟号空间站"
+太空电梯与方舟号空间站遭受袭击。人类承担现场战斗与救援。你决定工程辅助系统在危机中的接入范围。"
 scroll_active = false
 
 [node name="OptionsHeader" type="HBoxContainer" parent="CenterContainer/MainPanel/MainMargin/MainVBox" unique_id=2017078728]

@@ -47,11 +47,11 @@ metadata/_custom_type_script = "uid://bl7wa43xriuci"
 
 [resource]
 script = ExtResource("1_j8jfo")
-event_image = ExtResource("1_image")
 event_id = "event_2044_space_elevator_crisis"
 event_title = "太空电梯危机"
 event_time = 2044
 event_region = "asia"
-event_description = "太空电梯与方舟号空间站遭受袭击。人类承担现场战斗与救援。你决定工程辅助系统在危机中的接入范围。\n\n以下接口、代价和后续影响属于游戏改编，不补充袭击者的幕后身份与动机；触发月份为游戏配置。"
+event_description = "太空电梯与方舟号空间站遭受袭击。人类承担现场战斗与救援。你决定工程辅助系统在危机中的接入范围。"
+event_image = ExtResource("1_image")
 options = Array[ExtResource("1_qu5m7")]([SubResource("Resource_j5aep"), SubResource("Resource_bbnqo"), SubResource("Resource_qu5m7")])
 metadata/_custom_type_script = "uid://dhndawkfhm8iq"

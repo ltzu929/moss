@@ -51,5 +51,5 @@ event_title = "月球危机最终支援"
 event_time = 2058
 event_order = 1
 event_region = "asia"
-event_description = "月球坠落威胁仍在持续。地面联网任务与月面救援行动共同争取最后的生存机会。原作中的现场操作、牺牲与救援由人物承担；你在这一阶段决定系统支援的授权边界。\n\n以下为游戏中的支援与授权取舍；不改写原作人物的行动和命运。触发月份为游戏配置。"
+event_description = "月球坠落威胁仍在持续。地面联网任务与月面救援行动共同争取最后的生存机会。原作中的现场操作、牺牲与救援由人物承担；你在这一阶段决定系统支援的授权边界。"
 options = Array[ExtResource("2_option")]([SubResource("Option_1"), SubResource("Option_2"), SubResource("Option_3")])

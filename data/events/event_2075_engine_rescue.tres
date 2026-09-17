@@ -51,5 +51,5 @@ event_title = "行星发动机救援"
 event_time = 2075
 event_order = 0
 event_region = "europe"
-event_description = "木星引力危机已经发生。全球救援力量投入行星发动机救援。面对正在进行的救援行动，你需要分配信息、能源和调度支援。现场操作由救援队员承担。\n\n以下为游戏中的支援与授权取舍；不改写原作人物的行动和命运。触发月份为游戏配置。"
+event_description = "木星引力危机已经发生。全球救援力量投入行星发动机救援。面对正在进行的救援行动，你需要分配信息、能源和调度支援。现场操作由救援队员承担。"
 options = Array[ExtResource("2_option")]([SubResource("Option_1"), SubResource("Option_2"), SubResource("Option_3")])
